@@ -29,7 +29,11 @@ services:
       context: .
       dockerfile: docker/app/Dockerfile
     restart: unless-stopped
-    env_file: .env
+    env_file:
+      # Optional so `docker compose config` can validate this file in CI, where there is
+      # no .env. Running the stack without one still works — every value has a default.
+      - path: .env
+        required: false
     environment:
       DATA_ROOT: /data
     volumes:
@@ -53,7 +57,9 @@ services:
       dockerfile: docker/app/Dockerfile
     restart: unless-stopped
     command: ["cron"]
-    env_file: .env
+    env_file:
+      - path: .env
+        required: false
     environment:
       DATA_ROOT: /data
     volumes:

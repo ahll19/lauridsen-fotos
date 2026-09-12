@@ -173,10 +173,17 @@ else
 
             if (( FAST )); then
                 skip "test suite (--fast)"
-            elif django_runner test --verbosity 1 >/dev/null 2>&1; then
-                ok "tests pass"
             else
-                fail "tests failed — run: scripts/dev.sh manage test"
+                test_log=$(mktemp)
+                if django_runner test --verbosity 1 >"$test_log" 2>&1; then
+                    ok "tests pass"
+                else
+                    fail "tests failed — run: scripts/dev.sh manage test"
+                    # Print the failures rather than only the verdict; a red check with no
+                    # reason is the most annoying possible CI result.
+                    sed 's/^/        /' "$test_log" | tail -40
+                fi
+                rm -f "$test_log"
             fi
         fi
     fi

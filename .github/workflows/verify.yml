@@ -40,5 +40,22 @@ jobs:
             echo "No requirements.txt yet — skipping."
           fi
 
+      # Runs with DEBUG off, as production does, which means ManifestStaticFilesStorage —
+      # and that needs the manifest collectstatic produces. The image does this at build
+      # time; here it has to happen before anything renders a template.
+      - name: Collect static assets
+        if: hashFiles('src/manage.py') != ''
+        run: cd src && python manage.py collectstatic --noinput
+        env:
+          DJANGO_SECRET_KEY: ci-only-not-a-secret
+          DJANGO_STATIC_ROOT: ${{ runner.temp }}/static
+          DATA_ROOT: ${{ runner.temp }}/data
+
       - name: Run verification pipeline
         run: ./scripts/verify.sh
+        env:
+          DJANGO_SECRET_KEY: ci-only-not-a-secret
+          DJANGO_STATIC_ROOT: ${{ runner.temp }}/static
+          DATA_ROOT: ${{ runner.temp }}/data
+          # The test client speaks HTTP; without this every request becomes a 301 to https.
+          DJANGO_SECURE_SSL_REDIRECT: "0"
