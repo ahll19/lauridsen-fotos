@@ -1,0 +1,40 @@
+# --- Secrets & local environment ---
+.env
+.env.*
+!.env.example
+
+# --- Application data (bind-mounted /data: SQLite DB, media, thumbnail cache) ---
+data/
+*.sqlite3
+*.sqlite3-journal
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.Python
+build/
+dist/
+.venv/
+venv/
+env/
+
+# --- Django ---
+staticfiles/
+mediafiles/
+*.log
+
+# --- Tooling / editors ---
+.vscode/
+.idea/
+.claude/settings.local.json
+.DS_Store
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# --- TLS / certbot state (never committed) ---
+certbot/
+letsencrypt/
