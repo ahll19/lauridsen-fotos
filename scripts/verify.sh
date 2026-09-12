@@ -129,6 +129,19 @@ fi
 step "Python"
 
 python_files=$(tracked_files | grep -E '\.py$' || true)
+
+# Django lives in the image, not on the developer's machine, so the checks that need it
+# run inside a container. CI installs requirements.txt directly and runs them in place.
+django_runner() {
+    if python -c "import django" >/dev/null 2>&1; then
+        (cd src && python manage.py "$@")
+    elif has docker && docker compose ps --services 2>/dev/null | grep -qx app; then
+        docker compose run --rm --no-deps -T app python manage.py "$@"
+    else
+        return 127
+    fi
+}
+
 if [[ -z "$python_files" ]]; then
     skip "no Python code yet"
 else
@@ -136,31 +149,36 @@ else
         ruff format --check . && ok "formatting clean" || fail "formatting issues — run: ruff format ."
         ruff check .          && ok "lint clean"       || fail "lint issues — run: ruff check --fix ."
     else
-        fail "ruff is not installed — pip install ruff"
+        skip "ruff not installed — formatting and linting (pip install ruff)"
     fi
 
-    if [[ -f manage.py ]]; then
-        if python manage.py check >/dev/null 2>&1; then
-            ok "django system checks pass"
-        else
-            fail "django system checks failed — run: python manage.py check"
-        fi
-
-        if python manage.py makemigrations --check --dry-run >/dev/null 2>&1; then
-            ok "no missing migrations"
-        else
-            fail "model changes have no migration — run: python manage.py makemigrations"
-        fi
-    else
+    if [[ ! -f src/manage.py ]]; then
         skip "no manage.py — django checks"
-    fi
-
-    if (( FAST )); then
-        skip "test suite (--fast)"
-    elif has pytest && [[ -d tests || -n "$(tracked_files | grep -E 'test_.*\.py$' || true)" ]]; then
-        pytest -q && ok "tests pass" || fail "tests failed"
     else
-        skip "no tests yet"
+        django_runner check >/dev/null 2>&1
+        rc=$?
+
+        if (( rc == 127 )); then
+            skip "django checks (no local Django, and the stack isn't running)"
+        elif (( rc != 0 )); then
+            fail "django system checks failed — run: scripts/dev.sh manage check"
+        else
+            ok "django system checks pass"
+
+            if django_runner makemigrations --check --dry-run >/dev/null 2>&1; then
+                ok "no missing migrations"
+            else
+                fail "models changed without a migration — run: scripts/dev.sh manage makemigrations"
+            fi
+
+            if (( FAST )); then
+                skip "test suite (--fast)"
+            elif django_runner test --verbosity 1 >/dev/null 2>&1; then
+                ok "tests pass"
+            else
+                fail "tests failed — run: scripts/dev.sh manage test"
+            fi
+        fi
     fi
 fi
 

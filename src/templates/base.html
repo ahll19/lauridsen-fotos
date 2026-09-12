@@ -1,0 +1,74 @@
+{% load i18n static %}<!doctype html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ site_name }}{% endblock %}</title>
+  {% block meta %}{% endblock %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'vendor/glightbox.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+<a class="skip-link" href="#main">{% translate "Skip to content" %}</a>
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="{% url 'pages:home' %}">
+      <span class="brand__name">{{ site_name }}</span>
+      {% if site_tagline %}<span class="brand__tagline">{{ site_tagline }}</span>{% endif %}
+    </a>
+
+    <button class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="{% translate 'Menu' %}">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav id="site-nav" class="nav" aria-label="{% translate 'Main navigation' %}">
+      <a href="{% url 'portfolio:index' %}" {% if request.resolver_match.app_name == 'portfolio' %}aria-current="page"{% endif %}>{% translate "Portfolio" %}</a>
+      <a href="{% url 'timeline:index' %}" {% if request.resolver_match.app_name == 'timeline' %}aria-current="page"{% endif %}>{% translate "Timeline" %}</a>
+      <a href="{% url 'pages:pricing' %}" {% if request.resolver_match.url_name == 'pricing' %}aria-current="page"{% endif %}>{% translate "Pricing" %}</a>
+      <a href="{% url 'pages:about' %}" {% if request.resolver_match.url_name == 'about' %}aria-current="page"{% endif %}>{% translate "About" %}</a>
+      <a href="{% url 'pages:contact' %}" {% if request.resolver_match.url_name == 'contact' %}aria-current="page"{% endif %}>{% translate "Contact" %}</a>
+
+      {% get_current_language as CURRENT %}
+      <form class="lang" action="{% url 'set_language' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        {% get_available_languages as LANGUAGES %}
+        {% for code, name in LANGUAGES %}
+          <button type="submit" name="language" value="{{ code }}"
+                  class="lang__btn {% if code == CURRENT %}is-active{% endif %}"
+                  {% if code == CURRENT %}aria-current="true"{% endif %}>{{ code|upper }}</button>
+        {% endfor %}
+      </form>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <div class="wrap site-footer__inner">
+    <div>
+      <p class="footer__name">{{ site_name }}</p>
+      {% if contact_settings.email %}<p><a href="mailto:{{ contact_settings.email }}">{{ contact_settings.email }}</a></p>{% endif %}
+      {% if contact_settings.phone %}<p>{{ contact_settings.phone }}</p>{% endif %}
+    </div>
+    <div class="footer__links">
+      {% if contact_settings.instagram_url %}<a href="{{ contact_settings.instagram_url }}" rel="me noopener">Instagram</a>{% endif %}
+      {% if contact_settings.facebook_url %}<a href="{{ contact_settings.facebook_url }}" rel="me noopener">Facebook</a>{% endif %}
+      <a href="{% url 'pages:contact' %}">{% translate "Get in touch" %}</a>
+    </div>
+  </div>
+</footer>
+
+<script src="{% static 'vendor/glightbox.min.js' %}"></script>
+<script src="{% static 'js/site.js' %}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

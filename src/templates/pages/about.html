@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load i18n thumbnail %}
+
+{% block title %}{% translate "About" %} — {{ site_name }}{% endblock %}
+
+{% block content %}
+<div class="wrap section">
+  <div class="about">
+    {% if about.portrait %}
+      <img class="about__portrait" src="{% thumbnail about.portrait 'cover' %}" alt="">
+    {% endif %}
+    <div class="about__body">
+      <h1>{{ about.heading|default:_("About") }}</h1>
+      {% if about.biography %}<p class="lede">{{ about.biography|linebreaksbr }}</p>{% endif %}
+      {% if about.how_i_work %}
+        <h2>{% translate "How I work" %}</h2>
+        <p>{{ about.how_i_work|linebreaksbr }}</p>
+      {% endif %}
+      <a class="btn btn--primary" href="{% url 'pages:contact' %}">{% translate "Get in touch" %}</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

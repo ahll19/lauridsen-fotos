@@ -23,6 +23,8 @@ env/
 staticfiles/
 mediafiles/
 *.log
+# Compiled translation catalogues: generated from the .po files by the entrypoint.
+*.mo
 
 # --- Tooling / editors ---
 .vscode/

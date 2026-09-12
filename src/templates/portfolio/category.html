@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load i18n thumbnail %}
+
+{% block title %}{{ category.name }} — {{ site_name }}{% endblock %}
+
+{% block content %}
+<div class="wrap section">
+  <nav class="crumbs"><a href="{% url 'portfolio:index' %}">{% translate "Portfolio" %}</a> <span>/</span> {{ category.name }}</nav>
+
+  <header class="page-head">
+    <h1>{{ category.name }}</h1>
+    {% if category.description %}<p class="lede">{{ category.description|linebreaksbr }}</p>{% endif %}
+  </header>
+
+  {% if albums %}
+    <div class="card-grid">
+      {% for album in albums %}
+        <article class="card">
+          <a href="{{ album.get_absolute_url }}">
+            <div class="card__media">
+              {% if album.cover_image %}
+                <img src="{% thumbnail album.cover_image 'cover' %}" alt="{{ album.name }}" loading="lazy">
+              {% else %}
+                <div class="card__placeholder"></div>
+              {% endif %}
+            </div>
+            <h2 class="card__title">{{ album.name }}</h2>
+            <p class="card__meta">
+              {% with count=album.photos.count %}
+                {% blocktranslate count counter=count %}{{ counter }} photograph{% plural %}{{ counter }} photographs{% endblocktranslate %}
+              {% endwith %}
+            </p>
+          </a>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="empty">{% translate "Nothing published here yet." %}</p>
+  {% endif %}
+</div>
+{% endblock %}

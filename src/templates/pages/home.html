@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load i18n thumbnail %}
+
+{% block title %}{{ site_name }}{% if site_tagline %} — {{ site_tagline }}{% endif %}{% endblock %}
+
+{% block content %}
+<section class="hero{% if not home.hero_image %} hero--plain{% endif %}">
+  {% if home.hero_image %}
+    <img class="hero__image" src="{% thumbnail home.hero_image 'hero' %}" alt="">
+  {% endif %}
+  <div class="hero__body wrap">
+    <h1 class="hero__title">{{ home.business_name }}</h1>
+    {% if home.tagline %}<p class="hero__tagline">{{ home.tagline }}</p>{% endif %}
+    <div class="hero__actions">
+      <a class="btn btn--primary" href="{% url 'portfolio:index' %}">{% translate "See the portfolio" %}</a>
+      <a class="btn" href="{% url 'timeline:index' %}">{% translate "Timeline" %}</a>
+      <a class="btn" href="{% url 'pages:contact' %}">{% translate "Contact" %}</a>
+    </div>
+  </div>
+</section>
+
+{% if home.intro %}
+<section class="wrap section section--narrow">
+  <p class="lede">{{ home.intro|linebreaksbr }}</p>
+</section>
+{% endif %}
+
+{% if featured_album or latest_entry %}
+<section class="wrap section">
+  <div class="teasers">
+    {% if featured_album %}
+    <article class="teaser">
+      <a href="{{ featured_album.get_absolute_url }}">
+        {% if featured_album.cover_image %}
+          <img src="{% thumbnail featured_album.cover_image 'cover' %}" alt="{{ featured_album.name }}" loading="lazy">
+        {% endif %}
+        <h2 class="teaser__title">{{ featured_album.name }}</h2>
+        <p class="teaser__meta">{% translate "From the portfolio" %} · {{ featured_album.category.name }}</p>
+      </a>
+    </article>
+    {% endif %}
+
+    {% if latest_entry %}
+    <article class="teaser">
+      <a href="{{ latest_entry.get_absolute_url }}">
+        {% with photo=latest_entry.photos.first %}
+          {% if photo %}<img src="{% thumbnail photo.image 'cover' %}" alt="{{ latest_entry.title }}" loading="lazy">{% endif %}
+        {% endwith %}
+        <h2 class="teaser__title">{{ latest_entry.title }}</h2>
+        <p class="teaser__meta">{% translate "Latest from the timeline" %} · {{ latest_entry.date|date:"j F Y" }}</p>
+      </a>
+    </article>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

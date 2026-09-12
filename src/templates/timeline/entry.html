@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n thumbnail %}
+
+{% block title %}{{ entry.title }} — {{ site_name }}{% endblock %}
+{% block body_class %}protect-images{% endblock %}
+
+{% block content %}
+<div class="wrap section">
+  <nav class="crumbs"><a href="{% url 'timeline:index' %}">{% translate "Timeline" %}</a> <span>/</span> {{ entry.title }}</nav>
+
+  <header class="page-head">
+    <time class="entry__date" datetime="{{ entry.date|date:'Y-m-d' }}">{{ entry.date|date:"j F Y" }}</time>
+    <h1>{{ entry.title }}</h1>
+    {% if entry.caption %}<p class="lede">{{ entry.caption|linebreaksbr }}</p>{% endif %}
+    {% if entry.tag_list %}
+      <p class="tags">
+        {% for tag in entry.tag_list %}<a class="tag" href="{% url 'timeline:index' %}?tag={{ tag|urlencode }}">{{ tag }}</a>{% endfor %}
+      </p>
+    {% endif %}
+  </header>
+
+  {% if photos %}
+    <div class="photo-grid">
+      {% for photo in photos %}
+        <figure class="photo">
+          <a href="{% thumbnail photo.image 'lightbox' %}" class="glightbox" data-gallery="entry-{{ entry.pk }}"
+             {% if photo.caption %}data-title="{{ photo.caption }}"{% endif %}>
+            <img src="{% thumbnail photo.image 'grid' %}" alt="{{ photo.caption }}" loading="lazy">
+          </a>
+        </figure>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
