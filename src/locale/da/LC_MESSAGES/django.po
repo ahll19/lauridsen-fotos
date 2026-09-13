@@ -7,12 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lauridsen-fotos\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-13 17:34+0200\n"
+"POT-Creation-Date: 2026-09-13 20:42+0200\n"
 "Language: da\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Shared"
+msgstr "Fælles"
 
 msgid "Add photographs"
 msgstr "Tilføj billeder"
@@ -115,6 +118,9 @@ msgstr "Luk nu (sletter billederne)"
 msgid "'%(label)s': %(count)d photograph(s) deleted from disk."
 msgstr "'%(label)s': %(count)d billede(r) slettet fra disken."
 
+msgid "Client galleries"
+msgstr "Klientgallerier"
+
 msgid "URL key"
 msgstr "URL-nøgle"
 
@@ -180,6 +186,9 @@ msgstr "Adgangskoden er ikke korrekt."
 
 msgid "delivered"
 msgstr "leveret"
+
+msgid "Pages"
+msgstr "Sider"
 
 msgid "Wedding, portrait, event…"
 msgstr "Bryllup, portræt, event…"
@@ -319,21 +328,7 @@ msgstr "Der er sendt for mange beskeder herfra for nylig. Prøv venligst igen se
 msgid "Your message was received, but the confirmation email could not be sent. Please get in touch directly if you don't hear back."
 msgstr "Din besked er modtaget, men bekræftelsesmailen kunne ikke sendes. Skriv gerne direkte, hvis du ikke hører fra mig."
 
-msgid "Name:"
-msgstr "Navn:"
-
-msgid "Email:"
-msgstr "E-mail:"
-
-msgid "Type:"
-msgstr "Type:"
-
-msgid "Date:"
-msgstr "Dato:"
-
-msgid "IP address:"
-msgstr "IP-adresse:"
-
+#, python-format
 msgid "Contact form: %(name)s"
 msgstr "Kontaktformular: %(name)s"
 
@@ -346,8 +341,12 @@ msgstr "forhåndsvisning"
 msgid "Select several at once; they are appended in the order chosen."
 msgstr "Vælg flere på én gang; de tilføjes i den valgte rækkefølge."
 
+#, python-format
 msgid "Added %(count)d photograph(s)."
 msgstr "Tilføjede %(count)d billede(r)."
+
+msgid "Portfolio"
+msgstr "Portfolio"
 
 msgid "slug"
 msgstr "kort-navn"
@@ -387,9 +386,6 @@ msgstr "Menu"
 
 msgid "Main navigation"
 msgstr "Hovedmenu"
-
-msgid "Portfolio"
-msgstr "Portfolio"
 
 msgid "Timeline"
 msgstr "Tidslinje"
@@ -563,3 +559,18 @@ msgstr "tidslinjebillede"
 
 msgid "timeline photos"
 msgstr "tidslinjebilleder"
+
+#~ msgid "Name:"
+#~ msgstr "Navn:"
+
+#~ msgid "Email:"
+#~ msgstr "E-mail:"
+
+#~ msgid "Type:"
+#~ msgstr "Type:"
+
+#~ msgid "Date:"
+#~ msgstr "Dato:"
+
+#~ msgid "IP address:"
+#~ msgstr "IP-adresse:"
