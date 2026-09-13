@@ -1,0 +1,54 @@
+# Rendered by the nginx image's envsubst at container start. TLS is absent on purpose —
+# certbot joins the stack when there is a domain and a VPS to point it at.
+
+upstream app_server {
+    server ${APP_HOST}:${APP_PORT};
+}
+
+server {
+    listen 80;
+    server_name _;
+
+    client_max_body_size ${MAX_UPLOAD_SIZE};
+
+    # Photographs are large; give slow uploads room before the proxy gives up.
+    proxy_read_timeout 300s;
+    proxy_send_timeout 300s;
+
+    # --- Static assets: shipped with the image, never user-written ---------
+    location /static/ {
+        alias /srv/static/;
+        access_log off;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # --- Public media: portfolio and timeline derivatives ------------------
+    # Only the thumbnail cache is exposed. Originals live under /data/media and are
+    # deliberately not reachable here, which is what stops full-resolution files being
+    # served publicly.
+    location /cache/thumbnails/ {
+        alias /data/cache/thumbnails/;
+        access_log off;
+        expires 30d;
+        add_header Cache-Control "public";
+    }
+
+    # --- Private files: client gallery photos and ZIPs ---------------------
+    # `internal` makes this location unreachable from outside; only an X-Accel-Redirect
+    # header emitted by the application can route a request into it. Django re-checks the
+    # gallery cookie before emitting that header (technical_design.md §8).
+    location /_protected/ {
+        internal;
+        alias /data/;
+    }
+
+    location / {
+        proxy_pass http://app_server;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_redirect off;
+    }
+}

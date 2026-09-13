@@ -1,0 +1,27 @@
+# Keep the build context small and free of anything that shouldn't reach an image.
+
+.git
+.github
+.githooks
+data
+*.md
+docs
+
+.env
+.env.*
+!.env.example
+
+__pycache__
+*.py[cod]
+.venv
+venv
+.ruff_cache
+.pytest_cache
+.mypy_cache
+.coverage
+htmlcov
+
+.DS_Store
+.vscode
+.idea
+.claude

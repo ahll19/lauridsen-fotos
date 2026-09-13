@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Contact" %} — {{ site_name }}{% endblock %}
+
+{% block content %}
+<div class="wrap section">
+  <header class="page-head">
+    <h1>{{ contact.heading|default:_("Contact") }}</h1>
+    {% if contact.intro %}<p class="lede">{{ contact.intro|linebreaksbr }}</p>{% endif %}
+  </header>
+
+  <div class="contact">
+    <div class="contact__form">
+      {% if sent %}
+        <div class="notice notice--success" role="status">
+          <p>{% translate "Thank you — your message has been sent. I'll be in touch soon." %}</p>
+        </div>
+      {% endif %}
+
+      {% if form.non_field_errors %}
+        <div class="notice notice--error" role="alert">
+          {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {# Honeypot: hidden from people, irresistible to bots. #}
+        <div class="hp" aria-hidden="true">
+          <label for="{{ form.website.id_for_label }}">{% translate "Leave this empty" %}</label>
+          <input type="text" name="website" id="{{ form.website.id_for_label }}" tabindex="-1" autocomplete="off">
+        </div>
+
+        {% for field in form %}
+          {% if field.name != 'website' %}
+            <div class="field {% if field.errors %}field--error{% endif %}">
+              <label class="field__label" for="{{ field.id_for_label }}">
+                {{ field.label }}{% if field.field.required %} <span aria-hidden="true">*</span>{% endif %}
+              </label>
+              {{ field }}
+              {% if field.help_text %}<p class="field__help">{{ field.help_text }}</p>{% endif %}
+              {% for error in field.errors %}<p class="field__error">{{ error }}</p>{% endfor %}
+            </div>
+          {% endif %}
+        {% endfor %}
+
+        <button class="btn btn--primary" type="submit">{% translate "Send message" %}</button>
+      </form>
+    </div>
+
+    <aside class="contact__aside">
+      <h2>{% translate "Or reach me directly" %}</h2>
+      {% if contact.email %}<p><a href="mailto:{{ contact.email }}">{{ contact.email }}</a></p>{% endif %}
+      {% if contact.phone %}<p>{{ contact.phone }}</p>{% endif %}
+      <p class="contact__social">
+        {% if contact.instagram_url %}<a href="{{ contact.instagram_url }}" rel="noopener">Instagram</a>{% endif %}
+        {% if contact.facebook_url %}<a href="{{ contact.facebook_url }}" rel="noopener">Facebook</a>{% endif %}
+      </p>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Prefill the shoot type when arriving from a pricing package.
+  (function () {
+    const type = new URLSearchParams(window.location.search).get('type');
+    const field = document.getElementById('id_shoot_type');
+    if (type && field && !field.value) field.value = type;
+  })();
+</script>
+{% endblock %}

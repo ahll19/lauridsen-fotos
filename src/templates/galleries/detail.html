@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{# Every image URL here routes through an access-checked view, never a public media path. #}
+
+{% block title %}{% translate "Your photographs" %}{% endblock %}
+{% block meta %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+
+{% block content %}
+<div class="wrap section">
+  <header class="page-head">
+    <h1>
+      {% if gallery.client_name %}
+        {% blocktranslate with name=gallery.client_name %}Photographs for {{ name }}{% endblocktranslate %}
+      {% else %}
+        {% translate "Your photographs" %}
+      {% endif %}
+    </h1>
+
+    <div class="gallery-bar">
+      <p class="gallery-bar__count">
+        {% blocktranslate count counter=photo_count %}{{ counter }} photograph{% plural %}{{ counter }} photographs{% endblocktranslate %}
+      </p>
+
+      {% if gallery.zip_exists %}
+        <a class="btn btn--primary" href="{% url 'galleries:download_zip' gallery.slug %}">
+          {% translate "Download all as ZIP" %}
+        </a>
+      {% endif %}
+    </div>
+
+    <p class="notice notice--info">
+      {% blocktranslate with date=gallery.expires_at|date:"j F Y" days=gallery.days_remaining %}
+        This gallery is available until {{ date }} — {{ days }} days left. Please download
+        anything you want to keep before then.
+      {% endblocktranslate %}
+    </p>
+  </header>
+
+  <div class="photo-grid">
+    {% for photo in photos %}
+      <figure class="photo photo--client">
+        <a href="{% url 'galleries:photo' gallery.slug photo.pk %}?size=large"
+           class="glightbox" data-gallery="client-gallery"
+           data-description="<a class='lightbox-download' href='{% url 'galleries:download_photo' gallery.slug photo.pk %}'>{% translate 'Download original' %}</a>">
+          <img src="{% url 'galleries:photo' gallery.slug photo.pk %}" alt="" loading="lazy">
+        </a>
+        <figcaption>
+          <a class="photo__download" href="{% url 'galleries:download_photo' gallery.slug photo.pk %}">
+            {% translate "Download" %}
+          </a>
+        </figcaption>
+      </figure>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

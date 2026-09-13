@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{# The tombstone page: the URL keeps answering after expiry so a late client gets an
+   explanation rather than a bare 404. #}
+
+{% block title %}{% translate "Gallery no longer available" %}{% endblock %}
+{% block meta %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block body_class %}gallery-gate{% endblock %}
+
+{% block content %}
+<div class="wrap gate">
+  <div class="gate__card">
+    <h1 class="gate__title">{% translate "This gallery is no longer available" %}</h1>
+    <p class="gate__intro">
+      {% blocktranslate with date=gallery.expires_at|date:"j F Y" %}
+        The photographs in this gallery were available until {{ date }} and have since been
+        deleted.
+      {% endblocktranslate %}
+    </p>
+    <p class="gate__intro">
+      {% translate "If you still need them, get in touch and I'll see what can be done." %}
+    </p>
+    <a class="btn btn--primary" href="{% url 'pages:contact' %}">{% translate "Contact" %}</a>
+  </div>
+</div>
+{% endblock %}

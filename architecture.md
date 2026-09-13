@@ -52,6 +52,8 @@ to each other) over the internal Docker network and is never directly exposed.
 - **Base packages**: Docker Engine + the Docker Compose plugin are the only real
   dependencies on the host itself. Everything application-specific lives inside containers,
   so the host stays thin and easy to rebuild from scratch if it ever needs replacing.
+  Configuration management (see §10) adds nothing here — it works over SSH and installs no
+  agent, so this remains the complete list.
 
 ## 3. Networking
 
@@ -149,9 +151,19 @@ Kept proportionate to a low-traffic, single-owner site — no heavyweight observ
 
 ## 10. Updates & maintenance
 
+- **Configuration management**: the host is not configured by hand. Everything from the bare
+  OS upwards — packages, users, SSH hardening, firewall rules, the application's directory
+  layout and its environment file — is described as Ansible playbooks kept in this
+  repository, and applied from the operator's own machine over SSH. Ansible is agentless, so
+  this adds no running software to the host (§2). The point is that the server is
+  reproducible rather than a pet: if it is lost or has to be moved to a different provider,
+  it is rebuilt by re-running the playbooks against a fresh machine, not by remembering what
+  was once typed into it. Secrets the playbooks need are held in an encrypted vault in the
+  repository, so a clone plus one vault password is enough to rebuild — see
+  [docs/decisions/0002-manage-the-host-with-ansible.md](docs/decisions/0002-manage-the-host-with-ansible.md).
 - **OS security patches**: automatic security-only updates on the host (e.g.
-  `unattended-upgrades` on Debian/Ubuntu) so the host doesn't silently drift out of date
-  between manual maintenance windows.
+  `unattended-upgrades` on Debian/Ubuntu), installed by the provisioning playbook, so the
+  host doesn't silently drift out of date between maintenance windows.
 - **Container images**: versions are pinned explicitly (no floating `latest` tags in
   production) and bumped deliberately as part of a maintenance pass, then redeployed —
   rather than auto-updating containers in place, which trades predictability for
@@ -163,9 +175,11 @@ Kept proportionate to a low-traffic, single-owner site — no heavyweight observ
 - **Deployment mechanism**: the image is built directly on the VPS (`git pull` +
   `docker build`, then `docker compose up -d`) rather than built elsewhere and pushed to a
   container registry — one less moving part and no registry account needed while there's no
-  CI pipeline yet. Wiring this into a CI/CD tool (e.g. Jenkins) later, with a registry in
-  between, is a natural upgrade that doesn't require changing anything else about the
-  architecture — the deployment step stays a thin, replaceable layer on top of "get new code
+  CI pipeline yet. That sequence is itself a playbook rather than a set of commands to run by
+  hand, so a deployment is one invocation that ends by checking the site answers. Wiring this
+  into a CI/CD tool (e.g. Jenkins) later, with a registry in between, is a natural upgrade
+  that doesn't require changing anything else about the architecture — CI would call the same
+  playbook, and the deployment step stays a thin, replaceable layer on top of "get new code
   onto the host, restart the affected services."
 
 ## 11. Security baseline
@@ -176,7 +190,9 @@ Kept proportionate to a low-traffic, single-owner site — no heavyweight observ
 - Containers run as non-root users wherever the base image supports it.
 - Secrets (database credentials if any, mail relay credentials, application secret keys) are
   injected via environment variables / an untracked `.env` file — never committed to version
-  control.
+  control in plaintext. The host's `.env` is rendered by the configuration-management layer
+  (§10) from an encrypted vault, so the values exist on the host and in the vault, and
+  nowhere else.
 - The mail relay only ever accepts connections from the internal Docker network, never from
   the public internet, removing an entire class of open-relay/abuse risk.
 

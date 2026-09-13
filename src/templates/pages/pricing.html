@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Pricing" %} — {{ site_name }}{% endblock %}
+
+{% block content %}
+<div class="wrap section">
+  <header class="page-head">
+    <h1>{{ pricing.heading|default:_("Pricing") }}</h1>
+    {% if pricing.intro %}<p class="lede">{{ pricing.intro|linebreaksbr }}</p>{% endif %}
+  </header>
+
+  {% if packages %}
+    <div class="packages">
+      {% for package in packages %}
+        <article class="package">
+          <h2 class="package__name">{{ package.name }}</h2>
+          <p class="package__price">{{ package.price }}</p>
+          <ul class="package__list">
+            {% for item in package.inclusions %}<li>{{ item }}</li>{% endfor %}
+          </ul>
+          <a class="btn btn--primary" href="{% url 'pages:contact' %}?type={{ package.name|urlencode }}">
+            {% translate "Enquire" %}
+          </a>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="empty">{% translate "Packages are being put together — get in touch in the meantime." %}</p>
+  {% endif %}
+
+  {% if pricing.faq %}
+    <section class="section section--narrow faq">
+      <h2>{% translate "How booking works" %}</h2>
+      <p>{{ pricing.faq|linebreaksbr }}</p>
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

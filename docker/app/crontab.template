@@ -1,0 +1,10 @@
+# Rendered by the entrypoint from environment variables — do not edit the generated
+# /etc/cron.d/app-jobs inside a running container; change the schedule in .env instead.
+#
+# Format: minute hour day-of-month month day-of-week user command
+
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin
+
+${CRON_SCHEDULE_EXPIRE_GALLERIES} ${APP_USER} set -a; . /app/cron.env; cd /app/src && python manage.py expire_galleries >> /proc/1/fd/1 2>&1
+${CRON_SCHEDULE_PURGE_TOMBSTONES} ${APP_USER} set -a; . /app/cron.env; cd /app/src && python manage.py purge_tombstoned_galleries >> /proc/1/fd/1 2>&1

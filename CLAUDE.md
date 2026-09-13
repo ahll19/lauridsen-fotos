@@ -14,11 +14,22 @@ they are the source of truth for *what* gets built:
 | [functional_design.md](functional_design.md) | What the site does, page by page. No technology choices. |
 | [architecture.md](architecture.md) | How the hosting environment is built and operated. |
 | [technical_design.md](technical_design.md) | How the application implements the functional design. |
+| [ROADMAP.md](ROADMAP.md) | Milestones to 1.0.0, each with a definition of done. |
 
 **Current phase: local development only.** The VPS has not been ordered yet. Everything must
 run on a laptop via Docker Compose. Do not write anything that assumes a provisioned server,
 a real domain, a public IP, or live TLS certificates — those arrive later, and the setup
-described in `architecture.md` is the target, not the present state.
+described in `architecture.md` is the target, not the present state. `certbot` is therefore
+absent from the compose file; it joins when there is a domain to point at it.
+
+## Nothing operational is hardcoded
+
+Ports, schedules, retention windows, paths, the admin URL and the mail relay image all come
+from `.env`, and `.env.example` documents every one. When adding something with an
+operational knob — a new scheduled job, a timeout, a limit — it gets an environment variable
+with a sensible default, documented in `.env.example`, rather than a literal in the code, the
+Dockerfile, or the compose file. The nginx config is an envsubst template and the cron table
+is rendered from the environment at container start for the same reason.
 
 ## Branching
 
@@ -96,10 +107,16 @@ someone's shell history.
 
 | Script | Purpose |
 | --- | --- |
+| `scripts/dev.sh` | The local stack: `up`, `down`, `reset`, `logs`, `manage`, `seed`, `superuser`, `shell`, `cron`, `urls`. |
 | `scripts/verify.sh` | The verification pipeline. Run it before opening a PR. |
 | `scripts/install-hooks.sh` | Points git at `.githooks/`. Run once per clone. |
 | `scripts/new-branch.sh` | Creates a correctly named branch off an up-to-date `main`. |
 | `scripts/release.sh` | Prepares and tags releases. |
+
+Host configuration is not a script: it lives in `ansible/` as playbooks applied over SSH, and
+the server is rebuilt by re-running them rather than by hand. If a document ever says "then
+SSH in and…", that step belongs in a role instead. Vault files are committed **encrypted**;
+the vault password never is.
 
 Scripts are POSIX-ish bash, `set -euo pipefail`, and must be safe to run twice. Each one
 prints what it is doing and exits non-zero on failure.

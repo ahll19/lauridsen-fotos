@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load i18n thumbnail %}
+
+{% block title %}{% translate "Timeline" %} — {{ site_name }}{% endblock %}
+{% block body_class %}protect-images{% endblock %}
+
+{% block content %}
+<div class="wrap section">
+  <header class="page-head">
+    <h1>{% translate "Timeline" %}</h1>
+    <p class="lede">{% translate "Sessions shot for their own sake — experiments, walks, and light worth chasing." %}</p>
+  </header>
+
+  {% if tags %}
+    <nav class="tags">
+      <a href="{% url 'timeline:index' %}" class="tag {% if not active_tag %}is-active{% endif %}">{% translate "All" %}</a>
+      {% for tag in tags %}
+        <a href="?tag={{ tag|urlencode }}" class="tag {% if tag == active_tag %}is-active{% endif %}">{{ tag }}</a>
+      {% endfor %}
+    </nav>
+  {% endif %}
+
+  {% for entry in entries %}
+    <article class="entry">
+      <header class="entry__head">
+        <time class="entry__date" datetime="{{ entry.date|date:'Y-m-d' }}">{{ entry.date|date:"j F Y" }}</time>
+        <h2 class="entry__title"><a href="{{ entry.get_absolute_url }}">{{ entry.title }}</a></h2>
+        {% if entry.caption %}<p class="entry__caption">{{ entry.caption|truncatewords:45|linebreaksbr }}</p>{% endif %}
+        {% if entry.related_category %}
+          <p class="entry__related">
+            {% blocktranslate with name=entry.related_category.name %}Related: {{ name }}{% endblocktranslate %}
+            <a href="{{ entry.related_category.get_absolute_url }}">{% translate "in the portfolio" %} →</a>
+          </p>
+        {% endif %}
+      </header>
+
+      {% if entry.photos.all %}
+        <div class="entry__photos">
+          {% for photo in entry.photos.all|slice:":4" %}
+            <a href="{% thumbnail photo.image 'lightbox' %}" class="glightbox" data-gallery="entry-{{ entry.pk }}"
+               {% if photo.caption %}data-title="{{ photo.caption }}"{% endif %}>
+              <img src="{% thumbnail photo.image 'grid' %}" alt="{{ photo.caption }}" loading="lazy">
+            </a>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </article>
+  {% empty %}
+    <p class="empty">{% translate "Nothing published here yet." %}</p>
+  {% endfor %}
+</div>
+{% endblock %}

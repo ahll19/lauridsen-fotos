@@ -1,0 +1,84 @@
+# The stack described in architecture.md, minus certbot (no domain or VPS yet).
+#
+# Every port, path, schedule and image tag comes from .env — see .env.example.
+
+name: lauridsen-fotos
+
+services:
+  reverse-proxy:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+    environment:
+      # Consumed by the official image's envsubst templating of docker/nginx/templates/.
+      APP_HOST: app
+      APP_PORT: ${APP_PORT:-8000}
+      MAX_UPLOAD_SIZE: ${MAX_UPLOAD_SIZE:-100m}
+    volumes:
+      - ./docker/nginx/templates:/etc/nginx/templates:ro
+      # Read-only: nginx serves these, the app writes them.
+      - ${DATA_DIR:-./data}:/data:ro
+      - static_files:/srv/static:ro
+    depends_on:
+      app:
+        condition: service_healthy
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    restart: unless-stopped
+    env_file:
+      # Optional so `docker compose config` can validate this file in CI, where there is
+      # no .env. Running the stack without one still works — every value has a default.
+      - path: .env
+        required: false
+    environment:
+      DATA_ROOT: /data
+    volumes:
+      - ${DATA_DIR:-./data}:/data
+      - static_files:/srv/static
+      # Source is mounted so edits are picked up without a rebuild during local
+      # development. Remove this line on the VPS, where the image is the source of truth.
+      - ./src:/app/src
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,os;urllib.request.urlopen(f\"http://127.0.0.1:{os.environ.get('APP_PORT','8000')}/healthz\").read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    depends_on:
+      - mail-relay
+
+  app-cron:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    restart: unless-stopped
+    command: ["cron"]
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATA_ROOT: /data
+    volumes:
+      - ${DATA_DIR:-./data}:/data
+      - ./src:/app/src
+    depends_on:
+      app:
+        condition: service_healthy
+
+  mail-relay:
+    image: ${MAIL_RELAY_IMAGE:-axllent/mailpit:latest}
+    restart: unless-stopped
+    environment:
+      MP_SMTP_BIND_ADDR: 0.0.0.0:1025
+      MP_MAX_MESSAGES: "500"
+    ports:
+      # Local only: the web UI for reading captured mail. The SMTP port is deliberately
+      # not published — only the internal Docker network reaches it.
+      - "${MAIL_UI_PORT:-8025}:8025"
+
+volumes:
+  static_files:

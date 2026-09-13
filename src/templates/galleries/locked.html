@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{# No photograph, filename, or count is rendered before the password is accepted. #}
+
+{% block title %}{% translate "Private gallery" %}{% endblock %}
+{% block meta %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block body_class %}gallery-gate{% endblock %}
+
+{% block content %}
+<div class="wrap gate">
+  <div class="gate__card">
+    <h1 class="gate__title">{% translate "Private gallery" %}</h1>
+    <p class="gate__intro">{% translate "This gallery is password protected. Enter the password you were given." %}</p>
+
+    {% if error %}
+      <div class="notice notice--error" role="alert"><p>{{ error }}</p></div>
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="field">
+        <label class="field__label" for="password">{% translate "Password" %}</label>
+        <input class="field__input" type="password" name="password" id="password"
+               autocomplete="current-password" autofocus required>
+      </div>
+      <button class="btn btn--primary" type="submit">{% translate "Open gallery" %}</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

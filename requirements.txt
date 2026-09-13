@@ -1,0 +1,12 @@
+# Major versions are fixed per technical_design.md; minor/patch float within them and are
+# reviewed during maintenance passes (architecture.md §10).
+
+Django~=5.2.0
+gunicorn~=23.0
+Pillow~=11.0
+
+easy-thumbnails~=2.10
+django-modeltranslation~=0.19
+django-ordered-model~=3.7
+django-solo~=2.4
+django-ratelimit~=4.1

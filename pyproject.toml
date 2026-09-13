@@ -1,0 +1,34 @@
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+# Migrations are generated; reformatting them creates noise and no benefit.
+extend-exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle
+    "F",    # pyflakes
+    "I",    # import sorting
+    "UP",   # pyupgrade
+    "B",    # bugbear
+    "C4",   # comprehensions
+    "DJ",   # Django-specific checks
+]
+ignore = [
+    # Django's Meta classes and admin options are class-level mutable attributes by
+    # design; flagging them would mean fighting the framework's own conventions.
+    "RUF012",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Settings assemble configuration top to bottom; the module-level constants are the point.
+"src/config/settings.py" = ["E402"]
+# DJ007 guards against exposing unintended fields on a public ModelForm. These forms are
+# reachable only from the admin, and django-modeltranslation expands each translated field
+# into per-language fields at form-construction time — so an explicit field list would have
+# to name fields that don't exist on the model, and would silently drop new ones.
+"src/portfolio/admin.py" = ["DJ007"]
+"src/timeline/admin.py" = ["DJ007"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["config", "core", "galleries", "pages", "portfolio", "timeline"]

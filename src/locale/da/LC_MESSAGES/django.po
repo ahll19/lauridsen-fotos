@@ -1,0 +1,205 @@
+# Danish translations for the site's interface strings.
+#
+# Content (album names, captions, page text) is translated per object in the admin via
+# django-modeltranslation. This file covers only the fixed interface chrome.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: lauridsen-fotos\n"
+"Report-Msgid-Bugs-To: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: da\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: templates/base.html
+msgid "Skip to content"
+msgstr "Gå til indhold"
+
+msgid "Menu"
+msgstr "Menu"
+
+msgid "Main navigation"
+msgstr "Hovedmenu"
+
+msgid "Portfolio"
+msgstr "Portfolio"
+
+msgid "Timeline"
+msgstr "Tidslinje"
+
+msgid "Pricing"
+msgstr "Priser"
+
+msgid "About"
+msgstr "Om mig"
+
+msgid "Contact"
+msgstr "Kontakt"
+
+msgid "Get in touch"
+msgstr "Skriv til mig"
+
+#: templates/pages/home.html
+msgid "See the portfolio"
+msgstr "Se portfolioen"
+
+msgid "From the portfolio"
+msgstr "Fra portfolioen"
+
+msgid "Latest from the timeline"
+msgstr "Nyeste fra tidslinjen"
+
+#: templates/portfolio/
+msgid "Nothing published here yet."
+msgstr "Der er ikke publiceret noget her endnu."
+
+msgid "No photographs in this album yet."
+msgstr "Der er ingen billeder i dette album endnu."
+
+#, python-format
+msgid "%(counter)s album"
+msgid_plural "%(counter)s albums"
+msgstr[0] "%(counter)s album"
+msgstr[1] "%(counter)s albums"
+
+#, python-format
+msgid "%(counter)s photograph"
+msgid_plural "%(counter)s photographs"
+msgstr[0] "%(counter)s billede"
+msgstr[1] "%(counter)s billeder"
+
+#: templates/timeline/
+msgid "Sessions shot for their own sake — experiments, walks, and light worth chasing."
+msgstr "Optagelser for deres egen skyld — forsøg, gåture og lys der var værd at jage."
+
+msgid "All"
+msgstr "Alle"
+
+#, python-format
+msgid "Related: %(name)s"
+msgstr "Relateret: %(name)s"
+
+msgid "in the portfolio"
+msgstr "i portfolioen"
+
+#: templates/pages/pricing.html
+msgid "Enquire"
+msgstr "Forespørg"
+
+msgid "How booking works"
+msgstr "Sådan booker du"
+
+msgid "Packages are being put together — get in touch in the meantime."
+msgstr "Pakkerne er ved at blive sat sammen — skriv endelig i mellemtiden."
+
+#: templates/pages/about.html
+msgid "How I work"
+msgstr "Sådan arbejder jeg"
+
+#: templates/pages/contact.html
+msgid "Thank you — your message has been sent. I'll be in touch soon."
+msgstr "Tak — din besked er sendt. Jeg vender tilbage hurtigst muligt."
+
+msgid "Leave this empty"
+msgstr "Lad dette felt være tomt"
+
+msgid "Send message"
+msgstr "Send besked"
+
+msgid "Or reach me directly"
+msgstr "Eller fang mig direkte"
+
+msgid "Wedding, portrait, event…"
+msgstr "Bryllup, portræt, event…"
+
+#: pages/models.py — contact form field labels
+msgid "shoot type"
+msgstr "type opgave"
+
+msgid "preferred date"
+msgstr "ønsket dato"
+
+msgid "message"
+msgstr "besked"
+
+#: pages/views.py
+msgid "Too many messages have been sent from here recently. Please try again later."
+msgstr "Der er sendt for mange beskeder herfra for nylig. Prøv venligst igen senere."
+
+msgid ""
+"Your message was received, but the confirmation email could not be sent. Please get in "
+"touch directly if you don't hear back."
+msgstr ""
+"Din besked er modtaget, men bekræftelsesmailen kunne ikke sendes. Skriv gerne direkte, "
+"hvis du ikke hører fra mig."
+
+#: templates/galleries/locked.html
+msgid "Private gallery"
+msgstr "Privat galleri"
+
+msgid "This gallery is password protected. Enter the password you were given."
+msgstr "Dette galleri er beskyttet med adgangskode. Indtast den kode du har fået."
+
+msgid "Password"
+msgstr "Adgangskode"
+
+msgid "Open gallery"
+msgstr "Åbn galleri"
+
+#: galleries/views.py
+msgid "That password is not correct."
+msgstr "Adgangskoden er ikke korrekt."
+
+#: templates/galleries/unavailable.html
+msgid "Gallery no longer available"
+msgstr "Galleriet er ikke længere tilgængeligt"
+
+msgid "This gallery is no longer available"
+msgstr "Dette galleri er ikke længere tilgængeligt"
+
+#, python-format
+msgid ""
+"\n"
+"        The photographs in this gallery were available until %(date)s and have since "
+"been\n"
+"        deleted.\n"
+"      "
+msgstr ""
+"\n"
+"        Billederne i dette galleri var tilgængelige indtil %(date)s og er siden blevet\n"
+"        slettet.\n"
+"      "
+
+msgid "If you still need them, get in touch and I'll see what can be done."
+msgstr "Har du stadig brug for dem, så skriv — så finder vi ud af noget."
+
+#: templates/galleries/detail.html
+msgid "Your photographs"
+msgstr "Dine billeder"
+
+#, python-format
+msgid "Photographs for %(name)s"
+msgstr "Billeder til %(name)s"
+
+msgid "Download all as ZIP"
+msgstr "Hent alle som ZIP"
+
+msgid "Download"
+msgstr "Hent"
+
+msgid "Download original"
+msgstr "Hent original"
+
+#, python-format
+msgid ""
+"\n"
+"        This gallery is available until %(date)s — %(days)s days left. Please download\n"
+"        anything you want to keep before then.\n"
+"      "
+msgstr ""
+"\n"
+"        Galleriet er tilgængeligt indtil %(date)s — %(days)s dage tilbage. Husk at hente\n"
+"        det du vil beholde inden da.\n"
+"      "

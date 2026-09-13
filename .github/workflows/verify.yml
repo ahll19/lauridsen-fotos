@@ -21,8 +21,8 @@ jobs:
           # gitleaks and the changelog generator both need history, not a shallow clone.
           fetch-depth: 0
 
-      - name: Install shellcheck
-        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Install shellcheck and gettext
+        run: sudo apt-get update && sudo apt-get install -y shellcheck gettext
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -32,6 +32,11 @@ jobs:
       - name: Install Python tooling
         run: pip install ruff
 
+      # Only once there is something to lint — verify.sh skips the step until then.
+      - name: Install Ansible tooling
+        if: hashFiles('ansible/**') != ''
+        run: pip install ansible-core ansible-lint
+
       - name: Install project dependencies
         run: |
           if [ -f requirements.txt ]; then
@@ -40,5 +45,32 @@ jobs:
             echo "No requirements.txt yet — skipping."
           fi
 
+      # Runs with DEBUG off, as production does, which means ManifestStaticFilesStorage —
+      # and that needs the manifest collectstatic produces. The image does this at build
+      # time; here it has to happen before anything renders a template.
+      - name: Collect static assets
+        if: hashFiles('src/manage.py') != ''
+        run: cd src && python manage.py collectstatic --noinput
+        env:
+          DJANGO_SECRET_KEY: ci-only-not-a-secret
+          DJANGO_STATIC_ROOT: ${{ runner.temp }}/static
+          DATA_ROOT: ${{ runner.temp }}/data
+
+      # The container entrypoint does this at startup, so the catalogues are always present
+      # when the site runs. Doing it here too keeps the tests honest about translated text,
+      # and makes a broken .po file fail the build rather than surfacing in production.
+      - name: Compile translation catalogues
+        if: hashFiles('src/manage.py') != ''
+        run: cd src && python manage.py compilemessages
+        env:
+          DJANGO_SECRET_KEY: ci-only-not-a-secret
+          DATA_ROOT: ${{ runner.temp }}/data
+
       - name: Run verification pipeline
         run: ./scripts/verify.sh
+        env:
+          DJANGO_SECRET_KEY: ci-only-not-a-secret
+          DJANGO_STATIC_ROOT: ${{ runner.temp }}/static
+          DATA_ROOT: ${{ runner.temp }}/data
+          # The test client speaks HTTP; without this every request becomes a 301 to https.
+          DJANGO_SECURE_SSL_REDIRECT: "0"
