@@ -1,0 +1,27 @@
+/*
+  Atelier Sage — one axis changed: the accent hue.
+
+  Everything else is deliberately untouched, so any preference between this and the original
+  is attributable to the colour alone. Terracotta advances toward the viewer; sage recedes.
+  The question is whether the accent should assert itself or stay behind the photographs.
+*/
+
+:root {
+  --accent: #5e7356;
+  --accent-dark: #46573f;
+}
+
+/* The two places the original hard-codes a tint derived from the accent rather than
+   using the token, so they have to follow it here. */
+.notice--error {
+  border-color: var(--accent);
+  background: #f1f4ef;
+}
+
+.field--error .field__input,
+.field--error input,
+.field--error textarea {
+  border-color: var(--accent-dark);
+}
+
+.field__error { color: var(--accent-dark); }

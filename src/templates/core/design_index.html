@@ -1,54 +1,41 @@
 {% load static %}<!doctype html>
 {# Deliberately standalone rather than extending base.html: this page has to stay neutral
-   while the directions it describes change around it. ROADMAP 0.2.0. #}
+   while the variations it describes change around it. ROADMAP 0.2.0. #}
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Visual directions — {{ site_name }}</title>
+  <title>Atelier variations — {{ site_name }}</title>
   <link rel="stylesheet" href="{% static 'css/design-preview.css' %}">
 </head>
 <body class="design-page">
 <div class="design-page__inner">
 
-  <h1>Four directions</h1>
+  <h1>Four versions of Atelier</h1>
   <p class="design-page__intro">
-    Pick one to apply it to the whole site, then browse around — these are real pages with
-    real content, not mockups. The bar at the bottom of every page switches between them.
-    Your choice is remembered in a cookie for this browser only. Nothing here reaches
-    visitors: it exists only while <code>DESIGN_PREVIEW_ENABLED</code> is on, which defaults
-    to off outside development.
+    The direction is settled. What is open is which version of it. Each variation moves
+    <strong>one axis</strong> and holds everything else constant — if three things changed at
+    once, a preference wouldn't tell you which change caused it.
+  </p>
+  <p class="design-page__intro">
+    Pick one to apply it to the whole site, then browse around; the bar at the bottom of every
+    page switches between them. Your choice is remembered in a cookie for this browser only,
+    and none of this reaches visitors — it exists only while <code>DESIGN_PREVIEW_ENABLED</code>
+    is on, which defaults to off outside development.
   </p>
 
   <div class="design-cards">
     {% for candidate in candidates %}
       <article class="design-card {% if candidate.slug == active.slug %}is-active{% endif %}">
         <div class="design-card__swatches">
-          {% if candidate.slug == 'atelier' %}
-            <span class="design-card__swatch" style="background:#fbfaf8"></span>
-            <span class="design-card__swatch" style="background:#f3f0eb"></span>
-            <span class="design-card__swatch" style="background:#b4553a"></span>
-            <span class="design-card__swatch" style="background:#1a1815"></span>
-          {% elif candidate.slug == 'darkroom' %}
-            <span class="design-card__swatch" style="background:#0d0c0b"></span>
-            <span class="design-card__swatch" style="background:#171514"></span>
-            <span class="design-card__swatch" style="background:#c8892f"></span>
-            <span class="design-card__swatch" style="background:#ece7e1"></span>
-          {% elif candidate.slug == 'broadsheet' %}
-            <span class="design-card__swatch" style="background:#ffffff"></span>
-            <span class="design-card__swatch" style="background:#f6f4ef"></span>
-            <span class="design-card__swatch" style="background:#9e2b20"></span>
-            <span class="design-card__swatch" style="background:#14130f"></span>
-          {% else %}
-            <span class="design-card__swatch" style="background:#fcfdfd"></span>
-            <span class="design-card__swatch" style="background:#eef2f2"></span>
-            <span class="design-card__swatch" style="background:#6b8f7d"></span>
-            <span class="design-card__swatch" style="background:#23282b"></span>
-          {% endif %}
+          {% for colour in candidate.swatches %}
+            <span class="design-card__swatch" style="background:{{ colour }}" title="{{ colour }}"></span>
+          {% endfor %}
         </div>
 
-        <h2>{{ candidate.name }}{% if candidate.slug == 'atelier' %} <small>— current</small>{% endif %}</h2>
+        <p class="design-card__axis">{{ candidate.axis }}</p>
+        <h2>{{ candidate.name }}</h2>
         <p class="design-card__tagline">{{ candidate.tagline }}</p>
         <p class="design-card__body">{{ candidate.description }}</p>
 
@@ -67,15 +54,20 @@
   </div>
 
   <section class="design-page__tour">
-    <h2>Worth looking at in each</h2>
+    <h2>Where the differences show</h2>
     <ul>
-      <li><a href="/">Home</a> — the hero treatment differs most here.</li>
-      <li><a href="/portfolio/bryllup/sofie-og-jonas/">An album</a> — grid density and how the
-        photographs sit next to each other.</li>
-      <li><a href="/timeline/">Timeline</a> — how well it reads as a run of text and images.</li>
-      <li><a href="/priser/">Pricing</a> — the only page that is mostly not photographs.</li>
-      <li><a href="/kontakt/">Contact</a> — form styling varies a lot between directions.</li>
+      <li><a href="/">Home</a> — the hero headline, where <em>Press</em> departs most.</li>
+      <li><a href="/portfolio/bryllup/sofie-og-jonas/">An album</a> — how the paper colour sits
+        against the photographs. The real test for <em>Slate</em>.</li>
+      <li><a href="/priser/">Pricing</a> — the accent carries this page, since it is the one
+        screen that is mostly not photographs. The real test for <em>Sage</em>.</li>
+      <li><a href="/kontakt/">Contact</a> — accent on form focus states and buttons.</li>
+      <li><a href="/timeline/">Timeline</a> — long-form reading, where type choice tells.</li>
     </ul>
+    <p>
+      Worth doing with your own photographs rather than the generated demo ones: warm paper
+      flatters warm work, and the demo images lean warm.
+    </p>
   </section>
 
 </div>

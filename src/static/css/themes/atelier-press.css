@@ -1,0 +1,73 @@
+/*
+  Atelier Press — one axis changed: typography.
+
+  Colours are identical to the original, deliberately: if this feels different, it is the
+  type doing it and nothing else.
+
+  Fraunces is soft, warm and slightly irregular. Bodoni Moda is the opposite — extreme
+  stroke contrast, fine hairlines, vertical stress — so it wants to be set large, tight and
+  sparingly. Hairlines disappear at small sizes, which is why this raises the display scale
+  rather than simply swapping the font in place.
+*/
+
+:root {
+  --display: "Bodoni Moda", Didot, "Times New Roman", Georgia, serif;
+}
+
+h1, h2, h3 {
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+
+h1 {
+  font-size: clamp(2.3rem, 6.2vw, 4.25rem);
+  line-height: 1.02;
+}
+
+h2 { font-size: clamp(1.5rem, 3.2vw, 2.2rem); line-height: 1.1; }
+
+.brand__name {
+  font-size: 1.45rem;
+  letter-spacing: 0.01em;
+}
+
+.brand__tagline {
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+}
+
+.hero__title { font-size: clamp(2.6rem, 8vw, 5rem); }
+.hero__tagline {
+  font-family: var(--display);
+  font-size: clamp(1.15rem, 2.2vw, 1.6rem);
+  font-style: italic;
+}
+
+/* A serif lede sets an editorial tone; body copy stays in the sans so long text
+   remains comfortable. */
+.lede {
+  font-family: var(--display);
+  font-size: clamp(1.1rem, 1.7vw, 1.4rem);
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.card__title, .teaser__title, .entry__title {
+  font-family: var(--display);
+  font-size: 1.35rem;
+  letter-spacing: -0.01em;
+}
+
+.entry__title { font-size: clamp(1.5rem, 3.2vw, 2.3rem); }
+.entry__date { letter-spacing: 0.2em; font-size: 0.7rem; }
+
+.package__name { font-size: 1.5rem; }
+.package__price {
+  font-size: 2rem;
+  font-style: italic;
+}
+
+.footer__name { font-size: 1.2rem; }
+
+/* Hairline serifs need a little more room around them than Fraunces does. */
+.page-head { margin-bottom: clamp(1.75rem, 4.5vw, 3.5rem); }

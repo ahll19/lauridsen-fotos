@@ -1,0 +1,41 @@
+/*
+  Atelier Slate — one axis changed: temperature and contrast.
+
+  Same layout, same type, same spacing. The yellow comes out of every neutral, the ink goes
+  deeper and slightly blue, and the accent follows into a muted indigo. The result reads as
+  gallery rather than printed page.
+
+  Worth judging against cool photographs — winter, coast, overcast — rather than the warm
+  demo images, since warm paper flatters warm work and this trade runs the other way.
+*/
+
+:root {
+  --ink: #14171a;
+  --ink-soft: #4d545a;
+  --ink-faint: #868d93;
+  --paper: #fafbfc;
+  --paper-warm: #eef1f3;
+  --line: #dfe4e7;
+  --accent: #46597a;
+  --accent-dark: #33435e;
+}
+
+/* Cool paper takes a slightly heavier line before it reads as a boundary. */
+.site-header { border-bottom-color: var(--line); }
+
+.notice--success {
+  border-color: #7f9f8e;
+  background: #eff5f2;
+}
+
+.notice--error {
+  border-color: var(--accent);
+  background: #eff2f7;
+}
+
+.field__error { color: var(--accent-dark); }
+
+/* The hero scrim is warm-black in the original; neutral suits this palette better. */
+.hero::after {
+  background: linear-gradient(to top, rgba(16, 19, 22, 0.74), rgba(16, 19, 22, 0.15) 55%, transparent);
+}
