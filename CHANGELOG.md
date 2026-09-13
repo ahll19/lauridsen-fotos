@@ -44,6 +44,37 @@ anything worth saying that a commit subject doesn't capture can be written under
 
 ### Fixed
 
+- **The test suite wrote into the live data directory** and ran `rmtree` against it. Tests
+  create galleries and then exercise expiry, so the deletion path was pointed at the same
+  tree that holds real client photographs, separated only by slugs not colliding. Tests now
+  get a temporary `DATA_ROOT`.
+- **The contact form's rate limit was global rather than per visitor.** Behind nginx every
+  request arrives from the proxy's address, so `5/h` meant five messages per hour from the
+  whole internet — one sender could close the site's only enquiry route for everyone.
+- **The visitor address recorded against a submission was chosen by the visitor**, taken from
+  the left-most `X-Forwarded-For` entry, which is whatever the caller sent. It is now read
+  from the trusted end of the chain.
+- **Deleting client galleries in bulk left the photographs on disk.** The admin's "Delete
+  selected" runs a queryset delete, which skips the model's own `delete()` — so the one path
+  that removes the files was the one path that never ran.
+- The Danish translation catalogue was missing 123 strings, so the whole admin rendered in
+  English, and 19 more were marked fuzzy with wrong guesses (`client gallery` had become
+  "Åbn galleri"). Catalogue regenerated, everything translated, plural of "album" corrected.
+- A multi-line `{# … #}` in `base.html` was not a comment — Django's is single-line — so the
+  text rendered into the navigation of every page.
+- nginx marked unhashed static assets `immutable` for 30 days, so browsers would not re-fetch
+  an edited stylesheet for a month. The policy is now `STATIC_CACHE_CONTROL`.
+- `scripts/dev.sh` aborted with exit 127: it sources `.env`, where unquoted cron expressions
+  ran as commands. `dev.sh up` started the stack and then died before reporting anything.
+- `proxy_set_header Host $host` dropped the port, so every absolute URL the application built
+  pointed at a port nothing listens on.
+- Private gallery pages and downloads now send `Cache-Control: private, no-store`; the
+  password form is rate limited; the ZIP is named for the gallery rather than its URL key;
+  and non-ASCII download filenames are RFC 6266 encoded.
+- The sitemap advertised `example.com`, omitted every English page, and listed albums inside
+  unpublished categories — publishing the name and URL of work still being prepared.
+- Error emails were sent while developing, the portfolio index discarded its own prefetch,
+  and the gallery changelist could raise on a gallery whose ZIP file and timestamp disagree.
 - The language toggle only worked one way. Switching to English worked; switching back to
   Danish set the cookie but left the visitor on the `/en/` URL, which decides the language,
   so nothing appeared to happen.
