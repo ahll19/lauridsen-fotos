@@ -113,6 +113,11 @@ someone's shell history.
 | `scripts/new-branch.sh` | Creates a correctly named branch off an up-to-date `main`. |
 | `scripts/release.sh` | Prepares and tags releases. |
 
+Host configuration is not a script: it lives in `ansible/` as playbooks applied over SSH, and
+the server is rebuilt by re-running them rather than by hand. If a document ever says "then
+SSH in and…", that step belongs in a role instead. Vault files are committed **encrypted**;
+the vault password never is.
+
 Scripts are POSIX-ish bash, `set -euo pipefail`, and must be safe to run twice. Each one
 prints what it is doing and exits non-zero on failure.
 

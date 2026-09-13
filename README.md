@@ -49,6 +49,10 @@ scripts/         dev, verify, release, hooks, branch creation
 docs/decisions/  decision records
 ```
 
+Host management will live in `ansible/` — provisioning, deployment, updates and
+backup/restore as playbooks, so the VPS is reproducible rather than hand-built. See
+[ROADMAP.md](ROADMAP.md) 0.4.0.
+
 Persistent data lives in one bind-mounted directory (`./data` locally, `/data` in the
 containers): the SQLite database, uploaded originals, and a disposable thumbnail cache that
 backups skip.

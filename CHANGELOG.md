@@ -24,6 +24,11 @@ anything worth saying that a commit subject doesn't capture can be written under
   content including a working client gallery.
 - Test suite covering the gallery access rules, expiry, and the contact form.
 - `ROADMAP.md`: milestones to 1.0.0, each with a definition of done.
+- Ansible is now the way the remote host is managed: an `ansible/` directory with the
+  environment and playbooks for provisioning, deployment, updates and backup/restore, so the
+  server is rebuilt from a clone rather than from memory. Recorded in ADR 0002 and reflected
+  in `architecture.md` §2, §10 and §11; `scripts/verify.sh` already lints it and refuses an
+  unencrypted vault file.
 
 ### Fixed
 

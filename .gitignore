@@ -3,6 +3,15 @@
 .env.*
 !.env.example
 
+# The ansible-vault password. Encrypted vault files ARE committed (see
+# docs/decisions/0002-manage-the-host-with-ansible.md); the password that opens them
+# never is — it belongs in a password manager.
+.vault-pass
+.vault_pass
+*.vault-pass
+vault-password*
+ansible/.vault*
+
 # --- Application data (bind-mounted /data: SQLite DB, media, thumbnail cache) ---
 data/
 *.sqlite3

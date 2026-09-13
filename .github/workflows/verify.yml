@@ -32,6 +32,11 @@ jobs:
       - name: Install Python tooling
         run: pip install ruff
 
+      # Only once there is something to lint — verify.sh skips the step until then.
+      - name: Install Ansible tooling
+        if: hashFiles('ansible/**') != ''
+        run: pip install ansible-core ansible-lint
+
       - name: Install project dependencies
         run: |
           if [ -f requirements.txt ]; then

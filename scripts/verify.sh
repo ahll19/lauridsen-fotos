@@ -190,6 +190,49 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+step "Ansible"
+
+if [[ ! -d ansible ]]; then
+    skip "no ansible/ directory yet"
+else
+    # Vault files are committed deliberately, but only ever encrypted. One saved without
+    # encryption would publish every production secret, so it is checked first and hard.
+    unencrypted=$(tracked_files | grep -E '^ansible/.*vault.*\.ya?ml$' | while read -r f; do
+        [[ -f "$f" ]] || continue
+        head -n1 "$f" | grep -q 'ANSIBLE_VAULT' || echo "$f"
+    done || true)
+
+    if [[ -n "$unencrypted" ]]; then
+        fail "vault file is NOT encrypted: $(echo "$unencrypted" | tr '\n' ' ')"
+        fail "  encrypt it with: ansible-vault encrypt <file>  — and rotate anything it exposed"
+    else
+        ok "vault files are encrypted"
+    fi
+
+    if has ansible-lint; then
+        if ansible-lint ansible/ >/dev/null 2>&1; then
+            ok "ansible-lint clean"
+        else
+            fail "ansible-lint reported problems — run: ansible-lint ansible/"
+        fi
+    else
+        skip "ansible-lint not installed (pip install ansible-lint)"
+    fi
+
+    if has ansible-playbook; then
+        playbook_ok=1
+        for playbook in ansible/playbooks/*.yml; do
+            [[ -e "$playbook" ]] || continue
+            ansible-playbook --syntax-check "$playbook" >/dev/null 2>&1 \
+                || { fail "syntax error in $playbook"; playbook_ok=0; }
+        done
+        (( playbook_ok )) && ok "playbook syntax valid"
+    else
+        skip "ansible not installed — playbook syntax check"
+    fi
+fi
+
+# ---------------------------------------------------------------------------
 step "Docker"
 
 compose_file=$(ls docker-compose.yml compose.yml 2>/dev/null | head -n1 || true)

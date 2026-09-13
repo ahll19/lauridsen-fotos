@@ -14,8 +14,9 @@ Versions follow the rules in [CLAUDE.md](CLAUDE.md) and are cut with `scripts/re
 | 0.1.0 | Design documents, working rules, and the application running locally | done |
 | 0.2.0 | [Visual identity](#020--visual-identity) | yes |
 | 0.3.0 | [Production configuration, proven locally](#030--production-configuration-proven-locally) | yes |
-| 0.4.0 | [The VPS exists and serves the site](#040--the-vps-exists-and-serves-the-site) | yes |
-| 0.5.0 | [Backups and monitoring, exercised](#050--backups-and-monitoring-exercised) | yes |
+| 0.4.0 | [Host tooling: the `ansible/` directory](#040--host-tooling-the-ansible-directory) | yes |
+| 0.5.0 | [The VPS exists and serves the site](#050--the-vps-exists-and-serves-the-site) | yes |
+| 0.6.0 | [Day-two operations: backups, monitoring, maintenance](#060--day-two-operations-backups-monitoring-maintenance) | yes |
 | 1.0.0 | [Live](#100--live) | — |
 
 ---
@@ -61,48 +62,110 @@ server. Finding these on a live host is worse in every way.
       does not land in spam (SPF/DKIM/rDNS as `architecture.md` §3 describes).
 - [ ] `.env.example` documents how to generate every production secret, and carries a
       visible warning that its defaults are for local use only.
-- [ ] The deployment sequence written down as a runnable script or a checklist in the repo,
-      not as knowledge in someone's head.
+- [ ] The production `.env` is a rendered artefact rather than a hand-edited file — the
+      template and its variables exist, ready for the playbooks in 0.4.0 to fill in.
 
 ---
 
-## 0.4.0 — The VPS exists and serves the site
+## 0.4.0 — Host tooling: the `ansible/` directory
 
-`architecture.md`, made real. The site answers on the domain over HTTPS, but is not yet
-announced to anyone.
+The server should be reproducible rather than a pet. Everything from a bare Debian install
+upwards is described as playbooks in this repository and applied over SSH, so the host can be
+rebuilt from a clone rather than from memory. See
+[ADR 0002](docs/decisions/0002-manage-the-host-with-ansible.md) for the reasoning, and
+`architecture.md` §10 for where it sits in the architecture.
+
+**Shape**
+
+```
+ansible/
+  ansible.cfg
+  requirements.yml            collections, pinned
+  inventory/production/
+    hosts.yml
+    group_vars/all/
+      vars.yml                non-secret configuration
+      vault.yml               ansible-vault encrypted
+  playbooks/
+    provision.yml             bare host → ready to run the stack
+    deploy.yml                pull, build, migrate, restart, verify
+    update.yml                OS patches, image bumps, dependency review, redeploy
+    backup.yml                install the nightly job and its rotation
+    restore.yml               pull a backup back onto a host
+  roles/
+    common/ firewall/ docker/ app/ backup/
+```
 
 **Definition of done**
 
-- [ ] Hetzner VPS provisioned, Debian 12, roughly 4–8 GB RAM and ~200 GB disk.
-- [ ] SSH is key-only, password authentication disabled.
-- [ ] `ufw` denies inbound by default, allowing only 80, 443 and SSH; the Hetzner Cloud
-      Firewall enforces the same set in front of it.
-- [ ] `unattended-upgrades` installed and confirmed to have applied at least one update.
+- [ ] `provision.yml` takes a bare Debian 12 host to the state `architecture.md` describes:
+      packages, non-root user, SSH hardening, `ufw`, `unattended-upgrades`, Docker Engine and
+      the Compose plugin, and the `/data` layout with correct ownership.
+- [ ] `deploy.yml` pulls the code, builds the image on the host, runs migrations, restarts
+      the stack, and **fails if `/healthz` does not answer afterwards** — a deploy that
+      quietly leaves the site down is worse than one that errors.
+- [ ] `update.yml` performs the maintenance pass from `architecture.md` §10: OS security
+      patches, pinned image bumps, dependency review, then redeploy.
+- [ ] `backup.yml` and `restore.yml` exist; they are *exercised* in 0.6.0, not here.
+- [ ] Secrets live in `ansible-vault`-encrypted files committed to the repository; the vault
+      password is in the password manager and is not in the repository, not in `.env`, and
+      not in shell history.
+- [ ] `requirements.yml` pins the collections used, so a fresh machine resolves the same
+      versions.
+- [ ] Every playbook is idempotent: a second consecutive run reports zero changed tasks.
+      This is the check that separates a playbook from a shell script.
+- [ ] `provision.yml` and `deploy.yml` have been run end to end against a **disposable**
+      host — a throwaway VPS or a local VM — not first attempted on the real one.
+- [ ] `ansible-lint` is clean and wired into `scripts/verify.sh`.
+- [ ] No configuration step exists outside Ansible. If a document anywhere says "then SSH in
+      and…", that step is a bug.
+
+---
+
+## 0.5.0 — The VPS exists and serves the site
+
+`architecture.md`, made real, entirely through the playbooks from 0.4.0. The site answers on
+the domain over HTTPS but is not yet announced to anyone.
+
+**Definition of done**
+
+- [ ] Hetzner VPS ordered: Debian 12, roughly 4–8 GB RAM and ~200 GB disk.
+- [ ] The host reached its configured state by running `provision.yml` against it, and
+      nothing else. Anything discovered mid-flight that had to be fixed by hand is folded
+      back into a role before this milestone closes.
+- [ ] The Hetzner Cloud Firewall allows only 80, 443 and SSH, matching what `ufw` enforces
+      on the host.
 - [ ] DNS A (and AAAA if used) pointing at the VPS.
 - [ ] `certbot` added to the compose stack; a valid Let's Encrypt certificate is served,
       HTTP redirects to HTTPS, and HSTS is on.
 - [ ] A renewal dry run succeeds (`certbot renew --dry-run`) — the certificate expiring
       silently in 90 days is the classic way this setup dies.
-- [ ] The stack is deployed by the documented sequence and survives `reboot` unattended.
-- [ ] Admin reachable at the secret path with a superuser created interactively; the path is
-      in `.env` on the host and nowhere in the repository.
+- [ ] The application was deployed by `deploy.yml`, and the stack comes back unattended
+      after a `reboot`.
+- [ ] Admin reachable at the secret path, with a superuser created interactively; the path
+      comes from the vault, not from the repository in plaintext.
 - [ ] Containers run as non-root, and `/data` is owned by that user only.
 
 ---
 
-## 0.5.0 — Backups and monitoring, exercised
+## 0.6.0 — Day-two operations: backups, monitoring, maintenance
 
 Nothing here counts as done because it was configured. It counts as done because it was
 tested and observed to work.
 
 **Definition of done**
 
-- [ ] Nightly `rsync` of `/data` to the home NAS, excluding the cache subpath, running on a
-      schedule and observed to have run unattended for several consecutive nights.
+- [ ] Nightly `rsync` of `/data` to the home NAS, excluding the cache subpath, installed by
+      `backup.yml` and observed to have run unattended for several consecutive nights.
 - [ ] Retention keeps the most recent 14 copies, and older ones are actually being pruned.
-- [ ] **A restore drill has been performed**: a scratch copy wiped, restored from the NAS
-      backup, and brought up with the database and photographs intact. The date it was done
-      and how long it took are written down.
+- [ ] **A restore drill has been performed** by running `restore.yml` against a scratch
+      host: the site comes up with the database and photographs intact. The date it was done
+      and how long it took are written down. A restore procedure nobody has run is a
+      hypothesis.
+- [ ] `update.yml` has been run at least once against the real host, and the site was still
+      healthy afterwards.
+- [ ] Losing the vault password is understood as a disaster-recovery scenario: the password
+      manager entry holding it is itself backed up (ADR 0002).
 - [ ] UptimeRobot (or equivalent) checking `/healthz`, alerting somewhere you will actually
       see it — verified by deliberately stopping the stack and receiving the alert.
 - [ ] An unhandled error produces an email through the relay — verified deliberately, not
@@ -143,7 +206,12 @@ doing.
 - **Accessibility pass** — keyboard navigation, visible focus states, colour contrast, and
   alt-text discipline in the admin. Partly there; a deliberate pass would make it solid.
 - **Jenkins CI/CD** — build and deploy from Jenkins with a registry in between, rather than
-  building on the VPS. `architecture.md` §10 already notes this needs no re-architecting.
+  building on the VPS. Cheap once the Ansible work is done: Jenkins calls `deploy.yml`
+  instead of you calling it, so the deployment logic doesn't move. `architecture.md` §10
+  already notes this needs no re-architecting.
+- **A staging host** — a second, cheaper VPS built from the same playbooks with a different
+  inventory. Worth it the first time an upgrade needs rehearsing before it touches
+  production; unnecessary before that.
 - **restic or borg backups** — snapshotting, deduplicating, encrypted at rest. Worth it when
   `/data` grows large enough that full nightly copies get expensive.
 - **Dead-man's-switch on the scheduled jobs** — detects the expiry job silently not running,
