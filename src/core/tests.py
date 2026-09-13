@@ -54,7 +54,9 @@ class DesignPreviewEnabledTests(TestCase):
 
         for url in ["/", "/portfolio/", "/timeline/", "/priser/", "/kontakt/"]:
             with self.subTest(page=url):
-                self.assertContains(self.client.get(url), "css/themes/atelier-slate.css")
+                # Matched without the extension: with DEBUG off, ManifestStaticFilesStorage
+                # rewrites this to atelier-slate.<hash>.css.
+                self.assertContains(self.client.get(url), "css/themes/atelier-slate")
 
     def test_switcher_is_shown(self):
         self.assertContains(self.client.get("/"), "design-switcher")
