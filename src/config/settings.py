@@ -39,6 +39,22 @@ def env_list(name, default=""):
 
 SECRET_KEY = env("DJANGO_SECRET_KEY", "insecure-development-key")
 DEBUG = env_bool("DJANGO_DEBUG", False)
+
+# Deploying with the shipped placeholder key would silently make every signed value on the
+# site forgeable — session cookies and the client-gallery unlock cookie included. Rather than
+# trusting that nobody ever copies .env.example into production, refuse to start.
+_PLACEHOLDER_KEYS = {
+    "insecure-development-key",
+    "dev-only-insecure-key-replace-before-deploying",
+    "build-time-only",
+}
+if not DEBUG and SECRET_KEY in _PLACEHOLDER_KEYS:
+    from django.core.exceptions import ImproperlyConfigured
+
+    raise ImproperlyConfigured(
+        "DJANGO_SECRET_KEY is still the example placeholder. Generate one with:\n"
+        '    python -c "import secrets; print(secrets.token_urlsafe(64))"'
+    )
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1")
 CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
 

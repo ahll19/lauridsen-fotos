@@ -33,13 +33,21 @@ WORKDIR /app/src
 # Collect static assets at build time, as technical_design.md specifies. The entrypoint
 # repeats this into the shared volume at startup so a rebuilt image is picked up without
 # having to recreate the volume.
-RUN DJANGO_SECRET_KEY=build-time-only \
+#
+# Django refuses to start without a SECRET_KEY, and collectstatic is a full Django startup,
+# so the build needs *a* value. It is generated here and thrown away rather than being a
+# fixed literal: a memorable placeholder is the kind of thing that gets copied into a real
+# .env. Nothing signed at build time is ever verified at runtime, so this value has no
+# security meaning — and settings.py refuses to boot in production with a placeholder key,
+# which is the failure this actually guards against.
+RUN DJANGO_SECRET_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')" \
     DJANGO_STATIC_ROOT=/srv/static \
     python manage.py collectstatic --noinput --clear
 
-# The application runs as a non-root user owning only what it needs (architecture.md §11).
-# /data is bind-mounted at runtime and chowned by the entrypoint, which needs root, so the
-# entrypoint drops to this user itself rather than USER doing it here.
+# The application runs as a non-root user (architecture.md §11). The entrypoint starts as
+# root only long enough to make the bind-mounted /data writable, then replaces itself with
+# the application under this uid via setpriv — so a running container has no root process at
+# all. The uid is pinned so the host can pre-own /data with a matching owner.
 RUN useradd --create-home --uid 1000 app \
     && mkdir -p /srv/static \
     && chown -R app:app /srv/static /app

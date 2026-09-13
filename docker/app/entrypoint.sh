@@ -10,6 +10,10 @@ set -euo pipefail
 ROLE="${1:-web}"
 DATA_ROOT="${DATA_ROOT:-/data}"
 APP_USER=app
+# Pinned in the Dockerfile, and used numerically so the bind mount can be given matching
+# ownership on the host before the container ever starts.
+APP_UID=1000
+APP_GID=1000
 
 log() { printf '[entrypoint] %s\n' "$*"; }
 
@@ -25,9 +29,17 @@ if [[ "$(id -u)" -eq 0 ]]; then
     chown -R "$APP_USER:$APP_USER" "$DATA_ROOT" /srv/static 2>/dev/null || true
 fi
 
+# Drop to the unprivileged user. `setpriv` replaces itself with the command rather than
+# staying on as a parent, so once the long-running process starts there is no root process
+# left in the container at all — not even PID 1. `--no-new-privs` then prevents that process
+# from ever regaining privileges through a setuid binary.
+drop_privileges=(
+    setpriv --reuid="$APP_UID" --regid="$APP_GID" --init-groups --no-new-privs --
+)
+
 as_app() {
     if [[ "$(id -u)" -eq 0 ]]; then
-        runuser -u "$APP_USER" -- "$@"
+        "${drop_privileges[@]}" "$@"
     else
         "$@"
     fi
@@ -56,9 +68,10 @@ case "$ROLE" in
             --access-logfile -
             --error-logfile -
         )
-        # exec, so gunicorn becomes PID 1 and receives docker's stop signals directly.
+        # exec, so gunicorn becomes PID 1 and receives docker's stop signals directly —
+        # and, via setpriv, does so as the unprivileged user with no root process left.
         if [[ "$(id -u)" -eq 0 ]]; then
-            exec runuser -u "$APP_USER" -- "${gunicorn_cmd[@]}"
+            exec "${drop_privileges[@]}" "${gunicorn_cmd[@]}"
         else
             exec "${gunicorn_cmd[@]}"
         fi
@@ -92,7 +105,7 @@ case "$ROLE" in
         # and one-off management commands work. exec needs a real command, not the helper
         # function, so the privilege drop is spelled out here too.
         if [[ "$(id -u)" -eq 0 ]]; then
-            exec runuser -u "$APP_USER" -- "$@"
+            exec "${drop_privileges[@]}" "$@"
         else
             exec "$@"
         fi
