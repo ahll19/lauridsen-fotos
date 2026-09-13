@@ -92,6 +92,7 @@ h2 { font-size: clamp(1.4rem, 3vw, 1.9rem); }
 }
 
 .lang { display: flex; gap: 0.25rem; margin: 0; }
+.lang__form { margin: 0; display: inline; }
 .lang__btn {
   background: none; border: 1px solid transparent; border-radius: var(--radius);
   font: inherit; font-size: 0.75rem; letter-spacing: 0.06em; color: var(--ink-faint);

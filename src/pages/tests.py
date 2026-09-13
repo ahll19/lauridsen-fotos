@@ -1,3 +1,5 @@
+import re
+
 from django.core import mail
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -86,3 +88,54 @@ class PublicPageTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.client.cookies["django_language"].value, "en")
+
+
+class LanguageRoundTripTests(TestCase):
+    """
+    Switching must work in both directions, on every page.
+
+    Danish is the default and carries no URL prefix, so the language of a page is decided
+    by its URL rather than by the cookie. Switching therefore has to land the visitor on
+    the right URL — setting the cookie alone leaves them where they were.
+    """
+
+    def _offered_target(self, html, language_code):
+        """The URL the rendered page offers for switching to a language."""
+        pattern = (
+            rf'<input type="hidden" name="language" value="{language_code}">\s*'
+            r'<input type="hidden" name="next" value="([^"]*)">'
+        )
+        match = re.search(pattern, html)
+        self.assertIsNotNone(match, f"no language form for {language_code!r} on the page")
+        return match.group(1)
+
+    def _switch(self, language_code, page_url):
+        page = self.client.get(page_url)
+        self.assertEqual(page.status_code, 200)
+        target = self._offered_target(page.content.decode(), language_code)
+        response = self.client.post(
+            reverse("set_language"), {"language": language_code, "next": target}
+        )
+        return response["Location"]
+
+    def test_da_to_en_and_back_again(self):
+        """The bug: going back to Danish left the visitor on the English URL."""
+        self.assertEqual(self._switch("en", "/"), "/en/")
+        self.assertEqual(self._switch("da", "/en/"), "/")
+
+        page = self.client.get("/")
+        self.assertContains(page, '<html lang="da"')
+
+    def test_round_trip_keeps_the_visitor_on_the_same_page(self):
+        for danish_url, english_url in [
+            ("/portfolio/", "/en/portfolio/"),
+            ("/priser/", "/en/priser/"),
+            ("/kontakt/", "/en/kontakt/"),
+            ("/timeline/", "/en/timeline/"),
+        ]:
+            with self.subTest(page=danish_url):
+                self.assertEqual(self._switch("en", danish_url), english_url)
+                self.assertEqual(self._switch("da", english_url), danish_url)
+
+    def test_query_string_survives_the_switch(self):
+        self.assertEqual(self._switch("en", "/timeline/?tag=vinter"), "/en/timeline/?tag=vinter")

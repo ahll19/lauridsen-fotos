@@ -1,4 +1,4 @@
-{% load i18n static %}<!doctype html>
+{% load i18n static language_urls %}<!doctype html>
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
   <meta charset="utf-8">
@@ -34,16 +34,22 @@
       <a href="{% url 'pages:contact' %}" {% if request.resolver_match.url_name == 'contact' %}aria-current="page"{% endif %}>{% translate "Contact" %}</a>
 
       {% get_current_language as CURRENT %}
-      <form class="lang" action="{% url 'set_language' %}" method="post">
-        {% csrf_token %}
-        <input type="hidden" name="next" value="{{ request.get_full_path }}">
-        {% get_available_languages as LANGUAGES %}
+      {% get_available_languages as LANGUAGES %}
+      {# One form per language: each carries its own already-translated target, since
+         set_language cannot work that out for a URL in a non-default language. #}
+      <div class="lang">
         {% for code, name in LANGUAGES %}
-          <button type="submit" name="language" value="{{ code }}"
-                  class="lang__btn {% if code == CURRENT %}is-active{% endif %}"
-                  {% if code == CURRENT %}aria-current="true"{% endif %}>{{ code|upper }}</button>
+          <form action="{% url 'set_language' %}" method="post" class="lang__form">
+            {% csrf_token %}
+            <input type="hidden" name="language" value="{{ code }}">
+            <input type="hidden" name="next" value="{% switch_language_url code %}">
+            <button type="submit"
+                    class="lang__btn {% if code == CURRENT %}is-active{% endif %}"
+                    {% if code == CURRENT %}aria-current="true"{% endif %}
+                    lang="{{ code }}" title="{{ name }}">{{ code|upper }}</button>
+          </form>
         {% endfor %}
-      </form>
+      </div>
     </nav>
   </div>
 </header>
