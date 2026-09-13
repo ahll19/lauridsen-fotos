@@ -68,9 +68,15 @@
       {% if contact_settings.phone %}<p>{{ contact_settings.phone }}</p>{% endif %}
     </div>
     <div class="footer__links">
-      {% if contact_settings.instagram_url %}<a href="{{ contact_settings.instagram_url }}" rel="me noopener">Instagram</a>{% endif %}
-      {% if contact_settings.facebook_url %}<a href="{{ contact_settings.facebook_url }}" rel="me noopener">Facebook</a>{% endif %}
-      <a href="{% url 'pages:contact' %}">{% translate "Get in touch" %}</a>
+      {% comment %}
+        Leaving the site opens a tab; browsing it does not. Social links and the "get in
+        touch" call to action are things a visitor does, not places they are navigating to,
+        so neither should cost them the page they were reading. The main navigation above
+        deliberately stays in the same tab.
+      {% endcomment %}
+      {% if contact_settings.instagram_url %}<a href="{{ contact_settings.instagram_url }}" target="_blank" rel="me noopener noreferrer">Instagram</a>{% endif %}
+      {% if contact_settings.facebook_url %}<a href="{{ contact_settings.facebook_url }}" target="_blank" rel="me noopener noreferrer">Facebook</a>{% endif %}
+      <a href="{% url 'pages:contact' %}" target="_blank" rel="noopener">{% translate "Get in touch" %}</a>
     </div>
   </div>
 </footer>
