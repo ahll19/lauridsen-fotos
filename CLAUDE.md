@@ -15,6 +15,7 @@ they are the source of truth for *what* gets built:
 | [architecture.md](architecture.md) | How the hosting environment is built and operated. |
 | [technical_design.md](technical_design.md) | How the application implements the functional design. |
 | [ROADMAP.md](ROADMAP.md) | Milestones to 1.0.0, each with a definition of done. |
+| [docs/defects.md](docs/defects.md) | Known defects found on the running site, with severity and status. |
 
 **Current phase: local development only.** The VPS has not been ordered yet. Everything must
 run on a laptop via Docker Compose. Do not write anything that assumes a provisioned server,
