@@ -112,7 +112,6 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.i18n",
                 "core.context_processors.site_context",
-                "core.context_processors.design_preview",
             ],
         },
     },
@@ -246,15 +245,6 @@ OWNER_EMAIL = env("OWNER_EMAIL", "owner@localhost")
 ADMINS = [("Site owner", OWNER_EMAIL)]
 
 CONTACT_RATELIMIT = env("CONTACT_RATELIMIT", "5/h")
-
-
-# --- Design preview ----------------------------------------------------------
-
-# Lets alternative visual directions be switched on per browser while one is chosen
-# (ROADMAP 0.2.0). Temporary: the winner is folded into site.css and this goes away.
-# Defaults to on in development and off otherwise, so it cannot reach visitors by accident.
-DESIGN_PREVIEW_ENABLED = env_bool("DESIGN_PREVIEW_ENABLED", DEBUG)
-THEME_COOKIE_NAME = "design_theme"
 
 
 # --- Security ----------------------------------------------------------------

@@ -12,7 +12,7 @@ Versions follow the rules in [CLAUDE.md](CLAUDE.md) and are cut with `scripts/re
 | Version | Milestone | Blocks 1.0? |
 | --- | --- | --- |
 | 0.1.0 | Design documents, working rules, and the application running locally | done |
-| 0.2.0 | [Visual identity](#020--visual-identity) | yes |
+| 0.2.0 | [Visual identity](#020--visual-identity) | done |
 | 0.3.0 | [Production configuration, proven locally](#030--production-configuration-proven-locally) | yes |
 | 0.4.0 | [Host tooling: the `ansible/` directory](#040--host-tooling-the-ansible-directory) | yes |
 | 0.5.0 | [The VPS exists and serves the site](#050--the-vps-exists-and-serves-the-site) | yes |
@@ -23,24 +23,29 @@ Versions follow the rules in [CLAUDE.md](CLAUDE.md) and are cut with `scripts/re
 
 ## 0.2.0 — Visual identity
 
-The one thing `technical_design.md` deliberately left open. Everything else is built; this is
-what makes it look like a photographer's site rather than a competent template.
+**Done.** Settled on **Atelier Sage** — see
+[ADR 0003](docs/decisions/0003-visual-direction-atelier-sage.md).
 
-**Approach**: two or three complete directions, each as a clickable local page rather than a
-description — different palette, type pairing, and "one deliberate accent" per the functional
-design. You pick one and say what to change; I implement it everywhere.
+Four complete directions were built and made switchable on the running site, so they could be
+judged against real photographs rather than mockups. Atelier won; a second round then varied
+it one axis at a time (accent hue, temperature, typography) so a preference was attributable
+to a single change. The sage accent recedes where the original terracotta advanced, which is
+what an accent on a photography site should do.
 
 **Definition of done**
 
-- [ ] Two or three directions viewable locally, each applied to at least the home page, an
-      album, and the timeline, so they can be judged as real pages.
-- [ ] One direction chosen.
-- [ ] Chosen direction applied to every page type: home, portfolio index/category/album,
+- [x] Four directions viewable locally as real pages, not mockups.
+- [x] One direction chosen.
+- [x] Chosen direction applied to every page type: home, portfolio index/category/album,
       timeline index/entry, pricing, contact, about, and all three gallery states
-      (locked, unlocked, expired).
-- [ ] Renders correctly at 360px, 768px and 1440px with no horizontal scroll.
-- [ ] `prefers-reduced-motion` honoured.
-- [ ] Still no CSS framework, no bundler, no Node — per `technical_design.md`.
+      (locked, unlocked, expired). It lives in `site.css`, so this is structural.
+- [x] Renders correctly at 360px, 768px and 1440px with no horizontal scroll. Every grid is
+      `minmax(min(100%, X), 1fr)` and the page gutter is `min(100% - 2.5rem, …)`, so nothing
+      can exceed the viewport; breakpoints at 760/800/860px.
+- [x] `prefers-reduced-motion` honoured.
+- [x] Still no CSS framework, no bundler, no Node — per `technical_design.md`.
+- [x] Preview machinery removed: the switcher, the comparison page, the candidate
+      stylesheets and the `DESIGN_PREVIEW_ENABLED` setting are all gone.
 
 ---
 

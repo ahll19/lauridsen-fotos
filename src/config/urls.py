@@ -14,17 +14,13 @@ from django.contrib.sitemaps.views import sitemap
 from django.urls import include, path
 
 from core.sitemaps import SITEMAPS
-from core.views import design_choose, design_index, healthz, robots_txt
+from core.views import healthz, robots_txt
 
 urlpatterns = [
     path(settings.ADMIN_PATH, admin.site.urls),
     path("i18n/", include("django.conf.urls.i18n")),
     path("healthz", healthz, name="healthz"),
     path("robots.txt", robots_txt, name="robots"),
-    # Temporary, while a visual direction is chosen (ROADMAP 0.2.0). The views 404 unless
-    # DESIGN_PREVIEW_ENABLED, so these routes are inert in production.
-    path("design/", design_index, name="design_index"),
-    path("design/choose/", design_choose, name="design_choose"),
     path("sitemap.xml", sitemap, {"sitemaps": SITEMAPS}, name="sitemap"),
     # Unlisted by design: never referenced from navigation, sitemap, or robots.txt.
     path("g/", include("galleries.urls")),

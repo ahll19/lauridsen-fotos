@@ -24,13 +24,18 @@ anything worth saying that a commit subject doesn't capture can be written under
   content including a working client gallery.
 - Test suite covering the gallery access rules, expiry, and the contact form.
 - `ROADMAP.md`: milestones to 1.0.0, each with a definition of done.
-- Alternative visual directions, switchable on the real site so they can be judged on real
-  content rather than mockups, with a comparison page at `/design/`. Darkroom, Broadsheet
-  and Nordic were tried and rejected in favour of the existing direction, Atelier; what
-  remains are three variations on Atelier, each changing exactly one axis — accent hue
-  (Sage), temperature and contrast (Slate), and typography (Press). The whole preview is
-  gated behind `DESIGN_PREVIEW_ENABLED`, off outside development, and goes away once a
-  version is chosen (ROADMAP 0.2.0).
+- The visual direction is settled: **Atelier Sage** (ROADMAP 0.2.0, ADR 0003). Warm
+  off-white paper, Fraunces against Inter, and a single low-saturation sage accent that
+  recedes behind the photographs instead of competing with them. Chosen by building four
+  complete directions and making them switchable on the running site, then varying the
+  winner one axis at a time. The preview machinery that made that possible has been
+  removed, as planned.
+
+### Changed
+
+- Error states no longer borrow the accent colour. With a green accent, an accent-coloured
+  error would sit beside a green success message and stop reading as a warning, so errors
+  get their own token — the terracotta the accent used to be.
 - Ansible is now the way the remote host is managed: an `ansible/` directory with the
   environment and playbooks for provisioning, deployment, updates and backup/restore, so the
   server is rebuilt from a clone rather than from memory. Recorded in ADR 0002 and reflected

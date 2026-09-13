@@ -2,8 +2,12 @@
   Hand-written, no framework and no build step.
 
   The restraint is deliberate: near-monochrome, generous whitespace, one accent colour
-  (a muted terracotta) used sparingly, and a serif display face against a plain sans for
-  body text. That pairing is the "one deliberate accent" the functional design asks for.
+  (a muted sage) used sparingly, and a serif display face against a plain sans for body
+  text. That pairing is the "one deliberate accent" the functional design asks for.
+
+  Every neutral is hue-shifted toward brown rather than being a true grey, so the page
+  reads as paper rather than as a screen — pure white and black make photographs look like
+  they are floating on a monitor.
 */
 
 :root {
@@ -13,8 +17,18 @@
   --paper: #fbfaf8;
   --paper-warm: #f3f0eb;
   --line: #e2ddd5;
-  --accent: #b4553a;
-  --accent-dark: #8f4029;
+
+  /* Sage: low-saturation and mid-value, so it never competes with a photograph. It
+     recedes rather than advances, which is the point — the images supply the colour. */
+  --accent: #5e7356;
+  --accent-dark: #46573f;
+
+  /* Errors get their own colour rather than reusing the accent. Red-for-error is too
+     strong a convention to override, and a green error sitting beside a green success
+     message would stop being a signal at all. This is the terracotta the accent used to
+     be, kept on for the one job it is still better at. */
+  --alert: #a8443d;
+  --alert-dark: #85322c;
 
   --display: "Fraunces", Georgia, "Times New Roman", serif;
   --body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -247,16 +261,16 @@ h2 { font-size: clamp(1.4rem, 3vw, 1.9rem); }
 }
 .field textarea { resize: vertical; }
 .field__help { font-size: 0.75rem; color: var(--ink-faint); margin: 0.3rem 0 0; }
-.field__error { font-size: 0.8rem; color: var(--accent-dark); margin: 0.3rem 0 0; }
-.field--error .field__input, .field--error input, .field--error textarea { border-color: var(--accent); }
+.field__error { font-size: 0.8rem; color: var(--alert-dark); margin: 0.3rem 0 0; }
+.field--error .field__input, .field--error input, .field--error textarea { border-color: var(--alert); }
 
 /* The honeypot: off-screen rather than display:none, which some bots skip. */
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
 .notice { padding: 1rem 1.25rem; border-radius: var(--radius); border: 1px solid var(--line); margin-bottom: 1.5rem; }
 .notice p { margin: 0; }
-.notice--success { border-color: #6a8f5f; background: #f2f7ef; }
-.notice--error { border-color: var(--accent); background: #fdf3f0; }
+.notice--success { border-color: var(--accent); background: #f1f4ef; }
+.notice--error { border-color: var(--alert); background: #fbf1f0; }
 .notice--info { border-color: var(--line); background: var(--paper-warm); font-size: 0.9rem; color: var(--ink-soft); }
 
 /* --- Client galleries --------------------------------------------------- */

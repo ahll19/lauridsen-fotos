@@ -10,9 +10,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'vendor/glightbox.min.css' %}">
   <link rel="stylesheet" href="{% static 'css/site.css' %}">
-  {% if theme.fonts %}<link rel="stylesheet" href="{{ theme.fonts }}">{% endif %}
-  {% if theme.stylesheet %}<link rel="stylesheet" href="{% static theme.stylesheet %}">{% endif %}
-  {% if design_preview %}<link rel="stylesheet" href="{% static 'css/design-preview.css' %}">{% endif %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
 
@@ -75,24 +72,6 @@
     </div>
   </div>
 </footer>
-
-{% if design_preview %}
-  {# Temporary switcher, so a direction can be judged on the real site rather than a mockup.
-     Present only while DESIGN_PREVIEW_ENABLED — see ROADMAP 0.2.0. #}
-  <div class="design-switcher">
-    <span class="design-switcher__label">Direction</span>
-    {% for candidate in themes %}
-      <form action="{% url 'design_choose' %}" method="post">
-        {% csrf_token %}
-        <input type="hidden" name="theme" value="{{ candidate.slug }}">
-        <input type="hidden" name="next" value="{{ request.get_full_path }}">
-        <button type="submit" class="design-switcher__btn {% if candidate.slug == theme.slug %}is-active{% endif %}"
-                title="{{ candidate.tagline }}">{{ candidate.name }}</button>
-      </form>
-    {% endfor %}
-    <a class="design-switcher__compare" href="{% url 'design_index' %}">Compare →</a>
-  </div>
-{% endif %}
 
 <script src="{% static 'vendor/glightbox.min.js' %}"></script>
 <script src="{% static 'js/site.js' %}"></script>
