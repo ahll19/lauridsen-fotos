@@ -108,6 +108,80 @@ class GalleryAccessTests(TestCase):
 
 
 @override_settings(USE_X_ACCEL=False)
+class GalleryPrivacyHeaderTests(TestCase):
+    """Private responses must not be storable by anything between here and the client."""
+
+    def setUp(self):
+        self.gallery = make_gallery()
+        self.client_ = Client()
+        self.client_.post(self.gallery.get_absolute_url(), {"password": "correct-horse"})
+
+    def test_gallery_page_is_not_cacheable(self):
+        response = self.client_.get(self.gallery.get_absolute_url())
+        self.assertEqual(response["Cache-Control"], "private, no-store")
+
+    def test_photo_download_is_not_cacheable(self):
+        photo = self.gallery.photos.first()
+        response = self.client_.get(
+            reverse("galleries:download_photo", args=[self.gallery.slug, photo.pk])
+        )
+        self.assertEqual(response["Cache-Control"], "private, no-store")
+
+    def test_zip_is_named_for_the_gallery_not_the_url_key(self):
+        """The client keeps this file; the URL key tells them nothing about it."""
+        self.gallery.client_name = "Sofie & Jonas"
+        self.gallery.save()
+        self.gallery.build_zip()
+        response = self.client_.get(reverse("galleries:download_zip", args=[self.gallery.slug]))
+        self.assertIn("sofie-jonas.zip", response["Content-Disposition"])
+        self.assertNotIn(self.gallery.slug, response["Content-Disposition"])
+
+
+@override_settings(USE_X_ACCEL=False, GALLERY_UNLOCK_RATELIMIT="3/h")
+class GalleryUnlockRateLimitTests(TestCase):
+    def test_repeated_wrong_passwords_are_throttled(self):
+        gallery = make_gallery()
+        client = Client()
+        for _ in range(3):
+            client.post(gallery.get_absolute_url(), {"password": "wrong"})
+
+        response = client.post(gallery.get_absolute_url(), {"password": "wrong"})
+        self.assertEqual(response.status_code, 429)
+
+    def test_throttling_does_not_reveal_the_correct_password(self):
+        """Once throttled, even the right password is refused rather than accepted."""
+        gallery = make_gallery()
+        client = Client()
+        for _ in range(4):
+            client.post(gallery.get_absolute_url(), {"password": "wrong"})
+
+        response = client.post(gallery.get_absolute_url(), {"password": "correct-horse"})
+        self.assertEqual(response.status_code, 429)
+
+
+@override_settings(USE_X_ACCEL=False)
+class GalleryFileCleanupTests(TestCase):
+    def test_bulk_delete_from_the_admin_removes_the_files(self):
+        """
+        The admin's "Delete selected" calls queryset.delete(), which skips Model.delete()
+        — so the files were left behind for exactly the bulk case.
+        """
+        from django.contrib.admin.sites import AdminSite
+
+        from galleries.admin import ClientGalleryAdmin
+
+        gallery = make_gallery()
+        directory = gallery.media_dir
+        self.assertTrue(directory.exists())
+
+        admin_instance = ClientGalleryAdmin(ClientGallery, AdminSite())
+        admin_instance.delete_queryset(None, ClientGallery.objects.filter(pk=gallery.pk))
+
+        self.assertFalse(directory.exists())
+        self.assertEqual(ClientGallery.objects.count(), 0)
+
+
+@override_settings(USE_X_ACCEL=False)
 class GalleryExpiryTests(TestCase):
     def test_expired_gallery_shows_tombstone_not_content(self):
         gallery = make_gallery(days=-1)
