@@ -10,6 +10,33 @@ anything worth saying that a commit subject doesn't capture can be written under
 
 ## [Unreleased]
 
+### From the 0.2.0 QA pass
+
+A full teardown-and-rebuild walkthrough of the running site, against a run book covering
+every page type, both languages, all three gallery states, the scheduled jobs and the
+release's own regression checks. Forty checks passed; six found something.
+
+- **The admin's section headings were in English** — "Galleries", "Pages", "Portfolio",
+  "Timeline". Django falls back to the raw app label when an app declares no verbose name,
+  and none of them did. Now named and translated.
+- **The pricing page's "Forespørg" button did not tell you which package it was about.**
+  The link had carried the package name as a query parameter all along; the contact view
+  simply never read it. Now it arrives with the enquiry.
+- **Links that leave the site, and calls to action, now open in a new tab** — Instagram,
+  Facebook, "skriv til mig", and the pricing enquiry button. Browsing the site still moves
+  the URL you are on; only actions cost you a tab.
+- **The header took too much of a phone screen.** It was pinned to the top and two lines
+  tall, so it held that space through every scroll. On phones it now scrolls away with the
+  page and drops the tagline.
+- **Right-click was not actually blocked on the largest public images.** The deterrent was
+  bound per element at load, so the lightbox — which builds its own overlay, showing the
+  biggest derivative — was left out. It is delegated from the document now, and covers the
+  portfolio index and category pages that were never wired up at all. Still a speed bump
+  rather than protection; the bytes are on the wire either way.
+- One check failed because the QA instruction was wrong, not the code: the app image has no
+  `ps`. Verified another way — every process in the container runs as uid 1000, PID 1
+  included.
+
 ### Added
 
 - The full application, running locally on Docker Compose: nginx, gunicorn + Django, a cron
