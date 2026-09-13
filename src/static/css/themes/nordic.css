@@ -1,0 +1,116 @@
+/*
+  Direction: Nordic — cool, soft, airy.
+
+  Pale cool greys with a muted sage accent, one geometric sans at light weights, generous
+  line height and wide gaps, soft rounded corners. Calm rather than dramatic: the least
+  assertive of the four, and the easiest to read at length.
+*/
+
+:root {
+  --ink: #23282b;
+  --ink-soft: #5c666b;
+  --ink-faint: #939ba0;
+  --paper: #fcfdfd;
+  --paper-warm: #eef2f2;
+  --line: #dde4e4;
+  --accent: #6b8f7d;
+  --accent-dark: #4f6f5f;
+
+  --display: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --body: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --radius: 10px;
+  --gap: 2rem;
+}
+
+body { line-height: 1.75; }
+
+h1, h2, h3 { font-weight: 300; letter-spacing: -0.015em; line-height: 1.2; }
+h1 { font-size: clamp(1.9rem, 4.4vw, 2.9rem); }
+
+.site-header {
+  background: color-mix(in srgb, var(--paper) 85%, transparent);
+  border-bottom: 1px solid var(--line);
+}
+.brand__name { font-weight: 500; font-size: 1.2rem; letter-spacing: -0.01em; }
+.brand__tagline { letter-spacing: 0.1em; color: var(--ink-faint); }
+.nav a { font-size: 0.9rem; letter-spacing: 0; }
+.nav a[aria-current="page"]::after { height: 2px; border-radius: 2px; }
+
+/* Contained rather than full-bleed, so the page frames the photograph. */
+.hero {
+  min-height: auto;
+  margin: 1.5rem auto 0;
+  width: min(100% - 2.5rem, 1180px);
+  border-radius: 18px;
+  overflow: hidden;
+  min-height: min(66vh, 620px);
+}
+.hero::after { background: linear-gradient(to top, rgba(25,32,34,0.62), transparent 62%); }
+.hero__tagline { font-weight: 300; }
+
+.btn {
+  border-radius: 999px;
+  padding: 0.75rem 1.7rem;
+  font-size: 0.9rem;
+  letter-spacing: 0;
+  border-color: var(--line);
+  color: var(--ink);
+}
+.btn:hover { background: var(--paper-warm); color: var(--ink); border-color: var(--ink-faint); }
+.btn--primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn--primary:hover { background: var(--accent-dark); border-color: var(--accent-dark); color: #fff; }
+.hero:not(.hero--plain) .btn { border-color: rgba(255,255,255,0.6); }
+.hero:not(.hero--plain) .btn:hover { background: rgba(255,255,255,0.92); color: var(--ink); }
+
+.card__media, .card__media img, .teaser img, .photo img, .entry__photos img {
+  border-radius: var(--radius);
+}
+.about__portrait { border-radius: 18px; }
+.card__title, .teaser__title { font-weight: 500; font-size: 1.1rem; }
+.card__meta, .teaser__meta { letter-spacing: 0; color: var(--ink-faint); }
+
+.photo-grid { gap: 1.25rem; }
+.card-grid, .teasers { gap: 2rem; }
+
+.tag { border-radius: 999px; text-transform: none; font-size: 0.8rem; letter-spacing: 0; }
+.tag:hover, .tag.is-active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.entry { border-top: 1px solid var(--line); }
+.entry__date { text-transform: none; letter-spacing: 0.06em; color: var(--ink-faint); }
+
+.package {
+  border-radius: 16px;
+  border-color: var(--line);
+  background: var(--paper);
+  box-shadow: 0 1px 2px rgba(35,40,43,0.04);
+}
+.package:hover {
+  border-color: var(--accent);
+  box-shadow: 0 12px 28px rgba(35,40,43,0.07);
+  transform: translateY(-3px);
+}
+.package__price { font-weight: 500; font-family: var(--body); font-size: 1.5rem; }
+.package__list li::before { content: "•"; }
+
+.field__input, .field input, .field textarea, .field select {
+  border-radius: 10px;
+  background: var(--paper-warm);
+  border-color: transparent;
+}
+.field__input:focus, .field input:focus, .field textarea:focus {
+  background: var(--paper);
+  border-color: var(--accent);
+}
+.field__label { letter-spacing: 0.04em; }
+
+.notice { border-radius: 12px; }
+.notice--success { border-color: #9dbfa9; background: #f0f6f2; }
+.notice--error { border-color: #c99; background: #fbf2f1; }
+
+.gate__card {
+  border-radius: 18px;
+  border-color: var(--line);
+  box-shadow: 0 14px 40px rgba(35,40,43,0.06);
+}
+.site-footer { background: var(--paper-warm); }
