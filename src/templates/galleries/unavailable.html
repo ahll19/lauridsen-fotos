@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{# The tombstone page: the URL keeps answering after expiry so a late client gets an
-   explanation rather than a bare 404. #}
+{% comment %}
+  The tombstone page: the URL keeps answering after expiry so a late client gets an
+  explanation rather than a bare 404.
+{% endcomment %}
 
 {% block title %}{% translate "Gallery no longer available" %}{% endblock %}
 {% block meta %}<meta name="robots" content="noindex, nofollow">{% endblock %}

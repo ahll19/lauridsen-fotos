@@ -16,11 +16,16 @@ server {
     proxy_send_timeout 300s;
 
     # --- Static assets: shipped with the image, never user-written ---------
+    # The policy comes from STATIC_CACHE_CONTROL because it is only safe to promise a
+    # browser that a URL will never change when the filename carries a content hash —
+    # true under ManifestStaticFilesStorage with DJANGO_DEBUG=0, false in development,
+    # where "immutable" leaves an edited stylesheet uncollectable for a month. One
+    # `add_header` rather than `expires` plus `add_header`, which emit two conflicting
+    # Cache-Control headers.
     location /static/ {
         alias /srv/static/;
         access_log off;
-        expires 30d;
-        add_header Cache-Control "public, immutable";
+        add_header Cache-Control "${STATIC_CACHE_CONTROL}";
     }
 
     # --- Public media: portfolio and timeline derivatives ------------------
@@ -45,7 +50,10 @@ server {
 
     location / {
         proxy_pass http://app_server;
-        proxy_set_header Host $host;
+        # $http_host, not $host: $host drops the port, so Django built every absolute URL
+        # it generates — sitemap entries, robots.txt, password-reset links — without it,
+        # pointing them at a port nothing listens on whenever the site is not on 80/443.
+        proxy_set_header Host $http_host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
