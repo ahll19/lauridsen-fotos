@@ -1,7 +1,9 @@
 from pathlib import Path
 
+from django.conf import settings
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import translation
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_http_methods
 
@@ -13,6 +15,24 @@ from .thumbnails import private_thumbnail
 
 def _get_gallery(slug):
     return get_object_or_404(ClientGallery, slug=slug)
+
+
+def _honour_language_cookie(request):
+    """
+    Let a client read their gallery in either language.
+
+    Gallery URLs deliberately carry no language prefix: the link handed to a client should
+    be one fixed string, and a private page has no business existing at two addresses.
+    That puts them outside `i18n_patterns`, where LocaleMiddleware pins the language to the
+    site default — so the visitor's own choice has to be applied here instead.
+
+    Prefixing these URLs would also break the unlock cookie, which is scoped to the
+    gallery's path: unlocking at /en/g/<slug>/ would leave /g/<slug>/ locked again.
+    """
+    language = request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME)
+    if language and translation.check_for_language(language):
+        translation.activate(language)
+        request.LANGUAGE_CODE = language
 
 
 def _require_access(request, gallery):
@@ -29,6 +49,7 @@ def detail(request, slug):
     Never renders a photograph before a password has been accepted, and says nothing
     about why a password was rejected.
     """
+    _honour_language_cookie(request)
     gallery = _get_gallery(slug)
 
     # Expired or already emptied: the URL keeps answering, but with an explanation

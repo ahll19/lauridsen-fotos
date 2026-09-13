@@ -14,6 +14,7 @@ they are the source of truth for *what* gets built:
 | [functional_design.md](functional_design.md) | What the site does, page by page. No technology choices. |
 | [architecture.md](architecture.md) | How the hosting environment is built and operated. |
 | [technical_design.md](technical_design.md) | How the application implements the functional design. |
+| [ROADMAP.md](ROADMAP.md) | Milestones to 1.0.0, each with a definition of done. |
 
 **Current phase: local development only.** The VPS has not been ordered yet. Everything must
 run on a laptop via Docker Compose. Do not write anything that assumes a provisioned server,

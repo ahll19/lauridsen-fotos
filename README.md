@@ -64,5 +64,8 @@ built. Read them in order:
 | [architecture.md](architecture.md) | How the hosting environment is built and operated. |
 | [technical_design.md](technical_design.md) | How the application implements the functional design. |
 
+[ROADMAP.md](ROADMAP.md) tracks what stands between here and 1.0.0, with a definition of done
+for each milestone.
+
 [CLAUDE.md](CLAUDE.md) has the working rules: branching, commit convention, versioning,
 verification, and what never to do.

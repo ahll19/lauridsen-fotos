@@ -23,6 +23,16 @@ anything worth saying that a commit subject doesn't capture can be written under
 - `scripts/dev.sh` for running the stack, and `seed_demo` for a site full of demonstration
   content including a working client gallery.
 - Test suite covering the gallery access rules, expiry, and the contact form.
+- `ROADMAP.md`: milestones to 1.0.0, each with a definition of done.
+
+### Fixed
+
+- The language toggle only worked one way. Switching to English worked; switching back to
+  Danish set the cookie but left the visitor on the `/en/` URL, which decides the language,
+  so nothing appeared to happen.
+- Client galleries are now readable in both languages. Their URLs deliberately carry no
+  language prefix, which had put them outside Django's language routing and pinned them to
+  Danish.
 
 ## [0.1.0] - 2026-09-12
 

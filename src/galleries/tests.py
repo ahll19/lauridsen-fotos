@@ -6,6 +6,7 @@ the password gate, cookie scoping, expiry, and the fact that files actually leav
 from datetime import timedelta
 from io import BytesIO
 
+from django.conf import settings
 from django.core.files.base import ContentFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
@@ -159,6 +160,48 @@ class GalleryExpiryTests(TestCase):
 
         self.assertFalse(ClientGallery.objects.filter(pk=old.pk).exists())
         self.assertTrue(ClientGallery.objects.filter(pk=recent.pk).exists())
+
+
+@override_settings(USE_X_ACCEL=False)
+class GalleryLanguageTests(TestCase):
+    """
+    Galleries live outside the language-prefixed URLs, so the visitor's language choice
+    has to be honoured from the cookie rather than from the path.
+    """
+
+    def setUp(self):
+        self.gallery = make_gallery()
+        self.url = self.gallery.get_absolute_url()
+
+    def test_defaults_to_danish(self):
+        response = self.client.get(self.url)
+        self.assertContains(response, "Privat galleri")
+
+    def test_english_cookie_is_honoured(self):
+        self.client.cookies[settings.LANGUAGE_COOKIE_NAME] = "en"
+        response = self.client.get(self.url)
+        self.assertContains(response, "Private gallery")
+        self.assertNotContains(response, "Privat galleri")
+
+    def test_switching_language_keeps_the_url_and_the_unlock(self):
+        """The gallery link a client was given must keep working across a language change."""
+        self.gallery.build_zip()
+        self.client.post(self.url, {"password": "correct-horse"})
+        self.assertContains(self.client.get(self.url), "photo-grid")
+
+        # The page offers itself as the switch target, since the URL has no prefix.
+        switch = self.client.post(
+            reverse("set_language"), {"language": "en", "next": self.url}
+        )
+        self.assertEqual(switch["Location"], self.url)
+
+        response = self.client.get(self.url)
+        self.assertContains(response, "photo-grid")
+        self.assertContains(response, "Download all as ZIP")
+
+    def test_an_invalid_language_cookie_is_ignored(self):
+        self.client.cookies[settings.LANGUAGE_COOKIE_NAME] = "klingon"
+        self.assertEqual(self.client.get(self.url).status_code, 200)
 
 
 class GalleryModelTests(TestCase):
