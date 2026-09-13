@@ -22,3 +22,4 @@ its decision; instead a new record supersedes it and says so.
 | --- | --- | --- |
 | [0001](0001-local-enforcement-of-main-protection.md) | Enforce main protection locally rather than on GitHub | Accepted |
 | [0002](0002-manage-the-host-with-ansible.md) | Manage the host with Ansible, with secrets in ansible-vault | Accepted |
+| [0003](0003-visual-direction-atelier-sage.md) | Visual direction: Atelier Sage | Accepted |
