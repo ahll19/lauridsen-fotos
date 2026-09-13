@@ -96,6 +96,11 @@ class ClientGalleryAdmin(admin.ModelAdmin):
         if not obj.pk or obj.deleted:
             return "—"
         if obj.zip_exists:
+            # The file and the timestamp can disagree — a restore from backup brings one
+            # back without the other, as does a crash between writing the archive and
+            # saving the row. Reporting the file as present beats raising on the changelist.
+            if not obj.zip_built_at:
+                return _("Built (date unknown)")
             return _("Built %(when)s") % {"when": obj.zip_built_at.strftime("%Y-%m-%d %H:%M")}
         return format_html("<strong>{}</strong>", _("Not built — run “Rebuild download ZIP”"))
 
@@ -146,6 +151,20 @@ class ClientGalleryAdmin(admin.ModelAdmin):
                 % {"count": len(uploads)},
                 level=messages.INFO,
             )
+
+    def delete_queryset(self, request, queryset):
+        """
+        Delete the photographs too, when several galleries go at once.
+
+        The admin's "Delete selected" runs `queryset.delete()`, which does not call each
+        model's `delete()` — so the override there, and with it the removal of the files,
+        was skipped for exactly the bulk case. The rows vanished and the client
+        photographs stayed on disk indefinitely, which for expired client work is the one
+        outcome `functional_design.md` §10 rules out.
+        """
+        for gallery in queryset:
+            gallery.delete_files()
+        super().delete_queryset(request, queryset)
 
     # --- Actions -------------------------------------------------------------
 

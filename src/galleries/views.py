@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import translation
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_http_methods
+from django_ratelimit.core import is_ratelimited
 
 from .access import grant, has_access
 from .models import ClientGallery, GalleryPhoto
@@ -60,6 +61,29 @@ def detail(request, slug):
         )
 
     if request.method == "POST":
+        # Guessing a generated password is hopeless, but an unthrottled endpoint that
+        # checks a credential is worth closing anyway. Keyed per gallery as well as per
+        # caller, so someone hammering one link cannot lock another client out of theirs.
+        if is_ratelimited(
+            request,
+            group="galleries.unlock",
+            key="ip",
+            rate=settings.GALLERY_UNLOCK_RATELIMIT,
+            method=["POST"],
+            increment=True,
+        ):
+            return noindex(
+                render(
+                    request,
+                    "galleries/locked.html",
+                    {
+                        "gallery": gallery,
+                        "error": _("Too many attempts. Please wait a little and try again."),
+                    },
+                    status=429,
+                )
+            )
+
         if gallery.check_gallery_password(request.POST.get("password", "")):
             return noindex(grant(redirect(gallery.get_absolute_url()), gallery))
         return noindex(
@@ -128,7 +152,9 @@ def download_zip(request, slug):
     return noindex(
         protected_file_response(
             gallery.zip_path,
-            filename=f"{gallery.slug}.zip",
+            # Named for the gallery, not its URL key: this is the file the client keeps,
+            # and "wMbTQ8P0ZLTr4M93MlXKoQ.zip" tells them nothing about what is in it.
+            filename=gallery.download_filename,
             content_type="application/zip",
             as_attachment=True,
         )

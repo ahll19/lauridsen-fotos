@@ -6,6 +6,7 @@ real location is never a URL anyone can request directly — nginx's `internal` 
 only an X-Accel-Redirect header from this application can route into it.
 """
 
+import unicodedata
 from pathlib import Path
 from urllib.parse import quote
 
@@ -49,13 +50,36 @@ def protected_file_response(path, *, filename=None, content_type=None, as_attach
         del response["Content-Type"]
 
     if as_attachment:
-        name = filename or resolved.name
-        response["Content-Disposition"] = f'attachment; filename="{name}"'
+        response["Content-Disposition"] = content_disposition(filename or resolved.name)
 
     return response
 
 
+def content_disposition(filename):
+    """
+    An attachment header that survives a non-ASCII filename.
+
+    Danish filenames routinely contain æ, ø and å, and a raw f-string leaves Django to
+    MIME-encode the header into something browsers show verbatim. RFC 6266 handles this
+    with a percent-encoded `filename*`, alongside a stripped-down `filename` for anything
+    that cannot read it. Quotes and backslashes are removed rather than escaped, since
+    neither belongs in a filename being offered to a client.
+    """
+    ascii_name = unicodedata.normalize("NFKD", filename).encode("ascii", "ignore").decode()
+    ascii_name = ascii_name.replace('"', "").replace("\\", "") or "download"
+    return f"attachment; filename=\"{ascii_name}\"; filename*=UTF-8''{quote(filename)}"
+
+
 def noindex(response):
-    """Keep a response out of search indexes without advertising its URL in robots.txt."""
+    """
+    Mark a private response: keep it out of search indexes, and out of caches.
+
+    The `noindex` half keeps the URL from being advertised without listing it in
+    robots.txt. `private, no-store` is the half that matters for the photographs
+    themselves — without it nothing stops a shared proxy, or a browser on a shared
+    machine, from keeping a copy of a client's gallery long after it has expired and been
+    deleted from disk.
+    """
     response["X-Robots-Tag"] = "noindex, nofollow, noarchive"
+    response["Cache-Control"] = "private, no-store"
     return response

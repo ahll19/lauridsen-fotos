@@ -10,6 +10,7 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 from ordered_model.models import OrderedModel
 
@@ -143,6 +144,16 @@ class ClientGallery(models.Model):
     @property
     def zip_exists(self):
         return self.zip_path.exists()
+
+    @property
+    def download_filename(self):
+        """
+        What the client's browser calls the archive when they save it.
+
+        The label is the owner's own reference and may be empty of anything sluggable, so
+        the URL key stays as the fallback rather than producing a bare ".zip".
+        """
+        return f"{slugify(self.client_name or self.label) or self.slug}.zip"
 
     def build_zip(self):
         """
