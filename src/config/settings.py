@@ -76,7 +76,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sitemaps",
-    "django.contrib.sites",
     "easy_thumbnails",
     "ordered_model",
     "solo",
@@ -89,6 +88,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # Before anything that reads REMOTE_ADDR — the rate limiter included.
+    "core.middleware.ClientIPMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     # Must sit between session and common middleware for the language cookie to be read.
     "django.middleware.locale.LocaleMiddleware",
@@ -117,7 +118,20 @@ TEMPLATES = [
     },
 ]
 
-SITE_ID = 1
+# The sitemap deliberately does not use django.contrib.sites. That framework stores one
+# domain in the database, which starts life as "example.com" and has to be remembered and
+# edited per environment — and when it isn't, the sitemap confidently advertises URLs on a
+# domain that is not this site. Without the app installed, Django derives the domain from
+# the request instead, which is correct in every environment with nothing to configure and
+# agrees with what robots.txt reports.
+
+# How many reverse proxies sit in front of the application. One is nginx; raise it only if
+# something else (a CDN) is ever put in front. See core.middleware.
+TRUSTED_PROXY_COUNT = env_int("TRUSTED_PROXY_COUNT", 1)
+
+# Tests write photographs to disk and exercise the code that deletes them, so they get a
+# throwaway DATA_ROOT rather than the live one.
+TEST_RUNNER = "config.test_runner.IsolatedDataRunner"
 
 
 # --- Storage -----------------------------------------------------------------
@@ -219,6 +233,7 @@ MODELTRANSLATION_FALLBACK_LANGUAGES = ("da", "en")
 GALLERY_DEFAULT_EXPIRY_DAYS = env_int("GALLERY_DEFAULT_EXPIRY_DAYS", 90)
 GALLERY_TOMBSTONE_RETENTION_DAYS = env_int("GALLERY_TOMBSTONE_RETENTION_DAYS", 30)
 GALLERY_SESSION_MAX_AGE = env_int("GALLERY_SESSION_MAX_AGE", 86400)
+GALLERY_UNLOCK_RATELIMIT = env("GALLERY_UNLOCK_RATELIMIT", "20/h")
 
 # Hand private files off to nginx instead of streaming them through Python. Turned off
 # when running manage.py runserver without a proxy in front.
@@ -281,10 +296,17 @@ LOGGING = {
     "formatters": {
         "simple": {"format": "[{asctime}] {levelname} {name}: {message}", "style": "{"},
     },
+    "filters": {
+        # Django's own default config applies this to mail_admins; leaving it off means
+        # every error raised while developing is mailed to the owner, including the ones
+        # you are in the middle of causing on purpose.
+        "require_debug_false": {"()": "django.utils.log.RequireDebugFalse"},
+    },
     "handlers": {
         "console": {"class": "logging.StreamHandler", "formatter": "simple"},
         "mail_admins": {
             "level": "ERROR",
+            "filters": ["require_debug_false"],
             "class": "django.utils.log.AdminEmailHandler",
             "include_html": True,
         },

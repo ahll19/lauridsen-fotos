@@ -44,6 +44,12 @@ is rendered from the environment at container start for the same reason.
 - Branches merge into `main` through a pull request, never by a local fast-forward.
 - Delete the branch after the PR merges.
 
+**Opening the pull request is Anders's call, not Claude's.** Creating a branch, committing to
+it and pushing it need no permission — opening a PR does, every time, and the answer has to be
+asked for rather than assumed. The workflow above describes how a change reaches `main` once it
+is ready; it is not standing authorisation to decide that it *is* ready. Finish the work, push
+the branch, then say it is ready and ask. The same goes for merging: Claude never merges.
+
 This repository is private on a free GitHub plan, which means GitHub itself **cannot** enforce
 branch protection (see [docs/decisions/0001-local-enforcement-of-main-protection.md](docs/decisions/0001-local-enforcement-of-main-protection.md)).
 Enforcement is a local `pre-push` hook instead. Install it once per clone:
@@ -158,6 +164,7 @@ record and add a pointer in the design document to it.
 ## Never
 
 - Push or commit to `main` directly.
+- Open a pull request, or merge one, without Anders asking for it.
 - Use `--no-verify`.
 - Commit `.env`, credentials, certificates, or client photographs. `/data` is bind-mounted at
   runtime and is not in version control.

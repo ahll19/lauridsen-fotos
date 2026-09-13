@@ -1,7 +1,7 @@
 import logging
 
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 from django.shortcuts import render
 from django.utils.translation import gettext as _
 from django_ratelimit.core import is_ratelimited
@@ -103,9 +103,13 @@ def contact(request):
 
 
 def _client_ip(request):
-    forwarded = request.META.get("HTTP_X_FORWARDED_FOR", "")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
+    """
+    ClientIPMiddleware has already resolved this out of X-Forwarded-For.
+
+    Reading the header here instead would take its left-most entry, which is whatever the
+    caller chose to send — so the recorded address of an abusive sender would be one they
+    picked themselves.
+    """
     return request.META.get("REMOTE_ADDR")
 
 
@@ -113,23 +117,26 @@ def _notify_owner(submission):
     """Mail the submission to the owner. Returns whether the relay accepted it."""
     body = "\n".join(
         [
-            f"Name:     {submission.name}",
-            f"Email:    {submission.email}",
-            f"Type:     {submission.shoot_type or '—'}",
-            f"Date:     {submission.preferred_date or '—'}",
-            f"IP:       {submission.ip_address or '—'}",
+            f"{_('Name:')} {submission.name}",
+            f"{_('Email:')} {submission.email}",
+            f"{_('Type:')} {submission.shoot_type or '—'}",
+            f"{_('Date:')} {submission.preferred_date or '—'}",
+            f"{_('IP address:')} {submission.ip_address or '—'}",
             "",
             submission.message,
         ]
     )
+    message = EmailMessage(
+        subject=_("Contact form: %(name)s") % {"name": submission.name},
+        body=body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[settings.OWNER_EMAIL],
+        # So replying in the mail client answers the enquirer rather than the no-reply
+        # address the relay sends as. The address is validated by the form.
+        reply_to=[submission.email],
+    )
     try:
-        send_mail(
-            subject=f"Contact form: {submission.name}",
-            message=body,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[settings.OWNER_EMAIL],
-            fail_silently=False,
-        )
+        message.send(fail_silently=False)
         return True
     except Exception:
         # The submission row is still written, so nothing is lost if the relay is down.

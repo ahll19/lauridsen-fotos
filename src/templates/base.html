@@ -35,8 +35,10 @@
 
       {% get_current_language as CURRENT %}
       {% get_available_languages as LANGUAGES %}
-      {# One form per language: each carries its own already-translated target, since
-         set_language cannot work that out for a URL in a non-default language. #}
+      {% comment %}
+        One form per language: each carries its own already-translated target, since
+        set_language cannot work that out for a URL in a non-default language.
+      {% endcomment %}
       <div class="lang">
         {% for code, name in LANGUAGES %}
           <form action="{% url 'set_language' %}" method="post" class="lang__form">

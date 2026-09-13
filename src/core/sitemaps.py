@@ -13,6 +13,11 @@ from timeline.models import TimelineEntry
 
 
 class StaticViewSitemap(Sitemap):
+    # Every public URL exists in Danish and English, so each is listed in both, with
+    # reciprocal hreflang alternates. Without this the English half of the site is
+    # invisible to search engines.
+    i18n = True
+    alternates = True
     changefreq = "monthly"
     priority = 0.6
 
@@ -31,6 +36,8 @@ class StaticViewSitemap(Sitemap):
 
 
 class CategorySitemap(Sitemap):
+    i18n = True
+    alternates = True
     changefreq = "monthly"
     priority = 0.8
 
@@ -39,14 +46,22 @@ class CategorySitemap(Sitemap):
 
 
 class AlbumSitemap(Sitemap):
+    i18n = True
+    alternates = True
     changefreq = "monthly"
     priority = 0.7
 
     def items(self):
-        return Album.objects.visible().select_related("category")
+        # An album is only reachable if its category is published too — the album view
+        # requires both. Listing a visible album inside a hidden category advertised a URL
+        # that answers 404, and published the name and slug of work the owner was still
+        # preparing, which is the thing "hidden" exists to prevent.
+        return Album.objects.visible().filter(category__visible=True).select_related("category")
 
 
 class TimelineSitemap(Sitemap):
+    i18n = True
+    alternates = True
     changefreq = "weekly"
     priority = 0.5
 

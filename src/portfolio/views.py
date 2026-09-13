@@ -1,3 +1,4 @@
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404, render
 
 from .models import Album, Category
@@ -5,7 +6,20 @@ from .models import Album, Category
 
 def index(request):
     """Portfolio landing: the categories, each with its albums' cover images."""
-    categories = Category.objects.visible().prefetch_related("albums").order_by("order")
+    categories = (
+        Category.objects.visible()
+        # Prefetched into an attribute the template reads directly. Prefetching "albums"
+        # and then calling category.visible_albums in the template threw the prefetch away
+        # — that is a fresh query — and cost two more per category on top.
+        .prefetch_related(
+            Prefetch(
+                "albums",
+                queryset=Album.objects.visible().prefetch_related("photos"),
+                to_attr="published_albums",
+            )
+        )
+        .order_by("order")
+    )
     return render(request, "portfolio/index.html", {"categories": categories})
 
 
