@@ -190,9 +190,7 @@ class GalleryLanguageTests(TestCase):
         self.assertContains(self.client.get(self.url), "photo-grid")
 
         # The page offers itself as the switch target, since the URL has no prefix.
-        switch = self.client.post(
-            reverse("set_language"), {"language": "en", "next": self.url}
-        )
+        switch = self.client.post(reverse("set_language"), {"language": "en", "next": self.url})
         self.assertEqual(switch["Location"], self.url)
 
         response = self.client.get(self.url)
