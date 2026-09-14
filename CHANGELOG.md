@@ -10,6 +10,51 @@ anything worth saying that a commit subject doesn't capture can be written under
 
 ## [Unreleased]
 
+The configuration production needs, checked on a laptop rather than discovered on a server.
+Still local-only — 0.3.0 changes how the site is configured, not where it runs.
+
+### Added
+
+- `scripts/prodcheck.sh` runs the whole stack the way the VPS will and checks it: Django's
+  deployment checklist, content-hashed static assets actually being served, every reachable
+  page crawled for a 200, the error pages, and the mail relay's sender policy. It puts the
+  development stack back afterwards, whatever the outcome.
+- Custom 400, 403, 404 and 500 pages in Danish and English, styled like the rest of the
+  site. Until now a mistyped address got Django's unstyled English paragraph. 403 and 500
+  earn their place too: 403 is what a form left open too long produces, and it now says so
+  instead of "forbidden".
+- A real outbound mail relay. Postfix, delivering straight to recipients rather than
+  through a sending service, refusing to send as any domain but its own, and publishing no
+  ports — reachable only from inside the Docker network. The reasoning, and what it costs,
+  is in [ADR 0004](docs/decisions/0004-deliver-mail-directly-rather-than-through-a-smarthost.md).
+- `.env.example` now opens with what every reader of a committed example file should be
+  told — that none of its values may be used on a server — and says how to generate each
+  production secret.
+
+### Changed
+
+- Mailpit and Postfix are two compose services selected by `COMPOSE_PROFILES`, rather than
+  one service with a swapped image. They share nothing but the protocol, and the shared
+  `MAIL_RELAY_IMAGE` variable failed in the worst possible way: an `.env` still carrying
+  the old value started Mailpit under the name `postfix` — a relay that accepts every
+  message and delivers none of them, silently. The images are pinned per service now, so a
+  stale value is inert instead of wrong. Both answer to `mail-relay` on the Docker network,
+  so the application's `EMAIL_HOST` never changes.
+- Whether the site is served over HTTPS is now its own setting rather than implied by
+  `DJANGO_DEBUG`. The two are not the same question, and conflating them made the
+  production configuration impossible to run locally: the SSL redirect sent every request
+  to a port nothing listens on, and the session and CSRF cookies, marked Secure, were
+  discarded by the browser — so the admin could not be logged into and no form could be
+  submitted. It defaults to on whenever debug is off, and `check --deploy` still objects if
+  it is off in production.
+- `scripts/dev.sh up` removes containers left over from an older version of the compose
+  file. Renaming a service otherwise leaves the old one running and holding its port.
+
+### Fixed
+
+- The Danish catalogue gained the thirteen strings the new error pages introduced, and a
+  fuzzy match that had rendered "Browse the portfolio" as "Fra portfolioen".
+
 ## [0.2.0] - 2026-09-14
 
 The site has a settled visual identity and has been taken apart and rebuilt from nothing to
@@ -49,11 +94,11 @@ check it. Still local-only: there is no server yet, and nothing here assumes one
   drops the tagline.
 - `README.md` is an operating manual rather than an overview: running it, publishing, client
   galleries, configuration and code, with command tables kept as reference at the end.
-- Ansible is now the way the remote host is managed: an `ansible/` directory with the
-  environment and playbooks for provisioning, deployment, updates and backup/restore, so the
-  server is rebuilt from a clone rather than from memory. Recorded in ADR 0002 and reflected
-  in `architecture.md` §2, §10 and §11; `scripts/verify.sh` already lints it and refuses an
-  unencrypted vault file.
+- Ansible is now how the remote host will be managed, so the server is rebuilt from a clone
+  rather than from memory: recorded in ADR 0002 and reflected in `architecture.md` §2, §10
+  and §11, with `scripts/verify.sh` ready to lint the playbooks and refuse an unencrypted
+  vault file. The `ansible/` directory itself is 0.4.0's work — this entry originally said
+  it had been added, which it had not.
 
 ### Fixed
 

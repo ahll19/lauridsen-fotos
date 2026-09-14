@@ -86,6 +86,12 @@ scripts/verify.sh
 `main` is protected, commit messages follow Conventional Commits, and the git hooks enforce
 both locally. [CLAUDE.md](CLAUDE.md) has the working rules in full.
 
+Production is a different code path, not just a different flag — assets get content-hashed
+names, errors become pages instead of tracebacks, and the security middleware stops being
+lenient. `scripts/prodcheck.sh` runs the stack that way here and checks it, then puts
+development mode back. Worth running before anything that touches templates, static files
+or settings.
+
 The look is `src/static/css/site.css`, with the palette as custom properties at the top —
 changing the accent is two values. Interface strings live in `src/locale/da/`: after touching
 one, run `makemessages`, translate the new entries, then `compilemessages`. Content text is
@@ -124,6 +130,7 @@ The rest:
 | | |
 | --- | --- |
 | `scripts/verify.sh` | Hygiene, secrets, lint, Django checks, migrations, tests, compose validation. Run before a pull request; `--fast` is the subset the pre-commit hook runs. |
+| `scripts/prodcheck.sh` | Runs the stack with production settings and checks it, then restores development mode. |
 | `scripts/install-hooks.sh` | Points git at `.githooks/`. Once per clone. |
 | `scripts/new-branch.sh <type> <slug>` | A correctly named branch off an up-to-date `main`. |
 | `scripts/release.sh` | `prepare <major\|minor\|patch>` then `tag`. |
@@ -147,9 +154,14 @@ docs/            decision records, defect register
 ```
 
 Four containers: nginx, the application, a cron container for the scheduled jobs, and a mail
-relay (Mailpit locally, send-only Postfix in production). All state lives in one
-bind-mounted directory — `./data` here, `/data` in the containers — holding the database,
-the uploaded originals, and a disposable thumbnail cache that backups skip.
+relay. All state lives in one bind-mounted directory — `./data` here, `/data` in the
+containers — holding the database, the uploaded originals, and a disposable thumbnail cache
+that backups skip.
+
+The relay is two services, and `COMPOSE_PROFILES` in `.env` picks one: `dev` gives Mailpit,
+which captures mail and shows it in a browser, and `prod` gives Postfix, which delivers it
+([ADR 0004](docs/decisions/0004-deliver-mail-directly-rather-than-through-a-smarthost.md)).
+Both answer to the name `mail-relay`, so only `EMAIL_PORT` differs between them.
 
 ### When something is wrong
 
