@@ -6,6 +6,11 @@ rendered on every page, a rate limit that turned out to be global, an address re
 from a header the caller controls.
 """
 
+import re
+from pathlib import Path
+
+from django.conf import settings
+from django.template.loader import get_template
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
@@ -50,6 +55,60 @@ class RenderedPageTests(TestCase):
         for path in self.PATHS:
             with self.subTest(path=path):
                 self.assertEqual(self.client.get(path).status_code, 200)
+
+
+class ErrorPageTests(TestCase):
+    """
+    The pages nobody looks at until the day they matter.
+
+    With DJANGO_DEBUG=0 Django stops producing tracebacks and renders these templates
+    instead. Before they existed the site answered a mistyped address with an unstyled
+    English paragraph, on a site that is otherwise Danish by default.
+    """
+
+    def test_404_is_the_sites_own_page(self):
+        response = self.client.get("/ingen-saadan-side/")
+        self.assertEqual(response.status_code, 404)
+        body = response.content.decode()
+        self.assertIn("site-header", body, "not the site's own 404 — Django's fallback")
+        self.assertIn("404", body)
+
+    def test_404_takes_the_language_from_the_url(self):
+        """Danish by default and English under /en/, like every other page."""
+        self.assertContains(
+            self.client.get("/ingen-saadan-side/"), '<html lang="da"', status_code=404
+        )
+        self.assertContains(
+            self.client.get("/en/no-such-page/"), '<html lang="en"', status_code=404
+        )
+
+    def test_404_does_not_invite_indexing(self):
+        self.assertContains(self.client.get("/ingen-saadan-side/"), "noindex", status_code=404)
+
+    def test_500_renders_with_no_context_at_all(self):
+        """
+        django.views.defaults.server_error calls render() with no arguments: no request,
+        no context processors, nothing. A 500 page that needs any of those raises a second
+        exception inside the handler for the first, and the visitor gets Django's bare
+        "A server error occurred" — at the exact moment the site is already failing.
+        """
+        html = get_template("500.html").render()
+        self.assertIn("500", html)
+
+    def test_500_depends_on_nothing_that_could_be_what_broke(self):
+        """
+        The guard behind the test above, stated where someone editing the file will see it.
+
+        {% extends %} would pull in base.html's site settings lookup, and {% static %}
+        would pull in the staticfiles manifest. Either is a plausible cause of the very
+        error being reported, so neither may appear on the page reporting it.
+        """
+        source = (Path(settings.BASE_DIR) / "templates" / "500.html").read_text()
+        # The template's own comment block explains why these tags are absent, so it names
+        # every one of them. Scan the markup that actually renders, not the prose about it.
+        markup = re.sub(r"\{% comment %\}.*?\{% endcomment %\}", "", source, flags=re.S)
+        for tag in ("{% extends", "{% static", "{% include"):
+            self.assertNotIn(tag, markup, f"500.html must not depend on {tag}")
 
 
 @override_settings(TRUSTED_PROXY_COUNT=1)

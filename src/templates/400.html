@@ -1,0 +1,10 @@
+{% extends "error.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Bad request" %} · {{ site_name }}{% endblock %}
+
+{% block code %}400{% endblock %}
+{% block heading %}{% translate "That request couldn't be read" %}{% endblock %}
+{% block message %}
+  {% translate "Something about the request was malformed, so it was refused before it reached the page. Try again from the front page." %}
+{% endblock %}

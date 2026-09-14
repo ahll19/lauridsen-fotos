@@ -1,0 +1,10 @@
+{% extends "error.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Page not found" %} · {{ site_name }}{% endblock %}
+
+{% block code %}404{% endblock %}
+{% block heading %}{% translate "This page doesn't exist" %}{% endblock %}
+{% block message %}
+  {% translate "The address may be mistyped, or the page may have been moved or taken down. The navigation above still works." %}
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% comment %}
+  Shared shape for the error pages that can still render normally — 400, 403 and 404.
+
+  500 deliberately does not extend this. Django renders 500.html with an empty context and
+  no context processors, so anything inheriting from base.html would raise a second
+  exception inside the handler for the first one; see the comment in 500.html.
+{% endcomment %}
+
+{% block meta %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block body_class %}errorpage{% endblock %}
+
+{% block content %}
+<div class="wrap error">
+  <p class="error__code">{% block code %}{% endblock %}</p>
+  <h1 class="error__title">{% block heading %}{% endblock %}</h1>
+  <p class="error__lead">{% block message %}{% endblock %}</p>
+  <div class="error__actions">
+    {% block actions %}
+      <a class="btn btn--primary" href="{% url 'pages:home' %}">{% translate "Go to the front page" %}</a>
+      <a class="btn" href="{% url 'portfolio:index' %}">{% translate "Browse the portfolio" %}</a>
+    {% endblock %}
+  </div>
+</div>
+{% endblock %}

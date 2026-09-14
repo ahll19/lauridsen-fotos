@@ -288,6 +288,22 @@ h2 { font-size: clamp(1.4rem, 3vw, 1.9rem); }
 .gallery-bar__count { margin: 0; color: var(--ink-faint); font-size: 0.85rem; letter-spacing: 0.05em; }
 .lightbox-download { color: #fff; text-decoration: underline; }
 
+/* --- Error pages -------------------------------------------------------- */
+
+/* Short pages, so the body is made a column with the footer pushed down — otherwise the
+   footer rides up under a two-line message and leaves the page looking truncated. */
+.errorpage { display: flex; flex-direction: column; min-height: 100vh; }
+.error {
+  flex: 1; display: flex; flex-direction: column; justify-content: center;
+  text-align: center; padding-block: clamp(3rem, 12vw, 7rem);
+}
+/* Large but faint: the number identifies the page for anyone reporting it, without being
+   the loudest thing on a page whose job is to apologise. */
+.error__code { margin: 0; font-family: var(--display); font-size: clamp(3.5rem, 12vw, 6rem); line-height: 1; color: var(--line); }
+.error__title { margin: 0.25rem 0 0; font-size: clamp(1.5rem, 4vw, 2rem); }
+.error__lead { max-width: 34rem; margin-inline: auto; color: var(--ink-soft); font-size: 0.95rem; }
+.error__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; margin-top: 1rem; }
+
 /* --- Footer ------------------------------------------------------------- */
 
 .site-footer { border-top: 1px solid var(--line); margin-top: auto; background: var(--paper-warm); }
