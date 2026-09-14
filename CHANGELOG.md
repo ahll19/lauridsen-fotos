@@ -10,6 +10,11 @@ anything worth saying that a commit subject doesn't capture can be written under
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-14
+
+The site has a settled visual identity and has been taken apart and rebuilt from nothing to
+check it. Still local-only: there is no server yet, and nothing here assumes one.
+
 ### Added
 
 - The full application, running locally on Docker Compose: nginx, gunicorn + Django, a cron
@@ -36,6 +41,14 @@ anything worth saying that a commit subject doesn't capture can be written under
 - Error states no longer borrow the accent colour. With a green accent, an accent-coloured
   error would sit beside a green success message and stop reading as a warning, so errors
   get their own token — the terracotta the accent used to be.
+- Links that leave the site, and calls to action, open in a new tab: Instagram, Facebook,
+  "skriv til mig" and the pricing enquiry button — which was taking away the prices the
+  visitor was comparing. Browsing still moves the URL you are on; only actions cost a tab.
+- The header no longer holds the top of a phone screen. It was sticky and two lines tall, so
+  it kept that space through every scroll; below 760px it now scrolls away with the page and
+  drops the tagline.
+- `README.md` is an operating manual rather than an overview: running it, publishing, client
+  galleries, configuration and code, with command tables kept as reference at the end.
 - Ansible is now the way the remote host is managed: an `ansible/` directory with the
   environment and playbooks for provisioning, deployment, updates and backup/restore, so the
   server is rebuilt from a clone rather than from memory. Recorded in ADR 0002 and reflected
@@ -44,6 +57,17 @@ anything worth saying that a commit subject doesn't capture can be written under
 
 ### Fixed
 
+- The admin's section headings were in English — "Galleries", "Pages", "Portfolio",
+  "Timeline". Django falls back to the raw app label when an app declares no verbose name,
+  and none of the five did, so the one part of the admin the translation pass could not
+  reach was the first thing you see on the index page.
+- The pricing page's enquiry button did not say which package it was about. The link had
+  carried the package name as a query parameter since it was written; the contact view never
+  read it, so enquiries arrived with no indication of what prompted them.
+- Right-click was not blocked on the largest public images. The deterrent was bound to each
+  image at load, which missed the lightbox — it builds its own overlay outside the photo
+  grid, showing the biggest derivative — and the portfolio index and category pages, which
+  had never opted in. Still a speed bump rather than protection.
 - **The test suite wrote into the live data directory** and ran `rmtree` against it. Tests
   create galleries and then exercise expiry, so the deletion path was pointed at the same
   tree that holds real client photographs, separated only by slugs not colliding. Tests now

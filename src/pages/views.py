@@ -53,7 +53,17 @@ def contact(request):
     """
     settings_obj = ContactSettings.get_solo()
     sent = False
-    form = ContactForm(request.POST or None)
+
+    # The pricing page links here as ?type=<package name> so an enquiry arrives saying
+    # which package prompted it. The link already carried the value; nothing read it.
+    # Trimmed to the field's own length, and only ever an initial value — the visitor can
+    # edit or clear it, and a bound POST ignores it entirely.
+    initial = {}
+    requested_type = request.GET.get("type", "").strip()
+    if requested_type:
+        initial["shoot_type"] = requested_type[:120]
+
+    form = ContactForm(request.POST or None, initial=initial)
 
     if request.method == "POST":
         # Counted per IP, before any work is done. Applied to POST only, so simply

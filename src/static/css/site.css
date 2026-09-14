@@ -311,7 +311,15 @@ h2 { font-size: clamp(1.4rem, 3vw, 1.9rem); }
   .nav-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
   .nav-toggle[aria-expanded="true"] span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
-  .site-header__inner { flex-wrap: wrap; }
+  /* On a phone the header was pinned to the top and two lines tall, so it held a
+     noticeable share of the screen on every scroll. A photography site should be
+     giving that space to the photographs: the bar scrolls away with the page, the
+     tagline drops (it is on the home page anyway), and the rest tightens up. */
+  .site-header { position: static; backdrop-filter: none; }
+  .site-header__inner { flex-wrap: wrap; padding-block: 0.6rem; }
+  .brand__tagline { display: none; }
+  .brand__name { font-size: 1.15rem; }
+
   .nav {
     display: none; width: 100%; flex-direction: column; align-items: flex-start;
     gap: 1rem; padding-block: 1.25rem 0.5rem;

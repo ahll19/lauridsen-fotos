@@ -20,6 +20,24 @@ class ContactFormTests(TestCase):
             "website": "",
         }
 
+    def test_pricing_link_prefills_the_shoot_type(self):
+        """
+        The pricing page links here as ?type=<package>, so an enquiry says which package
+        prompted it. The link existed before the view read it.
+        """
+        response = self.client.get(self.url, {"type": "Bryllup — hel dag"})
+        self.assertContains(response, 'value="Bryllup — hel dag"')
+
+    def test_shoot_type_is_empty_without_the_parameter(self):
+        response = self.client.get(self.url)
+        self.assertNotContains(response, 'name="shoot_type" value=')
+
+    def test_prefill_is_only_an_initial_value(self):
+        """What the visitor actually submits wins over the query string."""
+        data = dict(self.valid, shoot_type="Portræt")
+        self.client.post(self.url + "?type=Bryllup", data)
+        self.assertEqual(ContactSubmission.objects.get().shoot_type, "Portræt")
+
     def test_valid_submission_emails_owner_and_is_recorded(self):
         response = self.client.post(self.url, self.valid)
         self.assertEqual(response.status_code, 200)

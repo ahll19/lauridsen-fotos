@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load i18n thumbnail %}
 
+{% block body_class %}protect-images{% endblock %}
 {% block title %}{{ category.name }} — {{ site_name }}{% endblock %}
 
 {% block content %}

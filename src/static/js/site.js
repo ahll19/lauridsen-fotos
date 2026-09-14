@@ -34,17 +34,33 @@
 
   // --- Copy deterrents -----------------------------------------------------
   // A speed bump, not protection: anyone determined can still read the bytes off the
-  // wire. Scoped to photographs so the rest of the page behaves normally.
-  var protectedImages = document.querySelectorAll(
-    ".protect-images .photo img, .photo--client img, .entry__photos img"
-  );
+  // wire, and the lightbox link points at a real image URL they can open directly.
+  //
+  // Delegated from the document rather than bound to each image at load, because the
+  // lightbox builds its own overlay outside the photo grid. Binding per element left
+  // that overlay — which shows the *largest* public derivative — unprotected, so the
+  // one image worth deterring was the one that was not.
+  function isProtected(node) {
+    if (!node || node.tagName !== "IMG") {
+      return false;
+    }
+    // A page that opts in protects every photograph on it, the lightbox included;
+    // client galleries mark their own images instead.
+    return (
+      document.body.classList.contains("protect-images") ||
+      !!node.closest(".photo--client, .entry__photos")
+    );
+  }
 
-  Array.prototype.forEach.call(protectedImages, function (img) {
-    img.addEventListener("contextmenu", function (event) {
-      event.preventDefault();
-    });
-    img.addEventListener("dragstart", function (event) {
-      event.preventDefault();
-    });
+  ["contextmenu", "dragstart"].forEach(function (type) {
+    document.addEventListener(
+      type,
+      function (event) {
+        if (isProtected(event.target)) {
+          event.preventDefault();
+        }
+      },
+      true
+    );
   });
 })();

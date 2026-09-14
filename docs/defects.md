@@ -12,9 +12,11 @@ written without rediscovering the problem.
 | **B** | Wrong, but the damage is limited to search engines, the owner's own workflow, or polish. |
 | **C** | Worth deciding on. Not obviously wrong, but not obviously right either. |
 
-Two passes are recorded. The first (D1–D22) came from browsing the running site. The second
+Three passes are recorded. The first (D1–D22) came from browsing the running site. The second
 (D23–D33) came from reading every file in the repository afterwards, and found the more
-serious problems — none of them visible from the outside.
+serious problems — none of them visible from the outside. The third (D34–D38) came from
+Anders working through a QA run book against a freshly rebuilt environment before 0.2.0, and
+found what only someone using the site as its owner would notice.
 
 | # | Sev | Defect | Status |
 | --- | --- | --- | --- |
@@ -51,6 +53,62 @@ serious problems — none of them visible from the outside.
 | [D31](#d31) | B | The portfolio index throws away its own prefetch | fixed |
 | [D32](#d32) | B | Non-ASCII download filenames are mangled | fixed |
 | [D33](#d33) | C | The admin changelist can raise on a half-built ZIP | fixed |
+| [D34](#d34) | B | The admin's section headings are in English | fixed |
+| [D35](#d35) | B | The enquiry button does not say which package it is for | fixed |
+| [D36](#d36) | B | Right-click is not blocked on the lightbox image | fixed |
+| [D37](#d37) | B | The header holds the top of a phone screen | fixed |
+| [D38](#d38) | C | Leaving the site costs you the page you were reading | fixed |
+
+---
+
+## Third pass: found by using the site as its owner
+
+Five findings from a teardown-and-rebuild QA walkthrough before 0.2.0 — 40 checks, both
+languages, every page type and all three gallery states. Everything the first two passes
+covered still held; these are the things only someone operating the site would hit.
+
+### D34
+
+**The admin's section headings are in English.** The index page read "Galleries", "Pages",
+"Portfolio", "Timeline" while everything beneath them was Danish. Django falls back to the
+raw app label when an app declares no `verbose_name`, and none of the five apps did — so the
+one part of the admin D27's translation pass could not reach was the first thing you see.
+*Fixed*: each app names itself, translated.
+
+### D35
+
+**The enquiry button does not say which package it is for.** The pricing page has linked to
+the contact form as `?type=<package name>` since it was written, and the view never read the
+parameter, so an enquiry arrived with no indication of what prompted it. *Fixed*: it prefills
+the shoot type as an initial value only — the visitor can edit or clear it, and a submitted
+value always wins. Three tests cover it.
+
+### D36
+
+**Right-click is not blocked on the lightbox image.** The deterrent was bound to each image
+at load, so it covered the grid thumbnails and missed the lightbox, which builds its own
+overlay outside the photo grid — and shows the *largest* public derivative. The one image
+worth deterring was the one left unprotected. The portfolio index and category pages had
+never opted in at all.
+
+*Fixed* by delegating from the document instead. It remains a speed bump rather than
+protection: the lightbox link points at a real image URL, and the bytes are on the wire
+either way. Anders's judgement was that this is proportionate — he is not publishing work he
+is that sensitive about.
+
+### D37
+
+**The header holds the top of a phone screen.** It was `position: sticky` and two lines
+tall, so on a phone it kept a noticeable share of the screen through every scroll — space a
+photography site should be giving to the photographs. *Fixed*: below 760px it scrolls away
+with the page and drops the tagline, which the home page carries anyway.
+
+### D38
+
+**Leaving the site costs you the page you were reading.** Social links and calls to action
+opened in the same tab, including the pricing enquiry button — which took away the prices
+the visitor was in the middle of comparing. *Fixed*: things a visitor *does* open a tab;
+things they *navigate to* do not, so the main navigation is unchanged.
 
 ---
 
@@ -383,6 +441,13 @@ Recorded so they are not re-examined later:
   so a rebuilt image's assets really are served.
 - `.env` and `.env.example` define exactly the same keys.
 - No duplicate `id` attributes; no leaked template syntax anywhere, now enforced by a test.
+- **Every process in the app container runs as uid 1000, PID 1 included** — confirmed with
+  `docker compose top app` and `/proc/1/status`. The QA step that first appeared to fail here
+  was a bad instruction, not a finding: the image is slim and has no `ps`. An `exec` shell
+  still enters as root, because privileges are dropped by the entrypoint rather than by a
+  `USER` line in the Dockerfile.
+- A cold start from `scripts/dev.sh reset` reaches a serving site in about nine seconds, and
+  the seeded environment answers on all its public URLs with no broken assets.
 
 ## Known and already tracked
 

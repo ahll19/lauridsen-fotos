@@ -23,8 +23,10 @@ Versions follow the rules in [CLAUDE.md](CLAUDE.md) and are cut with `scripts/re
 
 ## 0.2.0 — Visual identity
 
-**Done.** Settled on **Atelier Sage** — see
-[ADR 0003](docs/decisions/0003-visual-direction-atelier-sage.md).
+**Done**, released as `v0.2.0`. Settled on **Atelier Sage** — see
+[ADR 0003](docs/decisions/0003-visual-direction-atelier-sage.md). Confirmed by a
+teardown-and-rebuild QA walkthrough of the running site before the release, which found five
+defects, all fixed ([D34–D38](docs/defects.md)).
 
 Four complete directions were built and made switchable on the running site, so they could be
 judged against real photographs rather than mockups. Atelier won; a second round then varied

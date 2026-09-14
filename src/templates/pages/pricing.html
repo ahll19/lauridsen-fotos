@@ -19,7 +19,9 @@
           <ul class="package__list">
             {% for item in package.inclusions %}<li>{{ item }}</li>{% endfor %}
           </ul>
-          <a class="btn btn--primary" href="{% url 'pages:contact' %}?type={{ package.name|urlencode }}">
+          {# Opens a tab so the visitor keeps the prices they were comparing. #}
+          <a class="btn btn--primary" target="_blank" rel="noopener"
+             href="{% url 'pages:contact' %}?type={{ package.name|urlencode }}">
             {% translate "Enquire" %}
           </a>
         </article>
