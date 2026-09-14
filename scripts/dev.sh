@@ -33,6 +33,10 @@ load_env() {
     # shellcheck source=/dev/null
     . ./.env
     set +a
+    # The mail relay lives behind a compose profile, so an .env predating that variable
+    # would start the stack with no relay at all and fail silently at the first sent
+    # message. Local work always wants Mailpit.
+    export COMPOSE_PROFILES="${COMPOSE_PROFILES:-dev}"
 }
 
 urls() {
@@ -51,11 +55,16 @@ EOF
 
 case "${1:-up}" in
     up)
-        require_env
-        echo "==> Building and starting"
-        compose up -d --build
-        echo "==> Waiting for the site to answer"
+        # Before the build, not after: COMPOSE_PROFILES decides which mail relay is
+        # brought up, and compose reads it from the environment at that moment.
         load_env
+        echo "==> Building and starting"
+        # --remove-orphans so the stack converges on the compose file rather than leaving
+        # containers behind from an older version of it. Renaming a service otherwise
+        # leaves the old one running and holding its published port, and the new one
+        # cannot start.
+        compose up -d --build --remove-orphans
+        echo "==> Waiting for the site to answer"
         for _ in $(seq 1 60); do
             if curl -fsS "http://localhost:${HTTP_PORT:-8080}/healthz" >/dev/null 2>&1; then
                 echo "✓ Up"
