@@ -55,6 +55,13 @@ EOF
 
 case "${1:-up}" in
     up)
+        # prodcheck.sh --keep advertises this command as the way back to development, so
+        # clear the production-mode environment it left behind. Otherwise the file sits in
+        # the repository root looking like configuration that matters.
+        if [[ -f .env.prodcheck ]]; then
+            echo "==> Removing .env.prodcheck (returning to development mode)"
+            rm -f .env.prodcheck
+        fi
         # Before the build, not after: COMPOSE_PROFILES decides which mail relay is
         # brought up, and compose reads it from the environment at that moment.
         load_env

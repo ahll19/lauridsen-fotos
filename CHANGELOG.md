@@ -53,7 +53,10 @@ Still local-only — 0.3.0 changes how the site is configured, not where it runs
   submitted. It defaults to on whenever debug is off, and `check --deploy` still objects if
   it is off in production.
 - `scripts/dev.sh up` removes containers left over from an older version of the compose
-  file. Renaming a service otherwise leaves the old one running and holding its port.
+  file. Renaming a service otherwise leaves the old one running and holding its port. It
+  also clears `.env.prodcheck`, since `prodcheck.sh --keep` names it as the way back to
+  development and the file would otherwise sit in the repository root looking like
+  configuration that matters.
 
 ### Fixed
 
