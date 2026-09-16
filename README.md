@@ -74,6 +74,18 @@ scripts/dev.sh down && scripts/dev.sh up
 Quote any value containing a space or an asterisk — `"0 3 * * *"` — because the scripts read
 the file with the shell.
 
+Switching the mail relay means changing three values together:
+
+| | Mailpit, for development | Postfix, as production runs |
+| --- | --- | --- |
+| `COMPOSE_PROFILES` | `dev` | `prod` |
+| `EMAIL_PORT` | `1025` | `587` |
+| `DEFAULT_FROM_EMAIL` | anything | must be on `MAIL_SENDER_DOMAIN`, or the relay refuses it |
+
+`DJANGO_DEBUG` and `STATIC_CACHE_CONTROL` travel together too: `immutable` is only ever a
+true thing to say about a filename carrying a content hash, which is what `DJANGO_DEBUG=0`
+produces. `scripts/prodcheck.sh` sets both correctly, so prefer it to changing them by hand.
+
 ## Working on the code
 
 Branch, verify, then open a pull request:
@@ -131,6 +143,7 @@ The rest:
 | --- | --- |
 | `scripts/verify.sh` | Hygiene, secrets, lint, Django checks, migrations, tests, compose validation. Run before a pull request; `--fast` is the subset the pre-commit hook runs. |
 | `scripts/prodcheck.sh` | Runs the stack with production settings and checks it, then restores development mode. `--keep` leaves it in production mode to look around. |
+| `scripts/crawl.py <url>` | Follows every link and `src` on the running site and reports anything that is not a 200. Used by `prodcheck.sh`; useful on its own after a template change. |
 | `scripts/install-hooks.sh` | Points git at `.githooks/`. Once per clone. |
 | `scripts/new-branch.sh <type> <slug>` | A correctly named branch off an up-to-date `main`. |
 | `scripts/release.sh` | `prepare <major\|minor\|patch>` then `tag`. |
@@ -158,10 +171,10 @@ relay. All state lives in one bind-mounted directory — `./data` here, `/data` 
 containers — holding the database, the uploaded originals, and a disposable thumbnail cache
 that backups skip.
 
-The relay is two services, and `COMPOSE_PROFILES` in `.env` picks one: `dev` gives Mailpit,
-which captures mail and shows it in a browser, and `prod` gives Postfix, which delivers it
+The relay is two services rather than one: Mailpit captures mail and shows it in a browser,
+Postfix delivers it straight to recipients
 ([ADR 0004](docs/decisions/0004-deliver-mail-directly-rather-than-through-a-smarthost.md)).
-Both answer to the name `mail-relay`, so only `EMAIL_PORT` differs between them.
+Both answer to the name `mail-relay`, so the application never knows which is running.
 
 ### When something is wrong
 
@@ -174,6 +187,10 @@ Both answer to the name `mail-relay`, so only `EMAIL_PORT` differs between them.
   code change the usual cause is a pending migration.
 - **A photograph 404s after moving an album** — upload paths are built from the slugs at
   upload time and renaming does not move files. Re-upload them.
+- **Every request redirects to `https://` and nothing answers** — production settings without
+  a certificate in front. Set `DJANGO_SERVE_OVER_HTTPS=0`, or use `prodcheck.sh`, which does.
+- **Mail disappears with no error** — either `COMPOSE_PROFILES` names a relay that is not
+  running, or Postfix is running and `DEFAULT_FROM_EMAIL` is not on `MAIL_SENDER_DOMAIN`.
 
 ### Documents
 
