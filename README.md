@@ -89,8 +89,8 @@ both locally. [CLAUDE.md](CLAUDE.md) has the working rules in full.
 Production is a different code path, not just a different flag — assets get content-hashed
 names, errors become pages instead of tracebacks, and the security middleware stops being
 lenient. `scripts/prodcheck.sh` runs the stack that way here and checks it, then puts
-development mode back. Worth running before anything that touches templates, static files
-or settings.
+development mode back — `--keep` leaves it there if you want to click around. Worth running
+before anything that touches templates, static files or settings.
 
 The look is `src/static/css/site.css`, with the palette as custom properties at the top —
 changing the accent is two values. Interface strings live in `src/locale/da/`: after touching
@@ -130,7 +130,7 @@ The rest:
 | | |
 | --- | --- |
 | `scripts/verify.sh` | Hygiene, secrets, lint, Django checks, migrations, tests, compose validation. Run before a pull request; `--fast` is the subset the pre-commit hook runs. |
-| `scripts/prodcheck.sh` | Runs the stack with production settings and checks it, then restores development mode. |
+| `scripts/prodcheck.sh` | Runs the stack with production settings and checks it, then restores development mode. `--keep` leaves it in production mode to look around. |
 | `scripts/install-hooks.sh` | Points git at `.githooks/`. Once per clone. |
 | `scripts/new-branch.sh <type> <slug>` | A correctly named branch off an up-to-date `main`. |
 | `scripts/release.sh` | `prepare <major\|minor\|patch>` then `tag`. |

@@ -8,13 +8,25 @@
 # lenient. Every one of those has failed for someone on the first deploy. This finds them
 # here instead, where the cost is a restart.
 #
-#   scripts/prodcheck.sh
+#   scripts/prodcheck.sh          check, then put development mode back
+#   scripts/prodcheck.sh --keep   check, and leave the stack in production mode
 #
-# The stack is left running in development mode afterwards, the way it was found.
+# --keep is for looking around by hand: the error pages, the admin over a Secure-cookie
+# configuration, a form submission. `scripts/dev.sh up` returns to development whenever
+# you are done. Without it the stack is left the way it was found, because forgetting a
+# machine is in production mode is how an afternoon disappears wondering why CSS edits do
+# nothing.
 #
 set -euo pipefail
 
 cd "$(git rev-parse --show-toplevel)"
+
+KEEP=0
+case "${1:-}" in
+    --keep) KEEP=1 ;;
+    "")     ;;
+    *)      echo "usage: scripts/prodcheck.sh [--keep]" >&2; exit 2 ;;
+esac
 
 bold=$(tput bold 2>/dev/null || true)
 red=$(tput setaf 1 2>/dev/null || true)
@@ -35,11 +47,18 @@ if [[ ! -f .env ]]; then
     exit 1
 fi
 
-# Whatever happens — a failed check, a Ctrl-C — put the development stack back. Leaving a
-# machine in production mode is how you spend an afternoon wondering why your CSS edits
-# do nothing.
+# Runs on every exit path — a passed run, a failed check, a Ctrl-C — so the machine is never
+# left in production mode by accident. With --keep it says where things stand instead.
 restore() {
     local status=$?
+    if (( KEEP )); then
+        step "Leaving the stack in production mode (--keep)"
+        printf '    The site is at http://localhost:%s in the configuration the VPS will\n' "${HTTP_PORT:-8080}"
+        printf '    use. Static files are content-hashed, errors are pages rather than\n'
+        printf '    tracebacks, and %s holds the settings.\n\n' "$PROD_ENV"
+        printf '    Back to development:  scripts/dev.sh up\n'
+        exit "$status"
+    fi
     step "Restoring the development stack"
     # Unset before anything else. These are exported below and a subshell inherits them,
     # so leaving APP_ENV_FILE pointing at the file just deleted would bring the stack back

@@ -85,6 +85,29 @@ class ErrorPageTests(TestCase):
     def test_404_does_not_invite_indexing(self):
         self.assertContains(self.client.get("/ingen-saadan-side/"), "noindex", status_code=404)
 
+    def test_csrf_failure_renders_the_sites_own_403(self):
+        """
+        The only 403 this site actually produces, and it very nearly went unstyled.
+
+        Django does not route CSRF failures through handler403 — it calls
+        CSRF_FAILURE_VIEW, whose default renders a separate 403_csrf.html with no request
+        and no context processors. So adding 403.html was not enough: the page a visitor
+        met was still Django's bare built-in one.
+        """
+        client = Client(enforce_csrf_checks=True)
+        response = client.post(reverse("pages:contact"), {"name": "Test"})
+
+        self.assertEqual(response.status_code, 403)
+        body = response.content.decode()
+        self.assertIn("site-header", body, "still Django's built-in CSRF page")
+        self.assertIn("403", body)
+
+    def test_csrf_failure_is_in_the_language_of_the_page(self):
+        client = Client(enforce_csrf_checks=True)
+        self.assertContains(
+            client.post("/en/kontakt/", {"name": "Test"}), '<html lang="en"', status_code=403
+        )
+
     def test_500_renders_with_no_context_at_all(self):
         """
         django.views.defaults.server_error calls render() with no arguments: no request,

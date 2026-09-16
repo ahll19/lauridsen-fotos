@@ -18,11 +18,16 @@ Still local-only — 0.3.0 changes how the site is configured, not where it runs
 - `scripts/prodcheck.sh` runs the whole stack the way the VPS will and checks it: Django's
   deployment checklist, content-hashed static assets actually being served, every reachable
   page crawled for a 200, the error pages, and the mail relay's sender policy. It puts the
-  development stack back afterwards, whatever the outcome.
+  development stack back afterwards, whatever the outcome; `--keep` leaves it in production
+  mode instead, for looking around by hand.
 - Custom 400, 403, 404 and 500 pages in Danish and English, styled like the rest of the
   site. Until now a mistyped address got Django's unstyled English paragraph. 403 and 500
   earn their place too: 403 is what a form left open too long produces, and it now says so
   instead of "forbidden".
+- CSRF failures now render the site's 403 page. Django does not route them through
+  `handler403` — it calls `CSRF_FAILURE_VIEW`, whose default renders a separate template
+  with no request and no context processors, so adding `403.html` was not enough on its
+  own and the page a visitor actually met was still the unstyled built-in one.
 - A real outbound mail relay. Postfix, delivering straight to recipients rather than
   through a sending service, refusing to send as any domain but its own, and publishing no
   ports — reachable only from inside the Docker network. The reasoning, and what it costs,

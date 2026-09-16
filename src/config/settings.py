@@ -271,6 +271,11 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+# Django's own CSRF failure page is a separate, unstyled template rendered without a
+# request. Point it at the site's 403 page instead — a stale form is the only way a
+# visitor meets a 403 here, and "forbidden" is not a useful thing to tell them.
+CSRF_FAILURE_VIEW = "core.views.csrf_failure"
+
 X_FRAME_OPTIONS = "DENY"
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "same-origin"
