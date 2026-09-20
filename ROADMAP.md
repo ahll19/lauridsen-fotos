@@ -176,7 +176,11 @@ the domain over HTTPS but is not yet announced to anyone.
       after a `reboot`.
 - [ ] Admin reachable at the secret path, with a superuser created interactively; the path
       comes from the vault, not from the repository in plaintext.
-- [ ] Containers run as non-root, and `/data` is owned by that user only.
+- [ ] The application container runs entirely as uid 1000, PID 1 included, and `/data` is
+      owned by that user only. `app-cron` is the deliberate exception: its PID 1 is the cron
+      daemon, which must be root to drop to `app` for each job — the jobs themselves run
+      unprivileged. Tracked in [docs/defects.md](docs/defects.md) under "Known and already
+      tracked"; `supercronic` would remove it, and that is still undecided.
 - [ ] **Mail actually arrives.** Moved here from 0.3.0, which built the relay but could not
       prove delivery — that depends on the host and its DNS, neither of which existed
       ([ADR 0004](docs/decisions/0004-deliver-mail-directly-rather-than-through-a-smarthost.md)).

@@ -60,6 +60,18 @@ Still local-only — 0.3.0 changes how the site is configured, not where it runs
 
 ### Fixed
 
+- **`scripts/dev.sh reset` and `down` left containers running** ([D39](docs/defects.md)).
+  Compose only acts on services the current file describes and whose profile is active, so a
+  container created under an older service name is walked past — and so is one behind an
+  inactive profile, which is not an "orphan" either and survives `--remove-orphans`. Renaming
+  the mail relay made this visible in both directions. The survivor then held the network
+  open, so a reset left a container attached to the tree it had just deleted. Both commands
+  now enumerate the compose file's own profiles and mean everything.
+- **Private gallery files were not marked `noindex`, though the page around them was**
+  ([D40](docs/defects.md)). Django marks every gallery response, but when the response is an
+  X-Accel-Redirect nginx serves the file itself and forwards only a fixed set of upstream
+  headers. So the marking applied to the gallery page and not to the photographs in it, which
+  is the wrong way round.
 - The Danish catalogue gained the thirteen strings the new error pages introduced, and a
   fuzzy match that had rendered "Browse the portfolio" as "Fra portfolioen".
 

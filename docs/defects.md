@@ -12,11 +12,13 @@ written without rediscovering the problem.
 | **B** | Wrong, but the damage is limited to search engines, the owner's own workflow, or polish. |
 | **C** | Worth deciding on. Not obviously wrong, but not obviously right either. |
 
-Three passes are recorded. The first (D1–D22) came from browsing the running site. The second
+Four passes are recorded. The first (D1–D22) came from browsing the running site. The second
 (D23–D33) came from reading every file in the repository afterwards, and found the more
 serious problems — none of them visible from the outside. The third (D34–D38) came from
 Anders working through a QA run book against a freshly rebuilt environment before 0.2.0, and
-found what only someone using the site as its owner would notice.
+found what only someone using the site as its owner would notice. The fourth (D39–D40) came
+from running the 0.3.0 QA guide as commands rather than reading it, which is the cheapest of
+the four and should probably have been the habit from the start.
 
 | # | Sev | Defect | Status |
 | --- | --- | --- | --- |
@@ -58,6 +60,39 @@ found what only someone using the site as its owner would notice.
 | [D36](#d36) | B | Right-click is not blocked on the lightbox image | fixed |
 | [D37](#d37) | B | The header holds the top of a phone screen | fixed |
 | [D38](#d38) | C | Leaving the site costs you the page you were reading | fixed |
+| [D39](#d39) | B | `dev.sh reset` and `down` leave containers running | fixed |
+| [D40](#d40) | B | Private gallery files are not marked `noindex` | fixed |
+
+---
+
+## Fourth pass: found by running the 0.3.0 QA guide
+
+Two findings, both from mechanically running the checks rather than reading them. D39 came
+from Anders's own run; D40 from proving a check before publishing it.
+
+### D39
+
+**`dev.sh reset` and `dev.sh down` left containers running.** Compose only acts on services
+the current file describes and whose profile is active, so a container created under an older
+service name is walked straight past — and so is one behind an inactive profile, which is not
+an "orphan" either and survives `--remove-orphans`. Renaming the mail relay to `mailpit` and
+`postfix` in 0.3.0 made this visible in both directions: reset on `main` left `mailpit`
+running, reset on the branch left `mail-relay` running. The survivor then held the network
+open, so that could not be removed either, and a "reset" left a container attached to the
+tree it had just deleted. *Fixed*: both commands now enumerate the compose file's profiles
+with `docker compose config --profiles` and pass `--remove-orphans`, so they mean everything.
+
+### D40
+
+**Private gallery files were not marked `noindex`; the page around them was.** Django calls
+`noindex()` on every gallery response, setting `X-Robots-Tag` and `Cache-Control`. When that
+response is an X-Accel-Redirect, nginx takes over and serves the file itself, forwarding only
+a fixed set of upstream headers — `Content-Type`, `Content-Disposition` and `Cache-Control`
+survive, arbitrary ones do not. So the gallery page carried the marking and the photographs
+and ZIP inside it did not, which is the wrong way round: the files are the private part.
+Low severity, since reaching them needs the password and they are linked from nowhere, but it
+was a stated intention that silently did not hold. *Fixed*: the `internal` location restates
+the header.
 
 ---
 

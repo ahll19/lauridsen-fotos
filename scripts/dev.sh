@@ -19,6 +19,18 @@ cd "$(git rev-parse --show-toplevel)"
 
 compose() { docker compose "$@"; }
 
+# For commands that mean "all of it", regardless of which relay is currently selected.
+#
+# Compose only acts on services whose profile is active, and a service behind an inactive
+# profile is not an orphan either — so `down --remove-orphans` walks past it just the same
+# and leaves it running, which then blocks the network from being removed. Asking the
+# compose file which profiles it defines keeps this correct if another is ever added.
+compose_all() {
+    local profiles
+    profiles=$(docker compose config --profiles 2>/dev/null | paste -sd, - || true)
+    COMPOSE_PROFILES="${profiles:-dev}" docker compose "$@"
+}
+
 require_env() {
     if [[ ! -f .env ]]; then
         echo "==> No .env found; copying .env.example"
@@ -86,7 +98,11 @@ case "${1:-up}" in
         ;;
 
     down)
-        compose down
+        load_env
+        # --remove-orphans for the same reason `up` uses it: a container created by an
+        # older version of the compose file is not a service any more, so plain `down`
+        # walks straight past it and leaves it running.
+        compose_all down --remove-orphans
         ;;
 
     reset)
@@ -94,7 +110,13 @@ case "${1:-up}" in
         echo "This deletes ${DATA_DIR:-./data} — the database and every uploaded photograph."
         read -r -p "Type 'yes' to continue: " confirm
         [[ "$confirm" == "yes" ]] || { echo "Cancelled."; exit 1; }
-        compose down -v
+        # --remove-orphans matters most here. Renaming a service — which this project did
+        # when the mail relay became `mailpit` and `postfix` — leaves the old container
+        # running under the old name, and `down` does not touch it because the compose
+        # file no longer describes it. The network then cannot be removed either, because
+        # the survivor is still attached to it. A reset that leaves a container holding
+        # the tree it just deleted is not a reset.
+        compose_all down -v --remove-orphans
         rm -rf "${DATA_DIR:-./data}"
         echo "✓ Reset. Run scripts/dev.sh up to start again."
         ;;
