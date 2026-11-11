@@ -1,0 +1,215 @@
+- name: Check the deploy has what it needs
+  ansible.builtin.assert:
+    that:
+      - site_domain | length > 0
+      - owner_email | length > 0
+      - django_secret_key | length >= 50
+      - django_admin_path | length >= 8
+      - not tls_enabled or letsencrypt_agree_tos
+    fail_msg: >-
+      The inventory is incomplete. site_domain and owner_email must be set, the vault must
+      hold a secret key and an admin path, and with tls_enabled the Let's Encrypt
+      agreement must have been accepted (letsencrypt_agree_tos). See
+      ansible/inventory/production/group_vars/all/vars.yml.
+    quiet: true
+
+# --- Layout ------------------------------------------------------------------
+- name: Create the application's directories
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner | default(0) }}"
+    group: "{{ item.owner | default(0) }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: "{{ app_dir }}", mode: "0755" }
+    - { path: "{{ app_dir }}/releases", mode: "0755" }
+    # Holds the environment file and the DKIM key: nobody but root.
+    - { path: "{{ app_dir }}/shared", mode: "0700" }
+    - { path: "{{ app_dir }}/shared/dkim", mode: "0755" }
+    # The one directory the containers write to, owned by the uid they run as.
+    - { path: "{{ data_dir }}", mode: "0755", owner: "{{ app_uid }}" }
+  loop_control:
+    label: "{{ item.path }}"
+
+# --- The code ----------------------------------------------------------------
+# Shipped from the checkout this playbook runs from, rather than pulled by the server
+# (ADR 0005): the host holds no credential for the repository.
+- name: Resolve the revision to deploy
+  ansible.builtin.command:
+    cmd: git rev-parse --verify "{{ deploy_ref }}^{commit}"
+    chdir: "{{ playbook_dir }}/../.."
+  delegate_to: localhost
+  become: false
+  changed_when: false
+  register: deploy_revision
+
+- name: Name the release after it
+  ansible.builtin.set_fact:
+    release_id: "{{ deploy_revision.stdout[:12] }}"
+    release_dir: "{{ app_dir }}/releases/{{ deploy_revision.stdout[:12] }}"
+
+- name: See whether that release is already on the host
+  ansible.builtin.stat:
+    path: "{{ release_dir }}/REVISION"
+  register: release_marker
+
+- name: Ship the release
+  when: not release_marker.stat.exists
+  block:
+    - name: Make somewhere to pack it
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: .release
+      delegate_to: localhost
+      become: false
+      register: release_tmp
+
+    # The git module clones; this packs a revision of the checkout already here.
+    - name: Pack the committed tree # noqa: command-instead-of-module
+      ansible.builtin.command:
+        cmd: git archive --format=tar.gz -o "{{ release_tmp.path }}/release.tar.gz" "{{ deploy_revision.stdout }}"
+        chdir: "{{ playbook_dir }}/../.."
+      delegate_to: localhost
+      become: false
+      changed_when: true
+
+    - name: Create the release directory
+      ansible.builtin.file:
+        path: "{{ release_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Unpack it on the host
+      ansible.builtin.unarchive:
+        src: "{{ release_tmp.path }}/release.tar.gz"
+        dest: "{{ release_dir }}"
+
+    # Written last, so a release interrupted halfway is shipped again rather than trusted.
+    - name: Mark the release complete
+      ansible.builtin.copy:
+        dest: "{{ release_dir }}/REVISION"
+        content: "{{ deploy_revision.stdout }}\n"
+        mode: "0644"
+  always:
+    - name: Remove the local copy
+      ansible.builtin.file:
+        path: "{{ release_tmp.path }}"
+        state: absent
+      delegate_to: localhost
+      become: false
+      when: release_tmp.path is defined
+
+# --- Configuration and secrets -----------------------------------------------
+- name: Render the environment file
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ app_dir }}/shared/.env"
+    mode: "0600"
+  no_log: true
+
+- name: Link it into the release
+  ansible.builtin.file:
+    src: "{{ app_dir }}/shared/.env"
+    dest: "{{ release_dir }}/.env"
+    state: link
+
+# World-readable inside a directory only root can enter: the relay's signer runs under
+# its own uid inside the container and has to be able to read it.
+- name: Install the DKIM signing key
+  ansible.builtin.copy:
+    dest: "{{ app_dir }}/shared/dkim/{{ mail_sender_domain }}.private"
+    content: "{{ dkim_private_key }}"
+    mode: "0644"
+  no_log: true
+  when: dkim_private_key | length > 0
+
+- name: Point "current" at the release
+  ansible.builtin.file:
+    src: "{{ release_dir }}"
+    dest: "{{ app_dir }}/current"
+    state: link
+
+# --- Build and start ---------------------------------------------------------
+- name: Note the image that is running now
+  ansible.builtin.command:
+    cmd: docker image ls -q --no-trunc --filter reference={{ compose_project }}-app*
+  changed_when: false
+  register: images_before
+
+# Without attestations, because they embed the time of the build: with them a rebuild of
+# identical sources gets a new image id every time, and "did anything change" — which the
+# next task answers by comparing ids — would always be yes.
+- name: Build the image on the host
+  ansible.builtin.command:
+    cmd: docker compose build {{ app_pull_images | ternary('--pull', '') }}
+    chdir: "{{ release_dir }}"
+  environment:
+    BUILDX_NO_DEFAULT_ATTESTATIONS: "1"
+  changed_when: false
+
+- name: See whether the build produced a new image
+  ansible.builtin.command:
+    cmd: docker image ls -q --no-trunc --filter reference={{ compose_project }}-app*
+  register: images_after
+  # Sorted: the listing comes back in no particular order.
+  changed_when: images_after.stdout_lines | sort != images_before.stdout_lines | sort
+
+# The entrypoint applies migrations before gunicorn starts, so a container that reports
+# healthy has already migrated.
+- name: Start the stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ release_dir }}"
+    state: present
+    build: never
+    pull: "{{ app_pull_images | ternary('always', 'missing') }}"
+    remove_orphans: true
+    wait: true
+    wait_timeout: 300
+
+# --- Prove it ----------------------------------------------------------------
+- name: Confirm no migration was left unapplied
+  ansible.builtin.command:
+    cmd: docker compose exec -T app python manage.py migrate --check
+    chdir: "{{ release_dir }}"
+  changed_when: false
+
+# Asked the way a visitor would ask it — through nginx, by name, over HTTPS — because a
+# deploy that quietly leaves the site down is worse than one that fails.
+- name: Wait for the site to answer /healthz
+  ansible.builtin.command:
+    argv: >-
+      {{
+        ['curl', '--fail', '--silent', '--show-error', '--max-time', '10',
+         '--resolve', site_domain ~ ':' ~ (tls_enabled | ternary(https_port, http_port)) ~ ':127.0.0.1']
+        + ((tls_enabled and not healthcheck_verify_tls) | ternary(['--insecure'], []))
+        + [(tls_enabled | ternary('https', 'http')) ~ '://' ~ site_domain ~ ':'
+           ~ (tls_enabled | ternary(https_port, http_port)) ~ '/healthz']
+      }}
+  register: healthz
+  until: healthz.rc == 0 and healthz.stdout == 'ok'
+  retries: "{{ healthcheck_retries }}"
+  delay: "{{ healthcheck_delay }}"
+  changed_when: false
+
+# --- Tidy up -----------------------------------------------------------------
+- name: List the releases on the host
+  ansible.builtin.find:
+    paths: "{{ app_dir }}/releases"
+    file_type: directory
+  register: releases
+
+- name: Remove all but the newest few
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: >-
+    {{ (releases.files | rejectattr('path', 'equalto', release_dir) | sort(attribute='mtime', reverse=true))[app_keep_releases - 1 :] }}
+  loop_control:
+    label: "{{ item.path | basename }}"
+
+- name: Remove images no release uses any more
+  ansible.builtin.command:
+    cmd: docker image prune --force
+  register: image_prune
+  changed_when: "'Total reclaimed space: 0B' not in image_prune.stdout"

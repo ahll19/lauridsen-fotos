@@ -27,6 +27,18 @@ of them.
 Danish is the default and has no URL prefix; English lives under `/en/`. The URL decides the
 language, so a link opens in the language you sent it in.
 
+## Running it for real
+
+The server is built and deployed by playbooks in `ansible/`, never by hand.
+[docs/go-live.md](docs/go-live.md) is the whole procedure; day to day it is one command:
+
+```bash
+scripts/ansible.sh deploy
+```
+
+`scripts/vm.sh up` starts a throwaway Debian machine to rehearse any playbook against
+first: `scripts/ansible.sh -I disposable deploy`.
+
 ## Publishing
 
 Everything is managed in the admin. You never edit code to publish.
@@ -144,6 +156,9 @@ The rest:
 | `scripts/verify.sh` | Hygiene, secrets, lint, Django checks, migrations, tests, compose validation. Run before a pull request; `--fast` is the subset the pre-commit hook runs. |
 | `scripts/prodcheck.sh` | Runs the stack with production settings and checks it, then restores development mode. `--keep` leaves it in production mode to look around. |
 | `scripts/crawl.py <url>` | Follows every link and `src` on the running site and reports anything that is not a 200. Used by `prodcheck.sh`; useful on its own after a template change. |
+| `scripts/ansible.sh <playbook>` | `provision`, `deploy`, `update`, `backup`, `restore`. `-I disposable` targets the rehearsal machine. |
+| `scripts/vault.sh` | `init`, `edit`, `view` the production secrets; `public` prints what goes in DNS and on the NAS. |
+| `scripts/vm.sh` | `up`, `rebuild`, `ssh`, `down`: disposable machines for rehearsing playbooks. Needs Lima. |
 | `scripts/install-hooks.sh` | Points git at `.githooks/`. Once per clone. |
 | `scripts/new-branch.sh <type> <slug>` | A correctly named branch off an up-to-date `main`. |
 | `scripts/release.sh` | `prepare <major\|minor\|patch>` then `tag`. |

@@ -1,0 +1,41 @@
+- name: Install ufw
+  ansible.builtin.apt:
+    name: ufw
+    state: present
+
+# Before the firewall is switched on, or enabling it would cut off the connection doing so.
+- name: Allow SSH from anywhere
+  community.general.ufw:
+    rule: allow
+    port: "{{ ssh_port | string }}"
+    proto: tcp
+  when: ssh_allowed_cidrs | length == 0
+
+- name: Allow SSH from the named networks only
+  community.general.ufw:
+    rule: allow
+    port: "{{ ssh_port | string }}"
+    proto: tcp
+    from_ip: "{{ item }}"
+  loop: "{{ ssh_allowed_cidrs }}"
+
+- name: Allow the reverse proxy's ports
+  community.general.ufw:
+    rule: allow
+    port: "{{ item | string }}"
+    proto: tcp
+  loop: "{{ firewall_public_tcp_ports }}"
+
+- name: Deny everything else inbound
+  community.general.ufw:
+    direction: incoming
+    default: deny
+
+- name: Allow outbound
+  community.general.ufw:
+    direction: outgoing
+    default: allow
+
+- name: Switch the firewall on
+  community.general.ufw:
+    state: enabled

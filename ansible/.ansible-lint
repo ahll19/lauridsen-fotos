@@ -1,0 +1,10 @@
+# The variables that describe the host — operator_user, data_dir, site_domain — are shared
+# between roles on purpose: one name, set once in the inventory, read wherever it matters.
+# Prefixing each with its role's name would mean setting the same fact several times.
+skip_list:
+  - var-naming[no-role-prefix]
+
+exclude_paths:
+  - .collections/
+  - lima/
+  - inventory/disposable/

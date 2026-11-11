@@ -1,0 +1,42 @@
+- name: Create the keyring directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+
+- name: Add Docker's package repository
+  ansible.builtin.deb822_repository:
+    name: docker
+    types: deb
+    uris: https://download.docker.com/linux/debian
+    suites: "{{ ansible_facts.distribution_release }}"
+    components: stable
+    architectures: "{{ docker_arch_map[ansible_facts.architecture] }}"
+    signed_by: https://download.docker.com/linux/debian/gpg
+  register: docker_repository
+
+- name: Install Docker Engine and the Compose plugin
+  ansible.builtin.apt:
+    name: "{{ docker_packages }}"
+    state: present
+    update_cache: "{{ docker_repository is changed }}"
+
+- name: Limit the size of container logs
+  ansible.builtin.copy:
+    dest: /etc/docker/daemon.json
+    content: "{{ docker_daemon_config | to_nice_json }}\n"
+    mode: "0644"
+  vars:
+    docker_daemon_config:
+      log-driver: json-file
+      log-opts:
+        max-size: "{{ docker_log_max_size }}"
+        max-file: "{{ docker_log_max_files | string }}"
+  notify: Restart docker
+
+# Enabled, so the stack comes back by itself after a reboot.
+- name: Start Docker, now and at boot
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true

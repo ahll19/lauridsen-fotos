@@ -1,0 +1,8 @@
+ssh_port: 22
+# Networks allowed to reach SSH. Empty means anywhere; keys are the real protection, and a
+# home connection's address changes.
+ssh_allowed_cidrs: []
+# What the world may reach. The reverse proxy, and nothing else.
+firewall_public_tcp_ports:
+  - 80
+  - 443

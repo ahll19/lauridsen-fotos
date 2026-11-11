@@ -1,0 +1,27 @@
+# Rehearsal only (scripts/vm.sh). Never part of a real deployment.
+#
+# Let's Encrypt cannot issue for a domain that does not exist, so the rehearsal runs
+# Pebble — Let's Encrypt's own small test server — inside the stack and points certbot at
+# it. Pebble validates the HTTP-01 challenge for real, by fetching it from the reverse
+# proxy, which is why the proxy is given the rehearsal's hostnames on the Docker network.
+# That is the whole trick: certbot, nginx and the reload are exactly what production runs.
+
+services:
+  pebble:
+    image: ghcr.io/letsencrypt/pebble:latest
+    restart: unless-stopped
+    command: ["-config", "/config/pebble-config.json"]
+    environment:
+      # Pebble normally rejects a share of requests on purpose and adds random delays, to
+      # exercise ACME clients. Not what is being tested here.
+      PEBBLE_WFE_NONCEREJECT: "0"
+      PEBBLE_VA_NOSLEEP: "1"
+    volumes:
+      - ./ansible/lima/pebble-config.json:/config/pebble-config.json:ro
+
+  reverse-proxy:
+    networks:
+      default:
+        aliases:
+          - ${REHEARSAL_DOMAIN:-fotos.test}
+          - www.${REHEARSAL_DOMAIN:-fotos.test}

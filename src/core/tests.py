@@ -7,6 +7,7 @@ from a header the caller controls.
 """
 
 import re
+from io import StringIO
 from pathlib import Path
 
 from django.conf import settings
@@ -321,3 +322,47 @@ class ContentSecurityPolicyTests(TestCase):
     @override_settings(CONTENT_SECURITY_POLICY="")
     def test_an_empty_policy_sends_nothing(self):
         self.assertNotIn("Content-Security-Policy", self.client.get("/"))
+
+
+@override_settings(SECURE_SSL_REDIRECT=True, SECURE_REDIRECT_EXEMPT=[r"^healthz$"])
+class HealthCheckOverHttpTests(TestCase):
+    """
+    The container health check reaches gunicorn over plain HTTP.
+
+    Found by the first rehearsal deploy: with HTTPS enforced the probe was redirected to
+    a port that speaks no TLS, the container never became healthy, and the reverse proxy
+    waiting on it never started. Nothing local could show it, because running production
+    mode on a laptop means turning HTTPS off.
+    """
+
+    def test_health_check_is_not_redirected(self):
+        self.assertEqual(self.client.get("/healthz").status_code, 200)
+
+    def test_everything_else_still_is(self):
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 301)
+        self.assertTrue(response["Location"].startswith("https://"))
+
+    def test_the_exemption_is_what_production_settings_carry(self):
+        # The override above mirrors settings.py; this pins the two together.
+        source = (Path(settings.BASE_DIR) / "config" / "settings.py").read_text()
+        self.assertIn('SECURE_REDIRECT_EXEMPT = [r"^healthz$"]', source)
+
+
+class ErrorReportTests(TestCase):
+    def test_deliberate_error_is_mailed_to_the_owner(self):
+        from django.core import mail
+        from django.core.management import call_command
+
+        call_command("test_error_report", stdout=StringIO())
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [settings.OWNER_EMAIL])
+        self.assertIn("deliberate-test-error", mail.outbox[0].subject)
+
+    @override_settings(DEBUG=True)
+    def test_refuses_where_nothing_would_be_sent(self):
+        from django.core.management import call_command
+        from django.core.management.base import CommandError
+
+        with self.assertRaises(CommandError):
+            call_command("test_error_report", stdout=StringIO())

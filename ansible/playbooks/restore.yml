@@ -1,0 +1,89 @@
+# Bring a backup back onto a host: the database and every photograph, then the site.
+#
+# Run against a host that provision.yml has already prepared. It refuses to write over an
+# existing database unless told to, because the usual reason to run this is a host that
+# has lost its data, and the unusual one is a mistake.
+#
+#   scripts/ansible.sh restore                                  the newest copy
+#   scripts/ansible.sh restore -e restore_snapshot=2026-11-10T021503Z
+#   scripts/ansible.sh restore -e restore_overwrite=true
+- name: Restore /data from the backup target
+  hosts: site
+  become: true
+  vars:
+    restore_snapshot: latest
+    restore_overwrite: false
+  pre_tasks:
+    - name: Load the backup settings
+      ansible.builtin.include_role:
+        name: backup
+        public: true
+
+    - name: Look for a database already on the host
+      ansible.builtin.stat:
+        path: "{{ data_dir }}/db.sqlite3"
+      register: existing_database
+
+    - name: Refuse to overwrite it by accident
+      ansible.builtin.assert:
+        that: not existing_database.stat.exists or (restore_overwrite | bool)
+        fail_msg: >-
+          {{ data_dir }}/db.sqlite3 already exists. Restoring would replace the site's
+          current data with the backup's. Pass -e restore_overwrite=true if that is what
+          you mean.
+
+    - name: See whether the stack is running
+      ansible.builtin.stat:
+        path: "{{ app_dir | default('/opt/lauridsen-fotos') }}/current/docker-compose.yml"
+      register: current_release
+
+    - name: Stop it, so nothing writes while the data is replaced
+      ansible.builtin.command:
+        cmd: docker compose stop
+        chdir: "{{ app_dir | default('/opt/lauridsen-fotos') }}/current"
+      changed_when: true
+      when: current_release.stat.exists
+
+    - name: Copy the backup onto the host
+      ansible.builtin.command:
+        argv:
+          - rsync
+          - --archive
+          - --delete
+          - --numeric-ids
+          - --exclude=/cache/
+          - -e
+          - >-
+            ssh -p {{ backup_target_port }} -i {{ backup_key_path }} -o BatchMode=yes
+            -o IdentitiesOnly=yes -o UserKnownHostsFile={{ backup_known_hosts_path }}
+            -o StrictHostKeyChecking={{ (backup_target_host_key | length > 0) | ternary('yes', 'accept-new') }}
+          - "{{ backup_target_user }}@{{ backup_target_host }}:{{ backup_target_path }}/{{ restore_snapshot }}/"
+          - "{{ data_dir }}/"
+      changed_when: true
+
+    # The backup carries a consistent snapshot rather than the live file (roles/backup).
+    - name: Put the database snapshot back in place
+      ansible.builtin.copy:
+        src: "{{ data_dir }}/backup/db.sqlite3"
+        dest: "{{ data_dir }}/db.sqlite3"
+        remote_src: true
+        mode: "0644"
+
+    - name: Remove write-ahead files left from before the restore
+      ansible.builtin.file:
+        path: "{{ data_dir }}/{{ item }}"
+        state: absent
+      loop:
+        - db.sqlite3-wal
+        - db.sqlite3-shm
+
+    - name: Give the data back to the application's account
+      ansible.builtin.file:
+        path: "{{ data_dir }}"
+        state: directory
+        recurse: true
+        owner: "{{ app_uid }}"
+        group: "{{ app_uid }}"
+  roles:
+    # Starts the stack again and fails unless the site answers.
+    - app

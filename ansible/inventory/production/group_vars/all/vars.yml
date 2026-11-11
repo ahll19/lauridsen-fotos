@@ -1,0 +1,41 @@
+# What is specific to the real host. Everything else has a default in a role's
+# defaults/main.yml, and can be overridden here.
+#
+# Secrets are not in this file. They live in vault.yml beside it, encrypted, and are
+# referred to from here by name.
+
+# --- Who and where -----------------------------------------------------------
+site_domain: lauridsen-fotos.dk
+site_alternate_domains:
+  - www.lauridsen-fotos.dk
+
+# The key that may log in. By default, the public half of the key on the machine running
+# the playbooks.
+operator_ssh_public_keys:
+  - "{{ lookup('ansible.builtin.file', lookup('ansible.builtin.env', 'HOME') + '/.ssh/id_ed25519.pub') }}"
+
+# --- Certificates ------------------------------------------------------------
+# Let's Encrypt sends expiry warnings here. Setting agree_tos to true is you accepting
+# their subscriber agreement (https://letsencrypt.org/repository/); the deploy refuses to
+# request a certificate until you have.
+letsencrypt_email: ""
+letsencrypt_agree_tos: false
+
+# --- Mail --------------------------------------------------------------------
+# A mailbox you read, not on the site's own domain: contact-form messages and error
+# reports go here.
+owner_email: ""
+
+# --- Backups -----------------------------------------------------------------
+# The home NAS, as the VPS reaches it over SSH. Empty until there is one to point at;
+# backup.yml refuses to install a job that has nowhere to send to.
+backup_target_host: ""
+backup_target_user: backup
+backup_target_port: 22
+backup_target_path: /volume1/backups/lauridsen-fotos
+
+# --- Secrets, by reference ---------------------------------------------------
+django_secret_key: "{{ vault_django_secret_key }}"
+django_admin_path: "{{ vault_django_admin_path }}"
+dkim_private_key: "{{ vault_dkim_private_key }}"
+backup_ssh_private_key: "{{ vault_backup_ssh_private_key }}"

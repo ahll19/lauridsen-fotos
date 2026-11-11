@@ -1,0 +1,62 @@
+# Everything the site serves, shared by the plain-HTTP and the HTTPS server blocks so the
+# two cannot drift apart. Rendered into conf.d/snippets/, which nginx does not load by
+# itself — only a server block that includes it does.
+
+client_max_body_size ${MAX_UPLOAD_SIZE};
+
+# Photographs are large; give slow uploads room before the proxy gives up.
+proxy_read_timeout 300s;
+proxy_send_timeout 300s;
+
+# --- Static assets: shipped with the image, never user-written ---------
+# The policy comes from STATIC_CACHE_CONTROL because it is only safe to promise a
+# browser that a URL will never change when the filename carries a content hash —
+# true under ManifestStaticFilesStorage with DJANGO_DEBUG=0, false in development,
+# where "immutable" leaves an edited stylesheet uncollectable for a month. One
+# `add_header` rather than `expires` plus `add_header`, which emit two conflicting
+# Cache-Control headers.
+location /static/ {
+    alias /srv/static/;
+    access_log off;
+    add_header Cache-Control "${STATIC_CACHE_CONTROL}";
+}
+
+# --- Public media: portfolio and timeline derivatives ------------------
+# Only the thumbnail cache is exposed. Originals live under /data/media and are
+# deliberately not reachable here, which is what stops full-resolution files being
+# served publicly.
+location /cache/thumbnails/ {
+    alias /data/cache/thumbnails/;
+    access_log off;
+    expires 30d;
+    add_header Cache-Control "public";
+}
+
+# --- Private files: client gallery photos and ZIPs ---------------------
+# `internal` makes this location unreachable from outside; only an X-Accel-Redirect
+# header emitted by the application can route a request into it. Django re-checks the
+# gallery cookie before emitting that header (technical_design.md §8).
+location /_protected/ {
+    internal;
+    alias /data/;
+
+    # Re-stated here because nginx does not forward it. When the application answers
+    # with X-Accel-Redirect, nginx takes over and serves the file itself, keeping only
+    # a fixed set of upstream headers — Content-Type, Content-Disposition and
+    # Cache-Control survive, arbitrary ones like this do not. Django marks every
+    # gallery response `noindex` (galleries/serving.py), and without this line that
+    # marking silently applied to the gallery page but not to the photographs on it.
+    add_header X-Robots-Tag "noindex, nofollow, noarchive" always;
+}
+
+location / {
+    proxy_pass http://app_server;
+    # $http_host, not $host: $host drops the port, so Django built every absolute URL
+    # it generates — sitemap entries, robots.txt, password-reset links — without it,
+    # pointing them at a port nothing listens on whenever the site is not on 80/443.
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_redirect off;
+}

@@ -326,6 +326,11 @@ if SERVE_OVER_HTTPS:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_SSL_REDIRECT = env_bool("DJANGO_SECURE_SSL_REDIRECT", True)
+    # The container's health check asks gunicorn directly, over plain HTTP, from inside
+    # the container. Redirected to HTTPS it has nowhere to go — gunicorn speaks no TLS —
+    # so the container never reports healthy, and nginx, which waits for it, never starts.
+    # Visitors are unaffected: nginx redirects port 80 itself before Django is asked.
+    SECURE_REDIRECT_EXEMPT = [r"^healthz$"]
     SECURE_HSTS_SECONDS = env_int("DJANGO_HSTS_SECONDS", 31536000)
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True

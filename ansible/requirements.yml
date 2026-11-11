@@ -1,0 +1,10 @@
+# Pinned, so a fresh machine resolves the same versions. Bumped deliberately during a
+# maintenance pass, like the container images. scripts/ansible.sh installs these into
+# ansible/.collections.
+collections:
+  - name: community.docker
+    version: 5.4.0
+  - name: community.general
+    version: 14.0.1
+  - name: ansible.posix
+    version: 2.2.2

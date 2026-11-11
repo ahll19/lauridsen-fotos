@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+#
+# Managed by Ansible (roles/backup). Nightly copy of {{ data_dir }} to the NAS.
+#
+# Each night gets its own dated directory on the NAS. Files that did not change are hard
+# links to the previous night's copy, so fourteen copies cost roughly one copy plus what
+# changed — but each is a complete tree that can be restored by itself.
+set -euo pipefail
+
+DATA={{ data_dir | quote }}
+TARGET={{ (backup_target_user ~ '@' ~ backup_target_host) | quote }}
+DEST={{ backup_target_path | quote }}
+KEEP={{ backup_retention | int }}
+SSH=(ssh -p {{ backup_target_port | int }} -i {{ backup_key_path | quote }}
+     -o BatchMode=yes -o IdentitiesOnly=yes
+     -o UserKnownHostsFile={{ backup_known_hosts_path | quote }}
+     -o StrictHostKeyChecking={{ backup_target_host_key | length > 0 and 'yes' or 'accept-new' }})
+
+stamp=$(date -u +%Y-%m-%dT%H%M%SZ)
+log() { printf '[backup] %s\n' "$*"; }
+
+# A copy of a SQLite file taken while it is being written to can be unusable, and the
+# write-ahead log makes that likely rather than theoretical. SQLite's own backup API takes
+# a consistent snapshot without stopping the site; that snapshot is what gets copied.
+log "snapshotting the database"
+docker compose -p {{ compose_project | quote }} exec -T app python - <<'PY'
+import os, sqlite3
+os.makedirs("/data/backup", exist_ok=True)
+source = sqlite3.connect("/data/db.sqlite3")
+target = sqlite3.connect("/data/backup/db.sqlite3.new")
+with target:
+    source.backup(target)
+target.close(); source.close()
+os.replace("/data/backup/db.sqlite3.new", "/data/backup/db.sqlite3")
+PY
+
+log "copying to ${TARGET}:${DEST}/${stamp}"
+"${SSH[@]}" "$TARGET" "mkdir -p '${DEST}'"
+rsync --archive --delete --numeric-ids \
+{% for pattern in backup_excludes %}
+    --exclude={{ pattern | quote }} \
+{% endfor %}
+    --link-dest="../latest" \
+    -e "${SSH[*]}" \
+    "${DATA}/" "${TARGET}:${DEST}/${stamp}.partial/"
+
+# Renamed only once complete, so an interrupted run never looks like a good copy; then
+# everything but the newest $KEEP is removed. `tail -n +N` rather than `head -n -N`,
+# because the NAS's tools are BusyBox and only the first is portable.
+log "rotating: keeping the newest ${KEEP}"
+"${SSH[@]}" "$TARGET" "
+    set -e
+    cd '${DEST}'
+    mv '${stamp}.partial' '${stamp}'
+    ln -sfn '${stamp}' latest
+    ls -1d 20*Z | sort -r | tail -n +$((KEEP + 1)) | while read -r old; do rm -rf \"\$old\"; done
+"
+log "done"
