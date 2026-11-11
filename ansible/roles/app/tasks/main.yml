@@ -152,7 +152,8 @@
   ansible.builtin.command:
     cmd: docker image ls -q --no-trunc --filter reference={{ compose_project }}-app*
   register: images_after
-  changed_when: images_after.stdout != images_before.stdout
+  # Sorted: the listing comes back in no particular order.
+  changed_when: images_after.stdout_lines | sort != images_before.stdout_lines | sort
 
 # The entrypoint applies migrations before gunicorn starts, so a container that reports
 # healthy has already migrated.

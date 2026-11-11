@@ -87,6 +87,20 @@ case "$ROLE" in
         chown "$APP_USER:$APP_USER" /app/cron.env
         chmod 600 /app/cron.env
 
+        # Somewhere the jobs can write that ends up in `docker compose logs`. cron gives a
+        # job no terminal and mails its output nowhere useful, and the obvious target —
+        # this container's own stdout, /proc/1/fd/1 — belongs to root, while the jobs run
+        # as the unprivileged user. They redirected there anyway, the shell could not open
+        # it, and so it never ran the command at all: every scheduled job failed, silently,
+        # on every tick. A named pipe owned by that user, drained here into stdout, is the
+        # same idea made to work.
+        export CRON_OUTPUT=/run/cron-output
+        rm -f "$CRON_OUTPUT"
+        mkfifo -m 0600 "$CRON_OUTPUT"
+        chown "$APP_USER:$APP_USER" "$CRON_OUTPUT"
+        # Reopened in a loop: a reader sees end-of-file whenever the last writer closes.
+        ( while true; do cat "$CRON_OUTPUT"; done ) &
+
         log "Rendering schedules"
         log "  expire-galleries: ${CRON_SCHEDULE_EXPIRE_GALLERIES:-0 3 * * *}"
         log "  purge-tombstones: ${CRON_SCHEDULE_PURGE_TOMBSTONES:-30 3 * * *}"

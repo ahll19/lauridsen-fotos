@@ -2,9 +2,13 @@
 # /etc/cron.d/app-jobs inside a running container; change the schedule in .env instead.
 #
 # Format: minute hour day-of-month month day-of-week user command
+#
+# Output goes to ${CRON_OUTPUT}, a pipe the entrypoint drains into the container's log.
+# Not to /proc/1/fd/1: each job runs as the unprivileged user, which may not open root's
+# stdout, and a redirect the shell cannot open means the command is never started.
 
 SHELL=/bin/bash
 PATH=/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin
 
-${CRON_SCHEDULE_EXPIRE_GALLERIES} ${APP_USER} set -a; . /app/cron.env; cd /app/src && python manage.py expire_galleries >> /proc/1/fd/1 2>&1
-${CRON_SCHEDULE_PURGE_TOMBSTONES} ${APP_USER} set -a; . /app/cron.env; cd /app/src && python manage.py purge_tombstoned_galleries >> /proc/1/fd/1 2>&1
+${CRON_SCHEDULE_EXPIRE_GALLERIES} ${APP_USER} set -a; . /app/cron.env; cd /app/src && python manage.py expire_galleries >> ${CRON_OUTPUT} 2>&1
+${CRON_SCHEDULE_PURGE_TOMBSTONES} ${APP_USER} set -a; . /app/cron.env; cd /app/src && python manage.py purge_tombstoned_galleries >> ${CRON_OUTPUT} 2>&1

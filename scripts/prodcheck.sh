@@ -256,6 +256,36 @@ else
     sed 's/^/        /' <<<"$output" | tail -5
 fi
 
+# --- Scheduled jobs ----------------------------------------------------------
+# Run the way cron runs them: the exact command line from the rendered crontab, as the
+# unprivileged user, with nothing but the environment cron provides. Running the
+# management command by hand proves the command works and says nothing about the job —
+# for the whole of this project's life the job line redirected to a file only root could
+# open, so the shell never started the command, and no gallery ever expired on schedule
+# (D41). Both commands only act on what is already due, so running them here is safe.
+step "Scheduled jobs"
+
+for job in expire_galleries purge_tombstoned_galleries; do
+    line=$(docker compose exec -T app-cron sh -c "grep ' $job ' /etc/cron.d/app-jobs | cut -d' ' -f7-" || true)
+    if [[ -z "$line" ]]; then
+        fail "$job is not in the rendered crontab"
+        continue
+    fi
+    since=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+    if docker compose exec -T -u app app-cron env -i bash -c "$line" >/dev/null 2>&1; then
+        # The job's output has to arrive in the container log, or a failure on some
+        # future night would be as invisible as this one was.
+        sleep 2
+        if docker compose logs --since "$since" app-cron 2>/dev/null | grep -qE 'expir|galler|tombstone|purg'; then
+            ok "$job runs as cron runs it, and its output reaches the log"
+        else
+            fail "$job ran, but nothing reached the container log"
+        fi
+    else
+        fail "$job fails when run the way cron runs it"
+    fi
+done
+
 # --- Mail --------------------------------------------------------------------
 step "Mail relay"
 

@@ -55,6 +55,12 @@ if [[ ! -f .collections/.installed || requirements.yml -nt .collections/.install
     touch .collections/.installed
 fi
 
+if [[ "$INVENTORY" == production && ! -f inventory/production/group_vars/all/vault.yml ]]; then
+    echo "There is no vault yet, so the playbooks have no secrets to give the host." >&2
+    echo "Create it once with: scripts/vault.sh init" >&2
+    exit 1
+fi
+
 args=(-i "inventory/${INVENTORY}")
 vault="inventory/${INVENTORY}/group_vars/all/vault.yml"
 if [[ -f "$vault" ]] && head -n1 "$vault" | grep -q ANSIBLE_VAULT; then
