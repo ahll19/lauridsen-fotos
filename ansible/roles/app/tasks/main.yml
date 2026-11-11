@@ -133,7 +133,7 @@
 # --- Build and start ---------------------------------------------------------
 - name: Note the image that is running now
   ansible.builtin.command:
-    cmd: docker image ls -q --no-trunc {{ compose_project }}-app {{ compose_project }}-app-cron
+    cmd: docker image ls -q --no-trunc --filter reference={{ compose_project }}-app*
   changed_when: false
   register: images_before
 
@@ -145,7 +145,7 @@
 
 - name: See whether the build produced a new image
   ansible.builtin.command:
-    cmd: docker image ls -q --no-trunc {{ compose_project }}-app {{ compose_project }}-app-cron
+    cmd: docker image ls -q --no-trunc --filter reference={{ compose_project }}-app*
   register: images_after
   changed_when: images_after.stdout != images_before.stdout
 

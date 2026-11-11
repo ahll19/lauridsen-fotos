@@ -52,5 +52,6 @@ mediafiles/
 htmlcov/
 
 # --- TLS / certbot state (never committed) ---
-certbot/
-letsencrypt/
+# Anchored to the root: docker/certbot/ holds the renewal script and is very much committed.
+/certbot/
+/letsencrypt/
