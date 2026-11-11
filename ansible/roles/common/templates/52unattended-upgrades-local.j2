@@ -1,0 +1,4 @@
+// Managed by Ansible (roles/common).
+Unattended-Upgrade::Remove-Unused-Dependencies "true";
+Unattended-Upgrade::Automatic-Reboot "{{ unattended_reboot | ternary('true', 'false') }}";
+Unattended-Upgrade::Automatic-Reboot-Time "{{ unattended_reboot_time }}";

@@ -1,0 +1,12 @@
+# Managed by Ansible (roles/backup).
+[Unit]
+Description=Nightly backup of {{ data_dir }}
+
+[Timer]
+OnCalendar={{ backup_schedule }}
+RandomizedDelaySec={{ backup_random_delay }}
+# A night the host was down for is caught up on at the next boot rather than skipped.
+Persistent=true
+
+[Install]
+WantedBy=timers.target

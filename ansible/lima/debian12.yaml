@@ -1,0 +1,30 @@
+# A disposable Debian 12 machine for rehearsing the playbooks, started by scripts/vm.sh.
+#
+# Shaped to look like a freshly ordered VPS rather than like a Lima guest: nothing from the
+# Mac is mounted into it, and root can log in with a key — which is how a new Hetzner
+# server arrives, and is the state provision.yml has to be able to start from.
+base: template://debian-12
+
+cpus: 2
+memory: 2GiB
+disk: 20GiB
+
+mounts: []
+containerd:
+  system: false
+  user: false
+
+# Lets the rehearsal machines reach each other by name (lima-<name>.internal), which the
+# backup rehearsal needs: one plays the VPS and another plays the NAS.
+networks:
+  - lima: user-v2
+
+provision:
+  - mode: system
+    script: |
+      #!/bin/sh
+      set -eu
+      # Give root the same key Lima installed for its own user.
+      install -d -m 700 /root/.ssh
+      cat /home/*/.ssh/authorized_keys > /root/.ssh/authorized_keys
+      chmod 600 /root/.ssh/authorized_keys

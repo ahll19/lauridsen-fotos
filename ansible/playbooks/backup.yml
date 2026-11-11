@@ -1,0 +1,16 @@
+# Install the nightly backup of /data to the NAS, and its rotation.
+#
+#   scripts/ansible.sh backup
+#   scripts/ansible.sh backup -e backup_run_now=true    …and take one copy immediately
+- name: Install the nightly backup
+  hosts: site
+  become: true
+  roles:
+    - backup
+  post_tasks:
+    # A oneshot unit: "started" returns when the run has finished, and fails if it failed.
+    - name: Take a copy now
+      ansible.builtin.systemd_service:
+        name: site-backup.service
+        state: started
+      when: backup_run_now | default(false) | bool

@@ -1,0 +1,46 @@
+# The maintenance pass from architecture.md §10: OS patches, fresh base images, a look at
+# the application's dependencies, then a redeploy that fails unless the site answers.
+#
+#   scripts/ansible.sh update
+- name: Maintenance pass
+  hosts: site
+  become: true
+  vars:
+    # Whether the host may reboot when a patch needs it. The stack comes back by itself.
+    update_allow_reboot: true
+    app_pull_images: true
+  pre_tasks:
+    - name: Install pending OS updates
+      ansible.builtin.apt:
+        upgrade: dist
+        update_cache: true
+        autoremove: true
+
+    - name: See whether a patch is waiting for a reboot
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: reboot_required
+
+    - name: Reboot
+      ansible.builtin.reboot:
+        reboot_timeout: 600
+      when: reboot_required.stat.exists and (update_allow_reboot | bool)
+  roles:
+    # With app_pull_images set: rebuilds on the newest patch release of the pinned base
+    # images, pulls the pinned relay, proxy and certbot images again, and redeploys.
+    - app
+  post_tasks:
+    # A review is a person reading a list; this produces the list. Majors are fixed in
+    # requirements.txt and a rebuild already picked up every patch release inside them, so
+    # what is printed here is what would need the pin itself changed.
+    - name: List application dependencies with a newer release
+      ansible.builtin.command:
+        cmd: docker compose exec -T app pip list --outdated --disable-pip-version-check
+        chdir: "{{ app_dir }}/current"
+      register: outdated
+      changed_when: false
+      failed_when: false
+
+    - name: Dependencies to review
+      ansible.builtin.debug:
+        msg: "{{ outdated.stdout_lines | default(['(none listed)'], true) }}"

@@ -209,26 +209,46 @@ else
         ok "vault files are encrypted"
     fi
 
+    # Both tools are run from ansible/, where ansible.cfg says where the roles and the
+    # pinned collections are. From the repository root neither would be found.
     if has ansible-lint; then
-        if ansible-lint ansible/ >/dev/null 2>&1; then
+        if (cd ansible && ansible-lint >/dev/null 2>&1); then
             ok "ansible-lint clean"
         else
-            fail "ansible-lint reported problems — run: ansible-lint ansible/"
+            fail "ansible-lint reported problems — run: (cd ansible && ansible-lint)"
         fi
     else
         skip "ansible-lint not installed (pip install ansible-lint)"
     fi
 
-    if has ansible-playbook; then
+    if ! has ansible-playbook; then
+        skip "ansible not installed — playbook syntax check"
+    elif [[ ! -d ansible/.collections/ansible_collections ]]; then
+        skip "ansible collections not installed — playbook syntax check (ansible-galaxy collection install -r ansible/requirements.yml -p ansible/.collections)"
+    else
         playbook_ok=1
         for playbook in ansible/playbooks/*.yml; do
             [[ -e "$playbook" ]] || continue
-            ansible-playbook --syntax-check "$playbook" >/dev/null 2>&1 \
+            # Against an empty inventory: this checks the playbooks, and must not need the
+            # vault password to do it.
+            (cd ansible && ansible-playbook -i localhost, --syntax-check "playbooks/$(basename "$playbook")" >/dev/null 2>&1) \
                 || { fail "syntax error in $playbook"; playbook_ok=0; }
         done
         (( playbook_ok )) && ok "playbook syntax valid"
-    else
-        skip "ansible not installed — playbook syntax check"
+    fi
+
+    # The production environment file is rendered from a template, so a setting added to
+    # .env.example and forgotten there would exist on a laptop and silently not on the
+    # server. Every key in the example must appear in the template.
+    if [[ -f ansible/roles/app/templates/env.j2 ]]; then
+        missing=$(grep -oE '^#?[A-Z][A-Z0-9_]+=' .env.example | tr -d '#=' | sort -u | while read -r key; do
+            grep -qE "^(\{%.*%\})?${key}=" ansible/roles/app/templates/env.j2 || printf '%s ' "$key"
+        done)
+        if [[ -n "$missing" ]]; then
+            fail "in .env.example but not in ansible/roles/app/templates/env.j2: $missing"
+        else
+            ok "production env template covers every key in .env.example"
+        fi
     fi
 fi
 

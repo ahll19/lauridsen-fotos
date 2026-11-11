@@ -35,7 +35,9 @@ jobs:
       # Only once there is something to lint — verify.sh skips the step until then.
       - name: Install Ansible tooling
         if: hashFiles('ansible/**') != ''
-        run: pip install ansible-core ansible-lint
+        run: |
+          pip install ansible-core ansible-lint
+          ansible-galaxy collection install -r ansible/requirements.yml -p ansible/.collections
 
       - name: Install project dependencies
         run: |

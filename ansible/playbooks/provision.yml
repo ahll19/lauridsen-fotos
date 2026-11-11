@@ -1,0 +1,50 @@
+# Take a bare Debian 12 host to the state architecture.md describes. Safe to run again at
+# any time: a host already in that state reports nothing changed.
+#
+#   scripts/ansible.sh provision
+
+# A new server only has root; a provisioned one refuses root and answers to the operator.
+# Rather than making whoever runs this remember which it is, ask the host.
+- name: Find out which account the host answers to
+  hosts: site
+  gather_facts: false
+  tasks:
+    - name: Try the operator account
+      ansible.builtin.raw: "true"
+      vars:
+        ansible_user: "{{ operator_user | default('deploy') }}"
+      register: operator_login
+      ignore_unreachable: true
+      failed_when: false
+      changed_when: false
+
+    - name: Connect as the operator, or as root on a host that has never been provisioned
+      ansible.builtin.set_fact:
+        ansible_user: >-
+          {{ (operator_login is unreachable or operator_login.rc | default(1) != 0)
+             | ternary(bootstrap_user | default('root'), operator_user | default('deploy')) }}
+
+- name: Accounts, SSH and automatic updates
+  hosts: site
+  become: true
+  roles:
+    - common
+  post_tasks:
+    # sshd stops accepting root as soon as it reloads, so do that now and carry on as the
+    # operator instead of finding out several tasks later.
+    - name: Apply the SSH configuration
+      ansible.builtin.meta: flush_handlers
+
+    - name: Continue as the operator
+      ansible.builtin.set_fact:
+        ansible_user: "{{ operator_user }}"
+
+    - name: Drop the connection made as root
+      ansible.builtin.meta: reset_connection
+
+- name: Firewall and Docker
+  hosts: site
+  become: true
+  roles:
+    - firewall
+    - docker

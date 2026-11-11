@@ -1,0 +1,75 @@
+# --- Where things live on the host -------------------------------------------
+app_dir: /opt/lauridsen-fotos
+data_dir: /data
+app_user: fotos
+app_uid: 1000
+# Fixed by `name:` in docker-compose.yml; here so the playbooks can name containers.
+compose_project: lauridsen-fotos
+
+# Compose files layered on top of the two every deployment uses. The rehearsal adds one.
+compose_extra_files: []
+
+# --- What to deploy ----------------------------------------------------------
+# Any git revision in the checkout the playbook is run from. The deploy ships exactly the
+# committed tree at that revision, so uncommitted edits never reach the server.
+deploy_ref: HEAD
+# Older releases kept on disk for a quick look at what used to run.
+app_keep_releases: 3
+# Rebuild on top of freshly pulled base images. update.yml turns this on.
+app_pull_images: false
+
+# --- Names -------------------------------------------------------------------
+site_domain: ""
+site_alternate_domains: []
+site_domains: "{{ [site_domain] + site_alternate_domains }}"
+
+# --- HTTPS -------------------------------------------------------------------
+# Off only for a host that has no domain pointed at it yet.
+tls_enabled: true
+http_port: 80
+https_port: 443
+letsencrypt_email: ""
+letsencrypt_agree_tos: false
+# Empty means Let's Encrypt itself. The rehearsal points this at a local test CA.
+certbot_server: ""
+certbot_extra_args: ""
+certbot_image: certbot/certbot:v2.11.0
+certbot_renew_interval: 43200
+certbot_retry_interval: 900
+cert_reload_interval: 60
+
+# --- The application ---------------------------------------------------------
+django_time_zone: Europe/Copenhagen
+django_language_code: da
+django_hsts_seconds: 31536000
+django_log_level: INFO
+app_port: 8000
+gunicorn_workers: 3
+gunicorn_timeout: 120
+max_upload_size: 100m
+trusted_proxy_count: 1
+
+cron_schedule_expire_galleries: "0 3 * * *"
+cron_schedule_purge_tombstones: "30 3 * * *"
+gallery_default_expiry_days: 90
+gallery_tombstone_retention_days: 30
+gallery_session_max_age: 86400
+gallery_unlock_ratelimit: 20/h
+contact_ratelimit: 5/h
+
+# --- Mail (ADR 0004) ---------------------------------------------------------
+owner_email: ""
+mail_sender_domain: "{{ site_domain }}"
+mail_hostname: "mail.{{ site_domain }}"
+mail_from_address: "no-reply@{{ mail_sender_domain }}"
+postfix_image: boky/postfix:v5.1.0-alpine
+dkim_selector: mail
+dkim_private_key: ""
+
+# --- After the deploy --------------------------------------------------------
+# How long to wait for the site to answer before calling the deploy failed.
+healthcheck_retries: 36
+healthcheck_delay: 5
+# Whether the health check insists on a certificate a browser would accept. Only the
+# rehearsal, whose certificates come from a test CA, turns this off.
+healthcheck_verify_tls: true

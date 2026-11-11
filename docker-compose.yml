@@ -1,4 +1,5 @@
-# The stack described in architecture.md, minus certbot (no domain or VPS yet).
+# The stack described in architecture.md, as it runs on a laptop. The VPS adds
+# docker-compose.prod.yml on top: real ports, no mounted source, and certbot.
 #
 # Every port, path, schedule and image tag comes from .env — see .env.example.
 
@@ -14,6 +15,8 @@ services:
       # Consumed by the official image's envsubst templating of docker/nginx/templates/.
       APP_HOST: app
       APP_PORT: ${APP_PORT:-8000}
+      # http here; https on the VPS, where docker-compose.prod.yml adds the certificate.
+      NGINX_MODE: ${NGINX_MODE:-http}
       MAX_UPLOAD_SIZE: ${MAX_UPLOAD_SIZE:-100m}
       # Safe default: revalidate. Only hashed filenames may be called immutable.
       STATIC_CACHE_CONTROL: ${STATIC_CACHE_CONTROL:-public, max-age=0, must-revalidate}
@@ -45,7 +48,8 @@ services:
       - ${DATA_DIR:-./data}:/data
       - static_files:/srv/static
       # Source is mounted so edits are picked up without a rebuild during local
-      # development. Remove this line on the VPS, where the image is the source of truth.
+      # development. docker-compose.prod.yml drops it on the VPS, where the image is the
+      # source of truth.
       - ./src:/app/src
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request,os;urllib.request.urlopen(f\"http://127.0.0.1:{os.environ.get('APP_PORT','8000')}/healthz\").read()"]

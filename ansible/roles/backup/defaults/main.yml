@@ -1,0 +1,30 @@
+data_dir: /data
+compose_project: lauridsen-fotos
+app_uid: 1000
+
+# Where the copies go: the home NAS, reached over SSH (architecture.md §8).
+backup_target_host: ""
+backup_target_user: backup
+backup_target_port: 22
+backup_target_path: /volume1/backups/lauridsen-fotos
+# The NAS's SSH host key, as a known_hosts line without the hostname ("ssh-ed25519 AAAA…").
+# Empty means trust whatever key it presents the first time and hold it to that after.
+backup_target_host_key: ""
+
+# How many nightly copies are kept before the oldest is pruned.
+backup_retention: 14
+# A systemd calendar expression, and a random delay so it is not the same second each night.
+backup_schedule: "*-*-* 02:15:00"
+backup_random_delay: 15min
+
+# Never copied: thumbnails are regenerated from the originals, and the live database is
+# replaced by a consistent snapshot of itself.
+backup_excludes:
+  - /cache/
+  - /db.sqlite3
+  - /db.sqlite3-wal
+  - /db.sqlite3-shm
+
+backup_ssh_private_key: ""
+backup_key_path: /root/.ssh/site_backup_ed25519
+backup_known_hosts_path: /root/.ssh/site_backup_known_hosts

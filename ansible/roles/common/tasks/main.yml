@@ -1,0 +1,115 @@
+- name: Refuse to continue without a key to log in with
+  ansible.builtin.assert:
+    that:
+      - operator_ssh_public_keys | length > 0
+      - operator_ssh_public_keys | select('match', '^(ssh|ecdsa)-') | list | length == operator_ssh_public_keys | length
+    fail_msg: >-
+      operator_ssh_public_keys must list at least one SSH public key. Password logins are
+      about to be switched off, and without a key nobody could get back in.
+
+- name: Install base packages
+  ansible.builtin.apt:
+    name: "{{ common_packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Set the timezone
+  community.general.timezone:
+    name: "{{ host_timezone }}"
+
+# --- The account the containers run as ---------------------------------------
+# getent exits 2 when nothing has the id, which is the expected answer on a new host.
+- name: See who holds the application's uid
+  ansible.builtin.command:
+    cmd: getent passwd {{ app_uid }}
+  register: uid_holder
+  changed_when: false
+  failed_when: uid_holder.rc not in [0, 2]
+
+- name: Refuse to continue if another account holds it
+  ansible.builtin.assert:
+    that: uid_holder.rc == 2 or uid_holder.stdout.split(':')[0] == app_user
+    fail_msg: >-
+      uid {{ app_uid }} already belongs to "{{ uid_holder.stdout.split(':')[0] }}" on this
+      host. The application image runs as that uid, so /data could not be given to it alone.
+    quiet: true
+
+# The gid matters only as a number — that is all the container knows it by — so a group
+# that already has it is used as it stands rather than fought over.
+- name: See which group holds the application's gid
+  ansible.builtin.command:
+    cmd: getent group {{ app_uid }}
+  register: gid_holder
+  changed_when: false
+  failed_when: gid_holder.rc not in [0, 2]
+
+- name: Create the application's group
+  ansible.builtin.group:
+    name: "{{ app_user }}"
+    gid: "{{ app_uid }}"
+  when: gid_holder.rc == 2
+
+- name: Create the application's account
+  ansible.builtin.user:
+    name: "{{ app_user }}"
+    uid: "{{ app_uid }}"
+    group: "{{ (gid_holder.rc == 0) | ternary(gid_holder.stdout.split(':')[0], app_user) }}"
+    shell: /usr/sbin/nologin
+    create_home: false
+    password: "!"
+
+- name: Create the data directory, owned by that account alone
+  ansible.builtin.file:
+    path: "{{ data_dir }}"
+    state: directory
+    owner: "{{ app_uid }}"
+    group: "{{ app_uid }}"
+    mode: "0755"
+
+# --- The operator ------------------------------------------------------------
+- name: Create the operator account
+  ansible.builtin.user:
+    name: "{{ operator_user }}"
+    shell: /bin/bash
+    groups: sudo
+    append: true
+    password: "!"
+
+- name: Install the operator's SSH keys
+  ansible.posix.authorized_key:
+    user: "{{ operator_user }}"
+    key: "{{ operator_ssh_public_keys | join('\n') }}"
+    exclusive: true
+
+- name: Let the operator use sudo without a password
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/90-operator
+    content: "{{ operator_user }} ALL=(ALL) NOPASSWD:ALL\n"
+    mode: "0440"
+    validate: visudo -cf %s
+
+# --- SSH ---------------------------------------------------------------------
+# Only after the operator's key is in place: this is the step that locks root out.
+- name: Harden sshd
+  ansible.builtin.template:
+    src: sshd-hardening.conf.j2
+    dest: /etc/ssh/sshd_config.d/10-hardening.conf
+    mode: "0644"
+    validate: sshd -t -f %s
+  notify: Reload sshd
+
+# --- Unattended security updates ---------------------------------------------
+- name: Turn on automatic security updates
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+    mode: "0644"
+
+- name: Configure automatic security updates
+  ansible.builtin.template:
+    src: 52unattended-upgrades-local.j2
+    dest: /etc/apt/apt.conf.d/52unattended-upgrades-local
+    mode: "0644"

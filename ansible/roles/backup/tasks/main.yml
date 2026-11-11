@@ -1,0 +1,64 @@
+- name: Refuse to install a backup with nowhere to send it
+  ansible.builtin.assert:
+    that:
+      - backup_target_host | length > 0
+      - backup_ssh_private_key | length > 0
+    fail_msg: >-
+      backup_target_host is empty, or the vault holds no backup key. Set the NAS's address
+      in the inventory first.
+    quiet: true
+
+- name: Install rsync
+  ansible.builtin.apt:
+    name: rsync
+    state: present
+
+- name: Create root's SSH directory
+  ansible.builtin.file:
+    path: /root/.ssh
+    state: directory
+    mode: "0700"
+
+- name: Install the key the NAS trusts
+  ansible.builtin.copy:
+    dest: "{{ backup_key_path }}"
+    content: "{{ backup_ssh_private_key }}"
+    mode: "0600"
+  no_log: true
+
+- name: Pin the NAS's host key
+  ansible.builtin.copy:
+    dest: "{{ backup_known_hosts_path }}"
+    content: "{{ backup_known_host }} {{ backup_target_host_key }}\n"
+    mode: "0600"
+  vars:
+    # known_hosts writes a non-default port as [host]:port.
+    backup_known_host: >-
+      {{ (backup_target_port | int == 22)
+         | ternary(backup_target_host, '[' ~ backup_target_host ~ ']:' ~ backup_target_port) }}
+  when: backup_target_host_key | length > 0
+
+- name: Install the backup script
+  ansible.builtin.template:
+    src: site-backup.sh.j2
+    dest: /usr/local/sbin/site-backup
+    mode: "0750"
+
+- name: Install the service and its timer
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/etc/systemd/system/{{ item }}"
+    mode: "0644"
+  loop:
+    - site-backup.service
+    - site-backup.timer
+  notify: Reload systemd
+
+- name: Apply the unit files
+  ansible.builtin.meta: flush_handlers
+
+- name: Schedule the nightly run
+  ansible.builtin.systemd_service:
+    name: site-backup.timer
+    state: started
+    enabled: true

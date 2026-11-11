@@ -12,6 +12,11 @@
 vault-password*
 ansible/.vault*
 
+# --- Ansible: installed collections, and the rehearsal inventory scripts/vm.sh writes ---
+ansible/.collections/
+ansible/.ansible/
+ansible/inventory/disposable/
+
 # --- Application data (bind-mounted /data: SQLite DB, media, thumbnail cache) ---
 data/
 *.sqlite3

@@ -1,0 +1,69 @@
+# What the VPS runs on top of docker-compose.yml. Never used on a laptop.
+#
+# The host's .env sets COMPOSE_FILE to both files, so every `docker compose` command there
+# picks this up without being told. It is written by Ansible (roles/app), not by hand.
+#
+# Three differences from development: the application runs the code baked into its image
+# rather than a mounted source tree, the reverse proxy listens on the real ports, and —
+# behind the `tls` profile — certbot keeps a Let's Encrypt certificate in place.
+
+services:
+  reverse-proxy:
+    ports: !override
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    environment:
+      SERVER_NAMES: ${SERVER_NAMES:-_}
+      # How often to look for a renewed certificate, in seconds.
+      CERT_RELOAD_INTERVAL: ${CERT_RELOAD_INTERVAL:-60}
+    volumes:
+      - certificates:/etc/letsencrypt:ro
+      - acme_webroot:/var/www/certbot:ro
+      - ./docker/nginx/reload-on-cert-change.sh:/docker-entrypoint.d/90-reload-on-cert-change.sh:ro
+    depends_on:
+      # nginx cannot start in https mode without a certificate to read; certbot is healthy
+      # once there is one, placeholder or real. Not required, because without the `tls`
+      # profile there is no certbot and nginx serves plain HTTP.
+      certbot:
+        condition: service_healthy
+        required: false
+
+  app:
+    # The image is the source of truth here: no source tree is mounted over it.
+    volumes: !override
+      - ${DATA_DIR:-/data}:/data
+      - static_files:/srv/static
+
+  app-cron:
+    volumes: !override
+      - ${DATA_DIR:-/data}:/data
+
+  certbot:
+    profiles: ["tls"]
+    image: ${CERTBOT_IMAGE:-certbot/certbot:v2.11.0}
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "/usr/local/bin/certbot-loop.sh"]
+    environment:
+      CERT_DOMAINS: ${CERT_DOMAINS:-}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:-}
+      LETSENCRYPT_AGREE_TOS: ${LETSENCRYPT_AGREE_TOS:-0}
+      # Empty means Let's Encrypt's production directory.
+      CERTBOT_SERVER: ${CERTBOT_SERVER:-}
+      CERTBOT_EXTRA_ARGS: ${CERTBOT_EXTRA_ARGS:-}
+      # Seconds between renewal checks, and between attempts while there is no
+      # certificate at all.
+      CERTBOT_RENEW_INTERVAL: ${CERTBOT_RENEW_INTERVAL:-43200}
+      CERTBOT_RETRY_INTERVAL: ${CERTBOT_RETRY_INTERVAL:-900}
+    volumes:
+      - certificates:/etc/letsencrypt
+      - acme_webroot:/var/www/certbot
+      - ./docker/certbot/certbot-loop.sh:/usr/local/bin/certbot-loop.sh:ro
+    healthcheck:
+      test: ["CMD", "test", "-s", "/etc/letsencrypt/active/fullchain.pem"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+
+volumes:
+  certificates:
+  acme_webroot:

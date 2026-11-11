@@ -1,0 +1,33 @@
+# The account the playbooks log in as once the host is provisioned, and the one a new host
+# is first reached through. A fresh Hetzner server only has root.
+operator_user: deploy
+bootstrap_user: root
+operator_ssh_public_keys: []
+
+ssh_port: 22
+# Accounts sshd will accept at all. The operator, and nobody else.
+ssh_allow_users:
+  - "{{ operator_user }}"
+
+host_timezone: Europe/Copenhagen
+
+# The unprivileged account the containers run as. The uid is fixed in the image
+# (docker/app/Dockerfile), so the host must agree with it for /data to be writable.
+app_user: fotos
+app_uid: 1000
+# The one directory the containers write to (architecture.md §5).
+data_dir: /data
+
+common_packages:
+  - ca-certificates
+  - curl
+  - gnupg
+  - python3-debian
+  - rsync
+  - sudo
+  - unattended-upgrades
+
+# Security patches install themselves. Whether the host may then reboot itself for a
+# kernel update, and when.
+unattended_reboot: true
+unattended_reboot_time: "04:30"

@@ -1,0 +1,9 @@
+# Managed by Ansible (roles/backup).
+[Unit]
+Description=Copy {{ data_dir }} to the backup target
+Wants=network-online.target
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/site-backup
