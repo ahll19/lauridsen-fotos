@@ -37,11 +37,11 @@ class RenderedPageTests(TestCase):
         "/timeline/",
         "/en/timeline/",
         "/priser/",
-        "/en/priser/",
+        "/en/pricing/",
         "/kontakt/",
-        "/en/kontakt/",
+        "/en/contact/",
         "/om/",
-        "/en/om/",
+        "/en/about/",
     ]
 
     def test_no_unrendered_template_syntax(self):
@@ -105,7 +105,7 @@ class ErrorPageTests(TestCase):
     def test_csrf_failure_is_in_the_language_of_the_page(self):
         client = Client(enforce_csrf_checks=True)
         self.assertContains(
-            client.post("/en/kontakt/", {"name": "Test"}), '<html lang="en"', status_code=403
+            client.post("/en/contact/", {"name": "Test"}), '<html lang="en"', status_code=403
         )
 
     def test_500_renders_with_no_context_at_all(self):
@@ -227,3 +227,97 @@ class SitemapTests(TestCase):
     def test_no_gallery_url_appears(self):
         body = self.client.get("/sitemap.xml").content.decode()
         self.assertNotIn("/g/", body)
+
+
+class TranslatedUrlTests(TestCase):
+    """English pages have English addresses, and each language's address is its own."""
+
+    PAIRS = [("/priser/", "/en/pricing/"), ("/kontakt/", "/en/contact/"), ("/om/", "/en/about/")]
+
+    def test_each_language_answers_on_its_own_slug(self):
+        for danish, english in self.PAIRS:
+            with self.subTest(danish=danish):
+                self.assertEqual(self.client.get(danish).status_code, 200)
+                self.assertEqual(self.client.get(english).status_code, 200)
+
+    def test_a_danish_slug_under_the_english_prefix_does_not_exist(self):
+        # Otherwise every page has two English addresses and search engines pick one.
+        self.assertEqual(self.client.get("/en/priser/").status_code, 404)
+
+    def test_the_language_switcher_links_to_the_translated_address(self):
+        body = self.client.get("/priser/").content.decode()
+        self.assertIn('name="next" value="/en/pricing/"', body)
+        body = self.client.get("/en/pricing/").content.decode()
+        self.assertIn('name="next" value="/priser/"', body)
+
+    def test_the_sitemap_lists_the_translated_address(self):
+        body = self.client.get("/sitemap.xml").content.decode()
+        self.assertIn("/en/pricing/", body)
+        self.assertNotIn("/en/priser/", body)
+
+
+class PageMetadataTests(TestCase):
+    """What a pasted link shows: a title, a description, and no private page among them."""
+
+    @classmethod
+    def setUpTestData(cls):
+        category = Category.objects.create(
+            name="Bryllupper",
+            slug="bryllupper",
+            description="To mennesker og en lang dag.",
+            visible=True,
+        )
+        cls.album = Album.objects.create(
+            category=category, name="Sofie & Jonas", slug="sofie-jonas", visible=True
+        )
+
+    def test_public_page_describes_itself(self):
+        body = self.client.get(self.album.get_absolute_url()).content.decode()
+        self.assertIn('<meta property="og:title" content="Sofie &amp; Jonas">', body)
+        # The album has no description of its own, so its category's stands in.
+        self.assertIn('<meta name="description" content="To mennesker og en lang dag.">', body)
+        self.assertIn('property="og:url" content="http://testserver/portfolio/', body)
+
+    def test_error_page_carries_no_preview_tags(self):
+        body = self.client.get("/no-such-page/").content.decode()
+        self.assertNotIn("og:title", body)
+
+    def test_body_has_no_empty_class_attribute(self):
+        self.assertNotIn('class=""', self.client.get("/kontakt/").content.decode())
+
+    def test_fonts_are_not_loaded_from_a_third_party(self):
+        body = self.client.get("/").content.decode()
+        self.assertNotIn("fonts.googleapis.com", body)
+        self.assertNotIn("fonts.gstatic.com", body)
+
+    def test_favicon_is_linked_and_answers(self):
+        self.assertIn('rel="icon"', self.client.get("/").content.decode())
+        response = self.client.get("/favicon.ico")
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("favicon", response["Location"])
+
+
+class ContentSecurityPolicyTests(TestCase):
+    def test_pages_carry_a_policy_naming_no_other_host(self):
+        policy = self.client.get("/")["Content-Security-Policy"]
+        self.assertIn("default-src 'self'", policy)
+        self.assertIn("script-src 'self'", policy)
+        self.assertNotIn("http", policy)
+
+    def test_no_page_template_carries_an_inline_script(self):
+        # script-src 'self' silently disables one, so it would simply stop working.
+        for template in (Path(settings.BASE_DIR) / "templates").rglob("*.html"):
+            with self.subTest(template=template.name):
+                self.assertIsNone(re.search(r"<script(?![^>]*\bsrc=)", template.read_text()))
+
+    @override_settings(
+        CONTENT_SECURITY_POLICY="default-src 'none'", CONTENT_SECURITY_POLICY_REPORT_ONLY=True
+    )
+    def test_report_only_sends_the_other_header(self):
+        response = self.client.get("/")
+        self.assertNotIn("Content-Security-Policy", response)
+        self.assertEqual(response["Content-Security-Policy-Report-Only"], "default-src 'none'")
+
+    @override_settings(CONTENT_SECURITY_POLICY="")
+    def test_an_empty_policy_sends_nothing(self):
+        self.assertNotIn("Content-Security-Policy", self.client.get("/"))

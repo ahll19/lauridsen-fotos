@@ -62,14 +62,3 @@
   </div>
 </div>
 {% endblock %}
-
-{% block scripts %}
-<script>
-  // Prefill the shoot type when arriving from a pricing package.
-  (function () {
-    const type = new URLSearchParams(window.location.search).get('type');
-    const field = document.getElementById('id_shoot_type');
-    if (type && field && !field.value) field.value = type;
-  })();
-</script>
-{% endblock %}

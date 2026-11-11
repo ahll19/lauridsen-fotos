@@ -16,7 +16,8 @@ Four passes are recorded. The first (D1–D22) came from browsing the running si
 (D23–D33) came from reading every file in the repository afterwards, and found the more
 serious problems — none of them visible from the outside. The third (D34–D38) came from
 Anders working through a QA run book against a freshly rebuilt environment before 0.2.0, and
-found what only someone using the site as its owner would notice. The fourth (D39–D40) came
+found what only someone using the site as its owner would notice. The fourth closed
+the items the first had left open (D12–D22). The fourth (D39–D40) came
 from running the 0.3.0 QA guide as commands rather than reading it, which is the cheapest of
 the four and should probably have been the habit from the start.
 
@@ -33,17 +34,17 @@ the four and should probably have been the habit from the start.
 | [D9](#d9) | B | Contact notifications carry no `Reply-To` | fixed |
 | [D10](#d10) | B | The contact notification email is hardcoded English | fixed |
 | [D11](#d11) | B | The gallery ZIP is named after the random slug | fixed |
-| [D12](#d12) | B | No meta description and no link-preview tags | open |
-| [D13](#d13) | B | No favicon | open |
-| [D14](#d14) | B | Photographs have no `width`/`height` | open |
-| [D15](#d15) | B | Fonts are loaded from Google's CDN | open |
-| [D16](#d16) | B | The admin is unbranded | open |
+| [D12](#d12) | B | No meta description and no link-preview tags | fixed |
+| [D13](#d13) | B | No favicon | fixed |
+| [D14](#d14) | B | Photographs have no `width`/`height` | fixed |
+| [D15](#d15) | B | Fonts are loaded from Google's CDN | fixed |
+| [D16](#d16) | B | The admin is unbranded | fixed |
 | [D17](#d17) | B | `verify.sh` never renders a page | fixed |
-| [D18](#d18) | B | `<body class="">` on most pages | open |
-| [D19](#d19) | C | No Content-Security-Policy | open |
-| [D20](#d20) | C | Copy deterrents also apply to client galleries | open |
-| [D21](#d21) | C | English URLs keep Danish slugs | open |
-| [D22](#d22) | C | Portfolio photographs have no alt text of their own | open |
+| [D18](#d18) | B | `<body class="">` on most pages | fixed |
+| [D19](#d19) | C | No Content-Security-Policy | fixed |
+| [D20](#d20) | C | Copy deterrents also apply to client galleries | fixed |
+| [D21](#d21) | C | English URLs keep Danish slugs | fixed |
+| [D22](#d22) | C | Portfolio photographs have no alt text of their own | fixed |
 | [D23](#d23) | A | The test suite writes into the live data directory and deletes from it | fixed |
 | [D24](#d24) | A | The rate limit is global, not per visitor | fixed |
 | [D25](#d25) | A | The recorded visitor address is chosen by the visitor | fixed |
@@ -383,69 +384,66 @@ previous commit.
 
 ---
 
-## Still open
+## Fourth pass: the items left open
 
-These are the items from the first pass that are features or judgement calls rather than
-bugs, left deliberately.
+D12–D22 were first recorded as features or judgement calls and left. All were closed
+before 0.4.0, because two of them only get more expensive after launch: addresses that
+search engines have indexed, and photographs uploaded without a description.
 
 ### D12
 
-**No meta description and no link-preview tags.** Every page carries only `charset` and
-`viewport`. A link to an album shared on Instagram or in a message renders as a bare URL with
-no image — a real loss for a business whose work is the product. Wants a `description` block
-fed per page plus `og:title`, `og:description`, `og:image` and `og:type`.
+**No meta description and no link-preview tags.** A link to an album pasted into a message
+arrived as a bare URL with no image. *Fixed*: every public page carries a description and
+Open Graph tags, with the album cover or first photograph as the preview and the front
+page's hero as the fallback. Gallery and error pages carry none.
 
 ### D13
 
-**No favicon** — `/favicon.ico` returns 404 and no `<link rel="icon">` is emitted.
+**No favicon.** *Fixed*: an SVG mark in the accent colour, linked from every page;
+`/favicon.ico` redirects to it for the clients that ask there regardless.
 
 ### D14
 
-**Photographs have no `width`/`height`**, so the page reflows as each loads. The thumbnailer
-knows the dimensions at render time; the attributes only supply the aspect ratio.
+**Photographs have no `width`/`height`.** *Fixed*: public images carry their derivative's
+pixel size, remembered in the database (`THUMBNAIL_CACHE_DIMENSIONS`) so nothing opens a
+file to find out. Client-gallery images are sized by the CSS grid's `aspect-ratio`.
 
 ### D15
 
-**Fonts are loaded from Google's CDN.** Every visitor's IP is disclosed to Google, which for
-an EU business is a live GDPR question, and the typography depends on a third party being
-reachable. Self-hosting the two woff2 files fixes both and stays within the no-bundler rule.
+**Fonts are loaded from Google's CDN**, disclosing every visitor's address to a third
+party. *Fixed*: Fraunces and Inter are served from `static/fonts/`, with their licences.
 
 ### D16
 
-**The admin is unbranded** — `site_header`, `site_title` and `index_title` are unset, so it
-reads "Django website-administration". Cosmetic, but it is the interface the owner uses.
+**The admin is unbranded.** *Fixed*: it is headed "Lauridsen Fotos".
 
 ### D18
 
-**`<body class="">`** is emitted on pages that set no `body_class` — a leftover from removing
-the theme switcher. Harmless; removing it cleanly needs more template contortion than it is
-worth on its own.
+**`<body class="">`** on pages that set no class. *Fixed*: the block now carries the whole
+attribute, so a page without one emits a bare `<body>`.
 
 ### D19
 
-**No Content-Security-Policy.** The other security headers are all set. CSP is the one that
-would contain an injected script, and it becomes much easier to write once D15 removes the
-external font requests.
+**No Content-Security-Policy.** *Fixed*: every page sends one that names no host but the
+site itself, with no inline script allowed. It is a setting (`DJANGO_CSP`), and can be sent
+report-only. Styles still allow inline: the lightbox needs it.
 
 ### D20
 
-**Copy deterrents also apply to client galleries.** `site.js` blocks `contextmenu` and
-`dragstart` on `.photo--client` — the photographs the client is specifically meant to save.
-They have download buttons, so nothing is blocked outright, but right-click-save is how many
-people expect to do it. Suggest scoping the deterrents to public pages.
+**Copy deterrents also apply to client galleries** — the photographs the client is meant
+to save. *Fixed*: deterrents are scoped to public pages.
 
 ### D21
 
-**English URLs keep Danish slugs** — `/en/priser/`, `/en/om/`. Django supports translated URL
-patterns; whether the extra surface is worth it is a judgement call.
+**English URLs keep Danish slugs.** *Fixed*: `/en/pricing/`, `/en/contact/`, `/en/about/`.
+The Danish addresses are unchanged. Decided now because an address is free to change only
+until someone has linked to it.
 
 ### D22
 
-**Portfolio photographs have no alt text of their own.** The template uses
-`alt="{{ photo.caption }}"`, but a caption is shown and an alt text describes — they are
-different things, and the demo content leaves the caption empty, so every portfolio image
-renders `alt=""`. Worth settling the model question (one field or two) before there is much
-content to retrofit.
+**Portfolio photographs have no alt text of their own.** *Fixed*: portfolio and timeline
+photographs have a translated alt-text field beside the caption; the caption stands in
+when it is empty.
 
 ---
 

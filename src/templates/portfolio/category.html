@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n thumbnail %}
 
-{% block body_class %}protect-images{% endblock %}
+{% block body_attrs %} class="protect-images"{% endblock %}
 {% block title %}{{ category.name }} — {{ site_name }}{% endblock %}
 
 {% block content %}
@@ -20,7 +20,7 @@
           <a href="{{ album.get_absolute_url }}">
             <div class="card__media">
               {% if album.cover_image %}
-                <img src="{% thumbnail album.cover_image 'cover' %}" alt="{{ album.name }}" loading="lazy">
+                {% thumbnail album.cover_image 'cover' as thumb %}<img src="{{ thumb.url }}" width="{{ thumb.width }}" height="{{ thumb.height }}" alt="{{ album.name }}" loading="lazy">
               {% else %}
                 <div class="card__placeholder"></div>
               {% endif %}

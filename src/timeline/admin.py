@@ -12,7 +12,7 @@ from .models import TimelineEntry, TimelineEntryPhoto
 
 class TimelinePhotoInline(TranslationTabularInline, OrderedTabularInline):
     model = TimelineEntryPhoto
-    fields = ("preview", "image", "caption", "order", "move_up_down_links")
+    fields = ("preview", "image", "caption", "alt_text", "order", "move_up_down_links")
     readonly_fields = ("preview", "order", "move_up_down_links")
     extra = 0
     ordering = ("order",)

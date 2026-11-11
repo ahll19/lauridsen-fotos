@@ -1,5 +1,8 @@
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404, render
+from django.utils.translation import gettext as _
+
+from core.meta import page_meta
 
 from .models import Album, Category
 
@@ -20,7 +23,11 @@ def index(request):
         )
         .order_by("order")
     )
-    return render(request, "portfolio/index.html", {"categories": categories})
+    return render(
+        request,
+        "portfolio/index.html",
+        {"categories": categories, **page_meta(request, title=_("Portfolio"))},
+    )
 
 
 def category(request, slug):
@@ -29,7 +36,16 @@ def category(request, slug):
     return render(
         request,
         "portfolio/category.html",
-        {"category": category_obj, "albums": albums},
+        {
+            "category": category_obj,
+            "albums": albums,
+            **page_meta(
+                request,
+                title=category_obj.name,
+                description=category_obj.description,
+                image=albums[0].cover_image if albums else None,
+            ),
+        },
     )
 
 
@@ -43,5 +59,11 @@ def album(request, category_slug, slug):
             "category": category_obj,
             "album": album_obj,
             "photos": album_obj.photos.all(),
+            **page_meta(
+                request,
+                title=album_obj.name,
+                description=album_obj.description or category_obj.description,
+                image=album_obj.cover_image,
+            ),
         },
     )

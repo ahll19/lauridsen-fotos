@@ -6,6 +6,7 @@ from django.shortcuts import render
 from django.utils.translation import gettext as _
 from django_ratelimit.core import is_ratelimited
 
+from core.meta import page_meta
 from portfolio.models import Album
 from timeline.models import TimelineEntry
 
@@ -17,7 +18,14 @@ logger = logging.getLogger(__name__)
 
 def home(request):
     home_settings = HomeSettings.get_solo()
-    context = {"home": home_settings}
+    context = {
+        "home": home_settings,
+        **page_meta(
+            request,
+            description=home_settings.intro or home_settings.tagline,
+            image=home_settings.hero_image,
+        ),
+    }
 
     if home_settings.show_featured_album:
         context["featured_album"] = (
@@ -30,16 +38,35 @@ def home(request):
 
 
 def about(request):
-    return render(request, "pages/about.html", {"about": AboutSettings.get_solo()})
+    about_settings = AboutSettings.get_solo()
+    return render(
+        request,
+        "pages/about.html",
+        {
+            "about": about_settings,
+            **page_meta(
+                request,
+                title=about_settings.heading or _("About"),
+                description=about_settings.biography,
+                image=about_settings.portrait,
+            ),
+        },
+    )
 
 
 def pricing(request):
+    pricing_settings = PricingSettings.get_solo()
     return render(
         request,
         "pages/pricing.html",
         {
-            "pricing": PricingSettings.get_solo(),
+            "pricing": pricing_settings,
             "packages": PricingPackage.objects.filter(visible=True),
+            **page_meta(
+                request,
+                title=pricing_settings.heading or _("Pricing"),
+                description=pricing_settings.intro,
+            ),
         },
     )
 
@@ -108,7 +135,16 @@ def contact(request):
     return render(
         request,
         "pages/contact.html",
-        {"contact": settings_obj, "form": form, "sent": sent},
+        {
+            "contact": settings_obj,
+            "form": form,
+            "sent": sent,
+            **page_meta(
+                request,
+                title=settings_obj.heading or _("Contact"),
+                description=settings_obj.intro,
+            ),
+        },
     )
 
 

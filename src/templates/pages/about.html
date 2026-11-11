@@ -7,7 +7,7 @@
 <div class="wrap section">
   <div class="about">
     {% if about.portrait %}
-      <img class="about__portrait" src="{% thumbnail about.portrait 'cover' %}" alt="">
+      {% thumbnail about.portrait 'cover' as thumb %}<img class="about__portrait" src="{{ thumb.url }}" width="{{ thumb.width }}" height="{{ thumb.height }}" alt="">
     {% endif %}
     <div class="about__body">
       <h1>{{ about.heading|default:_("About") }}</h1>

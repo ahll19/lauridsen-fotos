@@ -44,11 +44,12 @@
     if (!node || node.tagName !== "IMG") {
       return false;
     }
-    // A page that opts in protects every photograph on it, the lightbox included;
-    // client galleries mark their own images instead.
+    // Public pages opt in, and that covers every photograph on them, the lightbox
+    // included. Client galleries deliberately do not: those photographs belong to the
+    // person looking at them, and right-click-save is how many people expect to keep one.
     return (
       document.body.classList.contains("protect-images") ||
-      !!node.closest(".photo--client, .entry__photos")
+      !!node.closest(".entry__photos")
     );
   }
 

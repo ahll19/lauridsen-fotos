@@ -53,3 +53,34 @@ class ClientIPMiddleware:
         request.META["PROXY_REMOTE_ADDR"] = request.META.get("REMOTE_ADDR")
         request.META["REMOTE_ADDR"] = real_client_ip(request)
         return self.get_response(request)
+
+
+class ContentSecurityPolicyMiddleware:
+    """
+    Send a Content-Security-Policy with every response the application renders.
+
+    The other security headers stop the page being framed or mis-sniffed; this is the one
+    that contains a script someone managed to inject, by telling the browser that nothing
+    is allowed to run or load unless it came from this site. It became straightforward to
+    write once the fonts stopped coming from a third party — the policy has no external
+    host in it at all.
+
+    The policy itself is a setting (DJANGO_CSP), so it can be loosened for a new embed or
+    switched to report-only without a code change. A response that already carries the
+    header keeps its own.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+        self.policy = settings.CONTENT_SECURITY_POLICY
+        self.header = (
+            "Content-Security-Policy-Report-Only"
+            if settings.CONTENT_SECURITY_POLICY_REPORT_ONLY
+            else "Content-Security-Policy"
+        )
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        if self.policy and self.header not in response:
+            response[self.header] = self.policy
+        return response
