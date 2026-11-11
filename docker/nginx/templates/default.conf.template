@@ -46,6 +46,14 @@ server {
     location /_protected/ {
         internal;
         alias /data/;
+
+        # Re-stated here because nginx does not forward it. When the application answers
+        # with X-Accel-Redirect, nginx takes over and serves the file itself, keeping only
+        # a fixed set of upstream headers — Content-Type, Content-Disposition and
+        # Cache-Control survive, arbitrary ones like this do not. Django marks every
+        # gallery response `noindex` (galleries/serving.py), and without this line that
+        # marking silently applied to the gallery page but not to the photographs on it.
+        add_header X-Robots-Tag "noindex, nofollow, noarchive" always;
     }
 
     location / {

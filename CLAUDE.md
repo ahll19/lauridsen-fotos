@@ -116,6 +116,8 @@ someone's shell history.
 | --- | --- |
 | `scripts/dev.sh` | The local stack: `up`, `down`, `reset`, `logs`, `manage`, `seed`, `superuser`, `shell`, `cron`, `urls`. |
 | `scripts/verify.sh` | The verification pipeline. Run it before opening a PR. |
+| `scripts/prodcheck.sh` | Runs the stack with production settings and checks it. `--keep` leaves it there. |
+| `scripts/crawl.py` | Crawls the running site for non-200 responses. |
 | `scripts/install-hooks.sh` | Points git at `.githooks/`. Run once per clone. |
 | `scripts/new-branch.sh` | Creates a correctly named branch off an up-to-date `main`. |
 | `scripts/release.sh` | Prepares and tags releases. |

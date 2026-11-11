@@ -271,13 +271,28 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+# Django's own CSRF failure page is a separate, unstyled template rendered without a
+# request. Point it at the site's 403 page instead — a stale form is the only way a
+# visitor meets a 403 here, and "forbidden" is not a useful thing to tell them.
+CSRF_FAILURE_VIEW = "core.views.csrf_failure"
+
 X_FRAME_OPTIONS = "DENY"
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "same-origin"
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = False
 
-if not DEBUG:
+# Whether this deployment is actually reached over HTTPS. Production is, so it defaults to
+# on whenever DEBUG is off. The exception is running the production configuration locally to
+# check it: nginx has no certificate here, so the site answers on plain http://localhost —
+# and the three settings below would each break it. SECURE_SSL_REDIRECT would bounce every
+# request to an https:// port nothing listens on, and the two Secure cookie flags would make
+# the browser discard the session and CSRF cookies, so the admin could not be logged into
+# and no form could be submitted. Turning this off is what makes a local production-mode run
+# possible; it must never be off on the VPS, and `check --deploy` says so if it is.
+SERVE_OVER_HTTPS = env_bool("DJANGO_SERVE_OVER_HTTPS", not DEBUG)
+
+if SERVE_OVER_HTTPS:
     # Behind nginx, which terminates TLS on the VPS.
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SESSION_COOKIE_SECURE = True

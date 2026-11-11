@@ -7,417 +7,611 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lauridsen-fotos\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-13 20:42+0200\n"
+"POT-Creation-Date: 2026-09-14 22:05+0200\n"
 "Language: da\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: core/apps.py:9
 msgid "Shared"
 msgstr "Fælles"
 
+#: galleries/admin.py:30 portfolio/admin.py:56 timeline/admin.py:26
 msgid "Add photographs"
 msgstr "Tilføj billeder"
 
+#: galleries/admin.py:31
 msgid "Select as many files as you like. They are appended to the gallery."
 msgstr "Vælg så mange filer du vil. De føjes til galleriet."
 
+#: galleries/admin.py:35
 msgid "Set a specific password"
 msgstr "Vælg en bestemt adgangskode"
 
+#: galleries/admin.py:36
 msgid "Leave empty to have one generated. Only ever shown once, right after saving."
 msgstr "Lad feltet stå tomt for at få en genereret. Vises kun én gang, lige efter du gemmer."
 
+#: galleries/admin.py:69
 msgid "Access"
 msgstr "Adgang"
 
+#: galleries/admin.py:70
 msgid "Photographs"
 msgstr "Billeder"
 
+#: galleries/admin.py:71
 msgid "Record"
 msgstr "Registrering"
 
+#: galleries/admin.py:76
 msgid "status"
 msgstr "status"
 
+#: galleries/admin.py:79
 msgid "Expired — photos deleted"
 msgstr "Udløbet — billeder slettet"
 
+#: galleries/admin.py:81
 msgid "Past expiry — awaiting cleanup"
 msgstr "Over udløbsdatoen — afventer oprydning"
 
+#: galleries/admin.py:82
 msgid "Active"
 msgstr "Aktivt"
 
+#: galleries/admin.py:84 portfolio/admin.py:74 portfolio/models.py:107
+#: timeline/admin.py:43
 msgid "photos"
 msgstr "billeder"
 
+#: galleries/admin.py:88
 msgid "remaining"
 msgstr "tilbage"
 
+#: galleries/admin.py:92
 #, python-format
 msgid "%(days)d days"
 msgstr "%(days)d dage"
 
+#: galleries/admin.py:94
 msgid "ZIP"
 msgstr "ZIP"
 
+#: galleries/admin.py:103
 msgid "Built (date unknown)"
 msgstr "Bygget (dato ukendt)"
 
+#: galleries/admin.py:104
 #, python-format
 msgid "Built %(when)s"
 msgstr "Bygget %(when)s"
 
+#: galleries/admin.py:105
 msgid "Not built — run “Rebuild download ZIP”"
 msgstr "Ikke bygget — kør “Byg download-ZIP igen”"
 
+#: galleries/admin.py:107
 msgid "client link"
 msgstr "klientlink"
 
+#: galleries/admin.py:132
 msgid "Password for this gallery:"
 msgstr "Adgangskode til dette galleri:"
 
+#: galleries/admin.py:134
 msgid "copy it now, it cannot be shown again."
 msgstr "kopier den nu, den kan ikke vises igen."
 
+#: galleries/admin.py:148
 #, python-format
 msgid "Added %(count)d photograph(s). Rebuild the download ZIP before sharing the link."
 msgstr "Tilføjede %(count)d billede(r). Byg download-ZIP'en igen, før du deler linket."
 
+#: galleries/admin.py:171
 msgid "Rebuild download ZIP"
 msgstr "Byg download-ZIP igen"
 
+#: galleries/admin.py:180
 #, python-format
 msgid "'%(label)s': archived %(count)d photograph(s)."
 msgstr "'%(label)s': arkiverede %(count)d billede(r)."
 
+#: galleries/admin.py:186
 #, python-format
 msgid "'%(label)s' has no photographs to archive."
 msgstr "'%(label)s' har ingen billeder at arkivere."
 
+#: galleries/admin.py:190
 msgid "Regenerate password"
 msgstr "Generer ny adgangskode"
 
+#: galleries/admin.py:199
 #, python-format
 msgid "New password for '%(label)s':"
 msgstr "Ny adgangskode til '%(label)s':"
 
+#: galleries/admin.py:205
 msgid "Extend by 30 days"
 msgstr "Forlæng med 30 dage"
 
+#: galleries/admin.py:212
 #, python-format
 msgid "Extended by %(days)d days."
 msgstr "Forlænget med %(days)d dage."
 
+#: galleries/admin.py:214
 msgid "Expire now (deletes the photographs)"
 msgstr "Luk nu (sletter billederne)"
 
+#: galleries/admin.py:220
 #, python-format
 msgid "'%(label)s': %(count)d photograph(s) deleted from disk."
 msgstr "'%(label)s': %(count)d billede(r) slettet fra disken."
 
+#: galleries/apps.py:9
 msgid "Client galleries"
 msgstr "Klientgallerier"
 
+#: galleries/models.py:61
 msgid "URL key"
 msgstr "URL-nøgle"
 
+#: galleries/models.py:65
 msgid "Generated. This is the unguessable part of the gallery's link."
 msgstr "Genereret. Det er den del af galleriets link, man ikke kan gætte."
 
+#: galleries/models.py:68
 msgid "label"
 msgstr "etiket"
 
+#: galleries/models.py:71
 msgid "Your own reference, e.g. 'Sofie & Jonas, June wedding'. Never shown to the client."
 msgstr "Din egen reference, f.eks. 'Sofie & Jonas, bryllup i juni'. Vises aldrig for klienten."
 
+#: galleries/models.py:75
 msgid "client name"
 msgstr "klientnavn"
 
+#: galleries/models.py:78
 msgid "Shown as a greeting on the gallery page. Optional."
 msgstr "Vises som en hilsen på galleriets side. Valgfrit."
 
+#: galleries/models.py:80
 msgid "password hash"
 msgstr "adgangskode-hash"
 
+#: galleries/models.py:81
 msgid "created"
 msgstr "oprettet"
 
+#: galleries/models.py:83
 msgid "expires"
 msgstr "udløber"
 
+#: galleries/models.py:85
 msgid "After this date the photographs are deleted from disk automatically."
 msgstr "Efter denne dato slettes billederne automatisk fra disken."
 
+#: galleries/models.py:88
 msgid "photos deleted"
 msgstr "billeder slettet"
 
+#: galleries/models.py:91
 msgid "Set by the expiry job once the files have been removed."
 msgstr "Sættes af udløbsjobbet, når filerne er fjernet."
 
+#: galleries/models.py:93
 msgid "ZIP built"
 msgstr "ZIP bygget"
 
+#: galleries/models.py:98
 msgid "client gallery"
 msgstr "klientgalleri"
 
+#: galleries/models.py:99
 msgid "client galleries"
 msgstr "klientgallerier"
 
+#: galleries/models.py:218
 msgid "gallery"
 msgstr "galleri"
 
+#: galleries/models.py:220 portfolio/models.py:100 timeline/models.py:64
 msgid "image"
 msgstr "billede"
 
+#: galleries/models.py:225
 msgid "gallery photo"
 msgstr "galleribillede"
 
+#: galleries/models.py:226
 msgid "gallery photos"
 msgstr "galleribilleder"
 
+#: galleries/views.py:81
 msgid "Too many attempts. Please wait a little and try again."
 msgstr "For mange forsøg. Vent lidt, og prøv igen."
 
+#: galleries/views.py:95
 msgid "That password is not correct."
 msgstr "Adgangskoden er ikke korrekt."
 
+#: pages/admin.py:57
 msgid "delivered"
 msgstr "leveret"
 
+#: pages/apps.py:9
 msgid "Pages"
 msgstr "Sider"
 
+#: pages/forms.py:24
 msgid "Wedding, portrait, event…"
 msgstr "Bryllup, portræt, event…"
 
+#: pages/models.py:10
 msgid "hero image"
 msgstr "hovedbillede"
 
+#: pages/models.py:11
 msgid "business name"
 msgstr "virksomhedsnavn"
 
+#: pages/models.py:12
 msgid "tagline"
 msgstr "slogan"
 
+#: pages/models.py:13 pages/models.py:45 pages/models.py:60
 msgid "introduction"
 msgstr "introduktion"
 
+#: pages/models.py:15
 msgid "show a featured album"
 msgstr "vis et fremhævet album"
 
+#: pages/models.py:17
 msgid "Surfaces the most recently published album as a teaser."
 msgstr "Viser det senest udgivne album som appetitvækker."
 
+#: pages/models.py:20
 msgid "show the latest timeline entry"
 msgstr "vis seneste indlæg fra tidslinjen"
 
+#: pages/models.py:24
 msgid "home page"
 msgstr "forside"
 
+#: pages/models.py:27
 msgid "Home page"
 msgstr "Forside"
 
+#: pages/models.py:31
 msgid "portrait"
 msgstr "portræt"
 
+#: pages/models.py:32 pages/models.py:44 pages/models.py:59
 msgid "heading"
 msgstr "overskrift"
 
+#: pages/models.py:33
 msgid "biography"
 msgstr "biografi"
 
+#: pages/models.py:34
 msgid "how I work"
 msgstr "sådan arbejder jeg"
 
+#: pages/models.py:37
 msgid "about page"
 msgstr "om-side"
 
+#: pages/models.py:40
 msgid "About page"
 msgstr "Om-side"
 
+#: pages/models.py:46
 msgid "public email address"
 msgstr "offentlig e-mailadresse"
 
+#: pages/models.py:47
 msgid "phone"
 msgstr "telefon"
 
+#: pages/models.py:48
 msgid "Instagram"
 msgstr "Instagram"
 
+#: pages/models.py:49
 msgid "Facebook"
 msgstr "Facebook"
 
+#: pages/models.py:52
 msgid "contact page"
 msgstr "kontaktside"
 
+#: pages/models.py:55
 msgid "Contact page"
 msgstr "Kontaktside"
 
+#: pages/models.py:62
 msgid "FAQ / how booking works"
 msgstr "FAQ / sådan booker du"
 
+#: pages/models.py:64
 msgid "Shown beneath the packages."
 msgstr "Vises under pakkerne."
 
+#: pages/models.py:68
 msgid "pricing page"
 msgstr "prisside"
 
+#: pages/models.py:71
 msgid "Pricing page"
 msgstr "Prisside"
 
+#: pages/models.py:75 pages/models.py:105 portfolio/models.py:19
+#: portfolio/models.py:54
 msgid "name"
 msgstr "navn"
 
+#: pages/models.py:77
 msgid "what's included"
 msgstr "hvad er inkluderet"
 
+#: pages/models.py:77
 msgid "One item per line; rendered as a list."
 msgstr "Ét punkt per linje; vises som en liste."
 
+#: pages/models.py:80
 msgid "price"
 msgstr "pris"
 
+#: pages/models.py:82
 msgid "Free text so the currency and any 'from' wording stay editable."
 msgstr "Fritekst, så valuta og et eventuelt 'fra'-forbehold kan redigeres."
 
+#: pages/models.py:84 portfolio/models.py:23 portfolio/models.py:59
+#: timeline/models.py:37
 msgid "visible"
 msgstr "synlig"
 
+#: pages/models.py:87
 msgid "pricing package"
 msgstr "prispakke"
 
+#: pages/models.py:88
 msgid "pricing packages"
 msgstr "prispakker"
 
+#: pages/models.py:106
 msgid "email"
 msgstr "e-mail"
 
+#: pages/models.py:107
 msgid "shoot type"
 msgstr "type opgave"
 
+#: pages/models.py:108
 msgid "preferred date"
 msgstr "ønsket dato"
 
+#: pages/models.py:109
 msgid "message"
 msgstr "besked"
 
+#: pages/models.py:110
 msgid "submitted at"
 msgstr "indsendt"
 
+#: pages/models.py:111
 msgid "IP address"
 msgstr "IP-adresse"
 
+#: pages/models.py:113
 msgid "notification sent"
 msgstr "besked sendt"
 
+#: pages/models.py:115
 msgid "False means the relay rejected it — the submission is still recorded here."
 msgstr "Falsk betyder, at mailserveren afviste den — henvendelsen er stadig gemt her."
 
+#: pages/models.py:119
 msgid "contact submission"
 msgstr "henvendelse"
 
+#: pages/models.py:120
 msgid "contact submissions"
 msgstr "henvendelser"
 
+#: pages/views.py:83
 msgid "Too many messages have been sent from here recently. Please try again later."
 msgstr "Der er sendt for mange beskeder herfra for nylig. Prøv venligst igen senere."
 
+#: pages/views.py:103
 msgid "Your message was received, but the confirmation email could not be sent. Please get in touch directly if you don't hear back."
 msgstr "Din besked er modtaget, men bekræftelsesmailen kunne ikke sendes. Skriv gerne direkte, hvis du ikke hører fra mig."
 
+#: pages/views.py:140
 #, python-format
 msgid "Contact form: %(name)s"
 msgstr "Kontaktformular: %(name)s"
 
+#: portfolio/admin.py:36 portfolio/models.py:69
 msgid "albums"
 msgstr "albummer"
 
+#: portfolio/admin.py:48 timeline/admin.py:20
 msgid "preview"
 msgstr "forhåndsvisning"
 
+#: portfolio/admin.py:57
 msgid "Select several at once; they are appended in the order chosen."
 msgstr "Vælg flere på én gang; de tilføjes i den valgte rækkefølge."
 
+#: portfolio/admin.py:86 timeline/admin.py:55
 #, python-format
 msgid "Added %(count)d photograph(s)."
 msgstr "Tilføjede %(count)d billede(r)."
 
+#: portfolio/apps.py:9 templates/base.html:30 templates/portfolio/album.html:10
+#: templates/portfolio/category.html:9 templates/portfolio/index.html:5
+#: templates/portfolio/index.html:10
 msgid "Portfolio"
 msgstr "Portfolio"
 
+#: portfolio/models.py:20 portfolio/models.py:55 timeline/models.py:16
 msgid "slug"
 msgstr "kort-navn"
 
+#: portfolio/models.py:21 portfolio/models.py:56
 msgid "description"
 msgstr "beskrivelse"
 
+#: portfolio/models.py:25
 msgid "Unpublished categories are hidden from the public site."
 msgstr "Kategorier, der ikke er udgivet, vises ikke på det offentlige site."
 
+#: portfolio/models.py:31 portfolio/models.py:52
 msgid "category"
 msgstr "kategori"
 
+#: portfolio/models.py:32
 msgid "categories"
 msgstr "kategorier"
 
+#: portfolio/models.py:57
 msgid "cover image"
 msgstr "forsidebillede"
 
+#: portfolio/models.py:61
 msgid "Unpublished albums are hidden from the public site."
 msgstr "Albummer, der ikke er udgivet, vises ikke på det offentlige site."
 
+#: portfolio/models.py:68 portfolio/models.py:98
 msgid "album"
 msgstr "album"
 
+#: portfolio/models.py:101 timeline/models.py:19 timeline/models.py:65
 msgid "caption"
 msgstr "billedtekst"
 
+#: portfolio/models.py:106
 msgid "photo"
 msgstr "billede"
 
+#: templates/400.html:4
+msgid "Bad request"
+msgstr "Ugyldig forespørgsel"
+
+#: templates/400.html:7
+msgid "That request couldn't be read"
+msgstr "Forespørgslen kunne ikke læses"
+
+#: templates/400.html:9
+msgid "Something about the request was malformed, so it was refused before it reached the page. Try again from the front page."
+msgstr "Der var noget galt med forespørgslen, så den blev afvist, før den nåede frem til siden. Prøv igen fra forsiden."
+
+#: templates/403.html:10
+msgid "Not allowed"
+msgstr "Ikke tilladt"
+
+#: templates/403.html:13
+msgid "That wasn't allowed"
+msgstr "Det var ikke tilladt"
+
+#: templates/403.html:15
+msgid "If you were sending a form, it had probably been open for a long time. Reload the page and send it again."
+msgstr "Hvis du var ved at sende en formular, har den sandsynligvis stået åben længe. Genindlæs siden, og send den igen."
+
+#: templates/404.html:4
+msgid "Page not found"
+msgstr "Siden blev ikke fundet"
+
+#: templates/404.html:7
+msgid "This page doesn't exist"
+msgstr "Denne side findes ikke"
+
+#: templates/404.html:9
+msgid "The address may be mistyped, or the page may have been moved or taken down. The navigation above still works."
+msgstr "Adressen kan være skrevet forkert, eller siden kan være flyttet eller fjernet. Menuen ovenfor virker stadig."
+
+#: templates/500.html:20 templates/500.html:50
+msgid "Something went wrong"
+msgstr "Noget gik galt"
+
+#: templates/500.html:52
+msgid "The error has been reported and will be looked at. Try again in a moment, or get in touch if it keeps happening."
+msgstr "Fejlen er blevet rapporteret og bliver set på. Prøv igen om lidt, eller skriv til mig, hvis den bliver ved."
+
+#: templates/500.html:54 templates/error.html:22
+msgid "Go to the front page"
+msgstr "Gå til forsiden"
+
+#: templates/base.html:16
 msgid "Skip to content"
 msgstr "Gå til indhold"
 
+#: templates/base.html:25
 msgid "Menu"
 msgstr "Menu"
 
+#: templates/base.html:29
 msgid "Main navigation"
 msgstr "Hovedmenu"
 
+#: templates/base.html:31 templates/pages/home.html:16
+#: templates/timeline/entry.html:9 templates/timeline/index.html:4
+#: templates/timeline/index.html:10 timeline/apps.py:9
 msgid "Timeline"
 msgstr "Tidslinje"
 
+#: templates/base.html:32 templates/pages/pricing.html:4
+#: templates/pages/pricing.html:9
 msgid "Pricing"
 msgstr "Priser"
 
+#: templates/base.html:33 templates/pages/about.html:4
+#: templates/pages/about.html:13
 msgid "About"
 msgstr "Om mig"
 
+#: templates/base.html:34 templates/galleries/unavailable.html:26
+#: templates/pages/contact.html:4 templates/pages/contact.html:9
+#: templates/pages/home.html:17
 msgid "Contact"
 msgstr "Kontakt"
 
+#: templates/base.html:81 templates/pages/about.html:19
 msgid "Get in touch"
 msgstr "Skriv til mig"
 
+#: templates/error.html:23
+msgid "Browse the portfolio"
+msgstr "Se portfolioen"
+
+#: templates/galleries/detail.html:6 templates/galleries/detail.html:16
 msgid "Your photographs"
 msgstr "Dine billeder"
 
+#: templates/galleries/detail.html:14
 #, python-format
 msgid "Photographs for %(name)s"
 msgstr "Billeder til %(name)s"
 
+#: templates/galleries/detail.html:22 templates/portfolio/category.html:31
 #, python-format
 msgid "%(counter)s photograph"
 msgid_plural "%(counter)s photographs"
 msgstr[0] "%(counter)s billede"
 msgstr[1] "%(counter)s billeder"
 
+#: templates/galleries/detail.html:27
 msgid "Download all as ZIP"
 msgstr "Hent alle som ZIP"
 
+#: templates/galleries/detail.html:33
 #, python-format
 msgid ""
 "\n"
@@ -430,30 +624,39 @@ msgstr ""
 "        det du vil beholde inden da.\n"
 "      "
 
+#: templates/galleries/detail.html:45
 msgid "Download original"
 msgstr "Hent original"
 
+#: templates/galleries/detail.html:50
 msgid "Download"
 msgstr "Hent"
 
+#: templates/galleries/locked.html:6 templates/galleries/locked.html:13
 msgid "Private gallery"
 msgstr "Privat galleri"
 
+#: templates/galleries/locked.html:14
 msgid "This gallery is password protected. Enter the password you were given."
 msgstr "Dette galleri er beskyttet med adgangskode. Indtast den kode du har fået."
 
+#: templates/galleries/locked.html:23
 msgid "Password"
 msgstr "Adgangskode"
 
+#: templates/galleries/locked.html:27
 msgid "Open gallery"
 msgstr "Åbn galleri"
 
+#: templates/galleries/unavailable.html:9
 msgid "Gallery no longer available"
 msgstr "Galleriet er ikke længere tilgængeligt"
 
+#: templates/galleries/unavailable.html:16
 msgid "This gallery is no longer available"
 msgstr "Dette galleri er ikke længere tilgængeligt"
 
+#: templates/galleries/unavailable.html:18
 #, python-format
 msgid ""
 "\n"
@@ -466,111 +669,127 @@ msgstr ""
 "        slettet.\n"
 "      "
 
+#: templates/galleries/unavailable.html:24
 msgid "If you still need them, get in touch and I'll see what can be done."
 msgstr "Har du stadig brug for dem, så skriv — så finder vi ud af noget."
 
+#: templates/pages/about.html:16
 msgid "How I work"
 msgstr "Sådan arbejder jeg"
 
+#: templates/pages/contact.html:17
 msgid "Thank you — your message has been sent. I'll be in touch soon."
 msgstr "Tak — din besked er sendt. Jeg vender tilbage hurtigst muligt."
 
+#: templates/pages/contact.html:32
 msgid "Leave this empty"
 msgstr "Lad dette felt være tomt"
 
+#: templates/pages/contact.html:49
 msgid "Send message"
 msgstr "Send besked"
 
+#: templates/pages/contact.html:54
 msgid "Or reach me directly"
 msgstr "Eller fang mig direkte"
 
+#: templates/pages/home.html:15
 msgid "See the portfolio"
 msgstr "Se portfolioen"
 
+#: templates/pages/home.html:38
 msgid "From the portfolio"
 msgstr "Fra portfolioen"
 
+#: templates/pages/home.html:50
 msgid "Latest from the timeline"
 msgstr "Nyeste fra tidslinjen"
 
+#: templates/pages/pricing.html:25
 msgid "Enquire"
 msgstr "Forespørg"
 
+#: templates/pages/pricing.html:31
 msgid "Packages are being put together — get in touch in the meantime."
 msgstr "Pakkerne er ved at blive sat sammen — skriv endelig i mellemtiden."
 
+#: templates/pages/pricing.html:36
 msgid "How booking works"
 msgstr "Sådan booker du"
 
+#: templates/portfolio/album.html:33
 msgid "No photographs in this album yet."
 msgstr "Der er ingen billeder i dette album endnu."
 
+#: templates/portfolio/category.html:39 templates/portfolio/index.html:38
+#: templates/timeline/index.html:49
 msgid "Nothing published here yet."
 msgstr "Der er ikke publiceret noget her endnu."
 
+#: templates/portfolio/index.html:30
 #, python-format
 msgid "%(counter)s album"
 msgid_plural "%(counter)s albums"
 msgstr[0] "%(counter)s album"
 msgstr[1] "%(counter)s albummer"
 
+#: templates/timeline/index.html:11
 msgid "Sessions shot for their own sake — experiments, walks, and light worth chasing."
 msgstr "Optagelser for deres egen skyld — forsøg, gåture og lys der var værd at jage."
 
+#: templates/timeline/index.html:16
 msgid "All"
 msgstr "Alle"
 
+#: templates/timeline/index.html:31
 #, python-format
 msgid "Related: %(name)s"
 msgstr "Relateret: %(name)s"
 
+#: templates/timeline/index.html:32
 msgid "in the portfolio"
 msgstr "i portfolioen"
 
+#: timeline/models.py:15
 msgid "title"
 msgstr "titel"
 
+#: timeline/models.py:17
 msgid "date"
 msgstr "dato"
 
+#: timeline/models.py:21
 msgid "A short story about the session — a paragraph or two, not an article."
 msgstr "En kort fortælling om optagelsen — et afsnit eller to, ikke en artikel."
 
+#: timeline/models.py:24
 msgid "tags"
 msgstr "tags"
 
+#: timeline/models.py:27
 msgid "Comma-separated, e.g. winter, coast, film."
 msgstr "Adskilt af komma, f.eks. vinter, kyst, film."
 
+#: timeline/models.py:35
 msgid "related portfolio category"
 msgstr "relateret portfoliokategori"
 
+#: timeline/models.py:42
 msgid "timeline entry"
 msgstr "tidslinjeindlæg"
 
+#: timeline/models.py:43
 msgid "timeline entries"
 msgstr "tidslinjeindlæg"
 
+#: timeline/models.py:62
 msgid "entry"
 msgstr "indlæg"
 
+#: timeline/models.py:70
 msgid "timeline photo"
 msgstr "tidslinjebillede"
 
+#: timeline/models.py:71
 msgid "timeline photos"
 msgstr "tidslinjebilleder"
-
-#~ msgid "Name:"
-#~ msgstr "Navn:"
-
-#~ msgid "Email:"
-#~ msgstr "E-mail:"
-
-#~ msgid "Type:"
-#~ msgstr "Type:"
-
-#~ msgid "Date:"
-#~ msgstr "Dato:"
-
-#~ msgid "IP address:"
-#~ msgstr "IP-adresse:"

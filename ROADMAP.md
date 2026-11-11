@@ -13,7 +13,7 @@ Versions follow the rules in [CLAUDE.md](CLAUDE.md) and are cut with `scripts/re
 | --- | --- | --- |
 | 0.1.0 | Design documents, working rules, and the application running locally | done |
 | 0.2.0 | [Visual identity](#020--visual-identity) | done |
-| 0.3.0 | [Production configuration, proven locally](#030--production-configuration-proven-locally) | yes |
+| 0.3.0 | [Production configuration, proven locally](#030--production-configuration-proven-locally) | done |
 | 0.4.0 | [Host tooling: the `ansible/` directory](#040--host-tooling-the-ansible-directory) | yes |
 | 0.5.0 | [The VPS exists and serves the site](#050--the-vps-exists-and-serves-the-site) | yes |
 | 0.6.0 | [Day-two operations: backups, monitoring, maintenance](#060--day-two-operations-backups-monitoring-maintenance) | yes |
@@ -58,19 +58,41 @@ server. Finding these on a live host is worse in every way.
 
 **Definition of done**
 
-- [ ] The stack runs locally with `DJANGO_DEBUG=0`, and every page returns 200 —
+- [x] The stack runs locally with `DJANGO_DEBUG=0`, and every page returns 200 —
       production uses `ManifestStaticFilesStorage` and a stricter security posture, which is
-      a genuinely different code path.
-- [ ] `manage.py check --deploy` produces no errors, and every remaining warning is
-      understood and deliberately accepted.
-- [ ] Custom 404 and 500 pages, in both languages, styled like the rest of the site.
-- [ ] Mailpit swapped for a real outbound-only Postfix relay behind the existing
-      `MAIL_RELAY_IMAGE` variable; a contact-form submission arrives in a real inbox and
-      does not land in spam (SPF/DKIM/rDNS as `architecture.md` §3 describes).
-- [ ] `.env.example` documents how to generate every production secret, and carries a
+      a genuinely different code path. `scripts/prodcheck.sh` runs the stack that way and
+      crawls it; currently 125 URLs, all 200.
+- [x] `manage.py check --deploy` produces no errors, and every remaining warning is
+      understood and deliberately accepted. There are none: the run is clean.
+- [x] Custom 400, 403, 404 and 500 pages, in both languages, styled like the rest of the
+      site. 403 and 400 were added alongside the two asked for, because a stale form's CSRF
+      failure produced exactly the same unstyled English page the milestone exists to remove.
+- [x] Mailpit swapped for a real outbound-only Postfix relay; a contact-form submission is
+      **accepted into the relay's queue**, the relay refuses to send as any other domain,
+      and it is configured to deliver straight to recipients ([ADR 0004](docs/decisions/0004-deliver-mail-directly-rather-than-through-a-smarthost.md)).
+- [x] `.env.example` documents how to generate every production secret, and carries a
       visible warning that its defaults are for local use only.
-- [ ] The production `.env` is a rendered artefact rather than a hand-edited file — the
-      template and its variables exist, ready for the playbooks in 0.4.0 to fill in.
+
+**Two things changed shape while this was built**, both recorded in ADR 0004:
+
+*Deliverability moved to 0.5.0.* The original wording asked for a submission that "arrives
+in a real inbox and does not land in spam". That cannot be proven here at all, and not for
+want of trying: it depends on a reverse DNS record on a host that does not exist, an SPF
+record naming an IP that has not been allocated, and a DKIM key published in a DNS zone —
+and residential ISPs block outbound port 25 regardless. What is provable locally is the hop
+this repository owns, and that is what is checked. The inbox test moves to 0.5.0, next to
+DNS and certificates.
+
+*The relay is a second service, not a swapped image.* The `MAIL_RELAY_IMAGE` variable was
+supposed to carry the swap. It could not: the two images share no configuration, and worse,
+an `.env` still holding the old value started Mailpit under the name `postfix` — a relay
+that accepts every message and silently delivers none. Mailpit and Postfix are now separate
+compose services chosen by `COMPOSE_PROFILES`, with the image pinned per service.
+
+**Deliberately left out.** "The production `.env` is a rendered artefact" was in this
+milestone's list, but a Jinja template belongs next to the vault that fills it, which is
+0.4.0's work. What 0.3.0 delivers instead is the input that template needs: every variable
+documented, with its production value and how to generate it.
 
 ---
 
@@ -117,6 +139,9 @@ ansible/
 - [ ] Secrets live in `ansible-vault`-encrypted files committed to the repository; the vault
       password is in the password manager and is not in the repository, not in `.env`, and
       not in shell history.
+- [ ] The production `.env` is a rendered artefact rather than a hand-edited file: a
+      template in `ansible/` filled from the vault. Moved here from 0.3.0, which documented
+      every variable it needs but had nowhere to put the template itself.
 - [ ] `requirements.yml` pins the collections used, so a fresh machine resolves the same
       versions.
 - [ ] Every playbook is idempotent: a second consecutive run reports zero changed tasks.
@@ -151,7 +176,21 @@ the domain over HTTPS but is not yet announced to anyone.
       after a `reboot`.
 - [ ] Admin reachable at the secret path, with a superuser created interactively; the path
       comes from the vault, not from the repository in plaintext.
-- [ ] Containers run as non-root, and `/data` is owned by that user only.
+- [ ] The application container runs entirely as uid 1000, PID 1 included, and `/data` is
+      owned by that user only. `app-cron` is the deliberate exception: its PID 1 is the cron
+      daemon, which must be root to drop to `app` for each job — the jobs themselves run
+      unprivileged. Tracked in [docs/defects.md](docs/defects.md) under "Known and already
+      tracked"; `supercronic` would remove it, and that is still undecided.
+- [ ] **Mail actually arrives.** Moved here from 0.3.0, which built the relay but could not
+      prove delivery — that depends on the host and its DNS, neither of which existed
+      ([ADR 0004](docs/decisions/0004-deliver-mail-directly-rather-than-through-a-smarthost.md)).
+      Specifically: Hetzner asked to unblock outbound port 25, which is closed by default on
+      new accounts; reverse DNS set on the VPS to `MAIL_HOSTNAME`; an SPF record naming the
+      VPS; a DKIM key generated, mounted, and its public half published at
+      `mail._domainkey`. Then a contact-form submission sent from the live site lands in a
+      real inbox, in the inbox rather than the spam folder, and its headers show SPF, DKIM
+      and DMARC all passing. Checking the queue is not evidence — mail that is accepted and
+      then filed as spam looks identical to mail that worked.
 
 ---
 

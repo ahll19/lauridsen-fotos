@@ -74,6 +74,18 @@ scripts/dev.sh down && scripts/dev.sh up
 Quote any value containing a space or an asterisk — `"0 3 * * *"` — because the scripts read
 the file with the shell.
 
+Switching the mail relay means changing three values together:
+
+| | Mailpit, for development | Postfix, as production runs |
+| --- | --- | --- |
+| `COMPOSE_PROFILES` | `dev` | `prod` |
+| `EMAIL_PORT` | `1025` | `587` |
+| `DEFAULT_FROM_EMAIL` | anything | must be on `MAIL_SENDER_DOMAIN`, or the relay refuses it |
+
+`DJANGO_DEBUG` and `STATIC_CACHE_CONTROL` travel together too: `immutable` is only ever a
+true thing to say about a filename carrying a content hash, which is what `DJANGO_DEBUG=0`
+produces. `scripts/prodcheck.sh` sets both correctly, so prefer it to changing them by hand.
+
 ## Working on the code
 
 Branch, verify, then open a pull request:
@@ -85,6 +97,12 @@ scripts/verify.sh
 
 `main` is protected, commit messages follow Conventional Commits, and the git hooks enforce
 both locally. [CLAUDE.md](CLAUDE.md) has the working rules in full.
+
+Production is a different code path, not just a different flag — assets get content-hashed
+names, errors become pages instead of tracebacks, and the security middleware stops being
+lenient. `scripts/prodcheck.sh` runs the stack that way here and checks it, then puts
+development mode back — `--keep` leaves it there if you want to click around. Worth running
+before anything that touches templates, static files or settings.
 
 The look is `src/static/css/site.css`, with the palette as custom properties at the top —
 changing the accent is two values. Interface strings live in `src/locale/da/`: after touching
@@ -124,6 +142,8 @@ The rest:
 | | |
 | --- | --- |
 | `scripts/verify.sh` | Hygiene, secrets, lint, Django checks, migrations, tests, compose validation. Run before a pull request; `--fast` is the subset the pre-commit hook runs. |
+| `scripts/prodcheck.sh` | Runs the stack with production settings and checks it, then restores development mode. `--keep` leaves it in production mode to look around. |
+| `scripts/crawl.py <url>` | Follows every link and `src` on the running site and reports anything that is not a 200. Used by `prodcheck.sh`; useful on its own after a template change. |
 | `scripts/install-hooks.sh` | Points git at `.githooks/`. Once per clone. |
 | `scripts/new-branch.sh <type> <slug>` | A correctly named branch off an up-to-date `main`. |
 | `scripts/release.sh` | `prepare <major\|minor\|patch>` then `tag`. |
@@ -147,9 +167,14 @@ docs/            decision records, defect register
 ```
 
 Four containers: nginx, the application, a cron container for the scheduled jobs, and a mail
-relay (Mailpit locally, send-only Postfix in production). All state lives in one
-bind-mounted directory — `./data` here, `/data` in the containers — holding the database,
-the uploaded originals, and a disposable thumbnail cache that backups skip.
+relay. All state lives in one bind-mounted directory — `./data` here, `/data` in the
+containers — holding the database, the uploaded originals, and a disposable thumbnail cache
+that backups skip.
+
+The relay is two services rather than one: Mailpit captures mail and shows it in a browser,
+Postfix delivers it straight to recipients
+([ADR 0004](docs/decisions/0004-deliver-mail-directly-rather-than-through-a-smarthost.md)).
+Both answer to the name `mail-relay`, so the application never knows which is running.
 
 ### When something is wrong
 
@@ -162,6 +187,10 @@ the uploaded originals, and a disposable thumbnail cache that backups skip.
   code change the usual cause is a pending migration.
 - **A photograph 404s after moving an album** — upload paths are built from the slugs at
   upload time and renaming does not move files. Re-upload them.
+- **Every request redirects to `https://` and nothing answers** — production settings without
+  a certificate in front. Set `DJANGO_SERVE_OVER_HTTPS=0`, or use `prodcheck.sh`, which does.
+- **Mail disappears with no error** — either `COMPOSE_PROFILES` names a relay that is not
+  running, or Postfix is running and `DEFAULT_FROM_EMAIL` is not on `MAIL_SENDER_DOMAIN`.
 
 ### Documents
 

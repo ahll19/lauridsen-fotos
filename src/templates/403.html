@@ -1,0 +1,16 @@
+{% extends "error.html" %}
+{% load i18n %}
+
+{% comment %}
+  Reached mainly by a stale form: a page left open long enough for its CSRF token to
+  expire posts a token the server no longer accepts. Saying so is more useful than
+  "forbidden", because the fix — reload and send it again — is the visitor's to apply.
+{% endcomment %}
+
+{% block title %}{% translate "Not allowed" %} · {{ site_name }}{% endblock %}
+
+{% block code %}403{% endblock %}
+{% block heading %}{% translate "That wasn't allowed" %}{% endblock %}
+{% block message %}
+  {% translate "If you were sending a form, it had probably been open for a long time. Reload the page and send it again." %}
+{% endblock %}
