@@ -10,4 +10,4 @@ class TimelineEntryTranslation(TranslationOptions):
 
 @register(TimelineEntryPhoto)
 class TimelineEntryPhotoTranslation(TranslationOptions):
-    fields = ("caption",)
+    fields = ("caption", "alt_text")

@@ -7,5 +7,7 @@ def site_context(request):
     return {
         "site_name": home.business_name,
         "site_tagline": home.tagline,
+        # The fallback description for any page that has none of its own.
+        "site_description": " ".join((home.intro or home.tagline or "").split())[:160],
         "contact_settings": ContactSettings.get_solo(),
     }

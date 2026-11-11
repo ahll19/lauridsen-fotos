@@ -15,4 +15,4 @@ class AlbumTranslation(TranslationOptions):
 
 @register(Photo)
 class PhotoTranslation(TranslationOptions):
-    fields = ("caption",)
+    fields = ("caption", "alt_text")

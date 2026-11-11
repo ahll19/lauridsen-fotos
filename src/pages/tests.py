@@ -147,8 +147,8 @@ class LanguageRoundTripTests(TestCase):
     def test_round_trip_keeps_the_visitor_on_the_same_page(self):
         for danish_url, english_url in [
             ("/portfolio/", "/en/portfolio/"),
-            ("/priser/", "/en/priser/"),
-            ("/kontakt/", "/en/kontakt/"),
+            ("/priser/", "/en/pricing/"),
+            ("/kontakt/", "/en/contact/"),
             ("/timeline/", "/en/timeline/"),
         ]:
             with self.subTest(page=danish_url):

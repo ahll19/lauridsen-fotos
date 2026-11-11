@@ -36,6 +36,15 @@ Still local-only — 0.3.0 changes how the site is configured, not where it runs
   told — that none of its values may be used on a server — and says how to generate each
   production secret.
 
+- Link previews: every public page carries a description and Open Graph tags, so a link
+  pasted into a message shows the album's cover rather than a bare URL ([D12](docs/defects.md)).
+- A favicon ([D13](docs/defects.md)), and the admin is headed with the site's name rather
+  than "Django administration" ([D16](docs/defects.md)).
+- A Content-Security-Policy on every page, naming no host but the site itself
+  ([D19](docs/defects.md)). Configurable through `DJANGO_CSP` and `DJANGO_CSP_REPORT_ONLY`.
+- An alt-text field on portfolio and timeline photographs, translated like the caption
+  ([D22](docs/defects.md)).
+
 ### Changed
 
 - Mailpit and Postfix are two compose services selected by `COMPOSE_PROFILES`, rather than
@@ -59,6 +68,15 @@ Still local-only — 0.3.0 changes how the site is configured, not where it runs
   configuration that matters.
 
 ### Fixed
+
+- Fonts are served from the site instead of Google's CDN, which was told every visitor's
+  address ([D15](docs/defects.md)).
+- English pages have English addresses: `/en/pricing/`, `/en/contact/`, `/en/about/`
+  ([D21](docs/defects.md)). The Danish addresses are unchanged.
+- Client galleries no longer block right-click and drag on the photographs the client is
+  there to save ([D20](docs/defects.md)).
+- Public images carry `width` and `height` ([D14](docs/defects.md)), and pages without a
+  body class no longer emit `class=""` ([D18](docs/defects.md)).
 
 - **`scripts/dev.sh reset` and `down` left containers running** ([D39](docs/defects.md)).
   Compose only acts on services the current file describes and whose profile is active, so a

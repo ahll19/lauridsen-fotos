@@ -6,7 +6,7 @@
 {% block content %}
 <section class="hero{% if not home.hero_image %} hero--plain{% endif %}">
   {% if home.hero_image %}
-    <img class="hero__image" src="{% thumbnail home.hero_image 'hero' %}" alt="">
+    {% thumbnail home.hero_image 'hero' as thumb %}<img class="hero__image" src="{{ thumb.url }}" width="{{ thumb.width }}" height="{{ thumb.height }}" alt="">
   {% endif %}
   <div class="hero__body wrap">
     <h1 class="hero__title">{{ home.business_name }}</h1>
@@ -32,7 +32,7 @@
     <article class="teaser">
       <a href="{{ featured_album.get_absolute_url }}">
         {% if featured_album.cover_image %}
-          <img src="{% thumbnail featured_album.cover_image 'cover' %}" alt="{{ featured_album.name }}" loading="lazy">
+          {% thumbnail featured_album.cover_image 'cover' as thumb %}<img src="{{ thumb.url }}" width="{{ thumb.width }}" height="{{ thumb.height }}" alt="{{ featured_album.name }}" loading="lazy">
         {% endif %}
         <h2 class="teaser__title">{{ featured_album.name }}</h2>
         <p class="teaser__meta">{% translate "From the portfolio" %} · {{ featured_album.category.name }}</p>
@@ -44,7 +44,7 @@
     <article class="teaser">
       <a href="{{ latest_entry.get_absolute_url }}">
         {% with photo=latest_entry.photos.first %}
-          {% if photo %}<img src="{% thumbnail photo.image 'cover' %}" alt="{{ latest_entry.title }}" loading="lazy">{% endif %}
+          {% if photo %}{% thumbnail photo.image 'cover' as thumb %}<img src="{{ thumb.url }}" width="{{ thumb.width }}" height="{{ thumb.height }}" alt="{{ latest_entry.title }}" loading="lazy">{% endif %}
         {% endwith %}
         <h2 class="teaser__title">{{ latest_entry.title }}</h2>
         <p class="teaser__meta">{% translate "Latest from the timeline" %} · {{ latest_entry.date|date:"j F Y" }}</p>

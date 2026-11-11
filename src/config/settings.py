@@ -98,6 +98,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "core.middleware.ContentSecurityPolicyMiddleware",
 ]
 
 TEMPLATES = [
@@ -202,6 +203,9 @@ THUMBNAIL_ALIASES = {
 # from everything served publicly. Treated as a privacy decision, not a side effect
 # (technical_design.md, "Image handling"). Orientation is applied before the data is lost.
 THUMBNAIL_PRESERVE_EXTENSIONS = True
+# Remember each derivative's pixel size in the database, so templates can write
+# width/height on an <img> without opening the file on every request.
+THUMBNAIL_CACHE_DIMENSIONS = True
 THUMBNAIL_DEFAULT_OPTIONS = {"autocrop": False}
 THUMBNAIL_PROCESSORS = (
     "easy_thumbnails.processors.colorspace",
@@ -275,6 +279,30 @@ AUTH_PASSWORD_VALIDATORS = [
 # request. Point it at the site's 403 page instead — a stale form is the only way a
 # visitor meets a 403 here, and "forbidden" is not a useful thing to tell them.
 CSRF_FAILURE_VIEW = "core.views.csrf_failure"
+
+# Everything the site loads comes from itself, so the policy names no other host. Scripts
+# are the strict part: no inline script and no eval, which is what stops an injected one
+# running. Styles allow inline, because the lightbox positions its slides with style
+# attributes and the self-contained 500 page carries its stylesheet in the document; an
+# injected style is a far smaller thing than an injected script. `data:` images are the
+# lightbox's own icons. Set DJANGO_CSP=off to send no policy at all.
+_DEFAULT_CSP = (
+    "default-src 'self'; "
+    "script-src 'self'; "
+    "style-src 'self' 'unsafe-inline'; "
+    "img-src 'self' data: blob:; "
+    "font-src 'self'; "
+    "object-src 'none'; "
+    "base-uri 'self'; "
+    "form-action 'self'; "
+    "frame-ancestors 'none'"
+)
+CONTENT_SECURITY_POLICY = env("DJANGO_CSP", _DEFAULT_CSP)
+if CONTENT_SECURITY_POLICY.strip().lower() == "off":
+    CONTENT_SECURITY_POLICY = ""
+# Report-only sends the policy without enforcing it: the browser logs what it would have
+# blocked. The way to try a tighter policy on the live site without breaking it.
+CONTENT_SECURITY_POLICY_REPORT_ONLY = env_bool("DJANGO_CSP_REPORT_ONLY", False)
 
 X_FRAME_OPTIONS = "DENY"
 SECURE_CONTENT_TYPE_NOSNIFF = True

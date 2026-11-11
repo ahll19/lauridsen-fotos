@@ -99,6 +99,15 @@ class Photo(OrderedModel):
     )
     image = models.ImageField(_("image"), upload_to=photo_path)
     caption = models.CharField(_("caption"), max_length=240, blank=True)
+    alt_text = models.CharField(
+        _("alt text"),
+        max_length=240,
+        blank=True,
+        help_text=_(
+            "Describes what is in the photograph, for visitors who cannot see it and for "
+            "search engines. Not shown on the page. The caption is used if this is empty."
+        ),
+    )
 
     order_with_respect_to = "album"
 
@@ -108,3 +117,8 @@ class Photo(OrderedModel):
 
     def __str__(self):
         return self.caption or self.image.name.rsplit("/", 1)[-1]
+
+    @property
+    def alt(self):
+        """A caption is shown and an alt text describes; fall back rather than say nothing."""
+        return self.alt_text or self.caption

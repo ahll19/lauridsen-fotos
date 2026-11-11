@@ -2,7 +2,7 @@
 {% load i18n thumbnail %}
 
 {% block title %}{% translate "Timeline" %} — {{ site_name }}{% endblock %}
-{% block body_class %}protect-images{% endblock %}
+{% block body_attrs %} class="protect-images"{% endblock %}
 
 {% block content %}
 <div class="wrap section">
@@ -39,7 +39,7 @@
           {% for photo in entry.photos.all|slice:":4" %}
             <a href="{% thumbnail photo.image 'lightbox' %}" class="glightbox" data-gallery="entry-{{ entry.pk }}"
                {% if photo.caption %}data-title="{{ photo.caption }}"{% endif %}>
-              <img src="{% thumbnail photo.image 'grid' %}" alt="{{ photo.caption }}" loading="lazy">
+              {% thumbnail photo.image 'grid' as thumb %}<img src="{{ thumb.url }}" width="{{ thumb.width }}" height="{{ thumb.height }}" alt="{{ photo.alt }}" loading="lazy">
             </a>
           {% endfor %}
         </div>

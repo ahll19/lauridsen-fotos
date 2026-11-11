@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n thumbnail %}
 
-{% block body_class %}protect-images{% endblock %}
+{% block body_attrs %} class="protect-images"{% endblock %}
 {% block title %}{% translate "Portfolio" %} — {{ site_name }}{% endblock %}
 
 {% block content %}
@@ -18,7 +18,7 @@
             <div class="card__media">
               {% with album=category.published_albums.0 %}
                 {% if album.cover_image %}
-                  <img src="{% thumbnail album.cover_image 'cover' %}" alt="{{ category.name }}" loading="lazy">
+                  {% thumbnail album.cover_image 'cover' as thumb %}<img src="{{ thumb.url }}" width="{{ thumb.width }}" height="{{ thumb.height }}" alt="{{ category.name }}" loading="lazy">
                 {% else %}
                   <div class="card__placeholder"></div>
                 {% endif %}
