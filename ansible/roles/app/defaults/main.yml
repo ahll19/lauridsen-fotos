@@ -36,6 +36,7 @@ certbot_extra_args: ""
 certbot_image: certbot/certbot:v2.11.0
 certbot_renew_interval: 43200
 certbot_retry_interval: 900
+certbot_timeout: 600
 cert_reload_interval: 60
 
 # --- The application ---------------------------------------------------------

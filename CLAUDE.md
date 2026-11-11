@@ -17,11 +17,10 @@ they are the source of truth for *what* gets built:
 | [ROADMAP.md](ROADMAP.md) | Milestones to 1.0.0, each with a definition of done. |
 | [docs/defects.md](docs/defects.md) | Known defects found on the running site, with severity and status. |
 
-**Current phase: local development only.** The VPS has not been ordered yet. Everything must
-run on a laptop via Docker Compose. Do not write anything that assumes a provisioned server,
-a real domain, a public IP, or live TLS certificates — those arrive later, and the setup
-described in `architecture.md` is the target, not the present state. `certbot` is therefore
-absent from the compose file; it joins when there is a domain to point at it.
+**Current phase: ready for a server, without one yet.** The VPS has not been ordered. The
+playbooks in `ansible/` have been rehearsed against a disposable machine (`scripts/vm.sh`),
+not a real host; [docs/go-live.md](docs/go-live.md) lists what remains. Prove any change to
+the host tooling on the disposable machine before it is proposed.
 
 ## Nothing operational is hardcoded
 
@@ -121,6 +120,9 @@ someone's shell history.
 | `scripts/install-hooks.sh` | Points git at `.githooks/`. Run once per clone. |
 | `scripts/new-branch.sh` | Creates a correctly named branch off an up-to-date `main`. |
 | `scripts/release.sh` | Prepares and tags releases. |
+| `scripts/ansible.sh` | Runs a playbook: `provision`, `deploy`, `update`, `backup`, `restore`. |
+| `scripts/vault.sh` | Creates, edits and reads the encrypted production secrets. |
+| `scripts/vm.sh` | Disposable Debian machines for rehearsing the playbooks. |
 
 Host configuration is not a script: it lives in `ansible/` as playbooks applied over SSH, and
 the server is rebuilt by re-running them rather than by hand. If a document ever says "then

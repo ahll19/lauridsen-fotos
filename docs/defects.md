@@ -12,14 +12,14 @@ written without rediscovering the problem.
 | **B** | Wrong, but the damage is limited to search engines, the owner's own workflow, or polish. |
 | **C** | Worth deciding on. Not obviously wrong, but not obviously right either. |
 
-Four passes are recorded. The first (D1–D22) came from browsing the running site. The second
+Six passes are recorded. The first (D1–D22) came from browsing the running site. The second
 (D23–D33) came from reading every file in the repository afterwards, and found the more
 serious problems — none of them visible from the outside. The third (D34–D38) came from
-Anders working through a QA run book against a freshly rebuilt environment before 0.2.0, and
-found what only someone using the site as its owner would notice. The fourth closed
-the items the first had left open (D12–D22). The fourth (D39–D40) came
-from running the 0.3.0 QA guide as commands rather than reading it, which is the cheapest of
-the four and should probably have been the habit from the start.
+Anders working through a QA run book against a freshly rebuilt environment before 0.2.0. The
+fourth (D39–D40) came from running the 0.3.0 QA guide as commands rather than reading it.
+The fifth closed what the first had left open (D12–D22). The sixth (D41–D42) came from
+deploying to a disposable server, and found the two that mattered most: both would have
+broken production, and neither could be seen on a laptop.
 
 | # | Sev | Defect | Status |
 | --- | --- | --- | --- |
@@ -63,6 +63,8 @@ the four and should probably have been the habit from the start.
 | [D38](#d38) | C | Leaving the site costs you the page you were reading | fixed |
 | [D39](#d39) | B | `dev.sh reset` and `down` leave containers running | fixed |
 | [D40](#d40) | B | Private gallery files are not marked `noindex` | fixed |
+| [D41](#d41) | A | The scheduled jobs have never run | fixed |
+| [D42](#d42) | A | With HTTPS enforced, the application never becomes healthy | fixed |
 
 ---
 
@@ -382,9 +384,59 @@ them. *Fixed* by `core.tests.RenderedPageTests`, which walks the public URLs in 
 languages and asserts no response contains `{#`, `{%` or `{{`. That test fails against the
 previous commit.
 
+## Sixth pass: found by deploying to a disposable server
+
+Both came out of the first rehearsal of the playbooks against a throwaway Debian machine
+(`scripts/vm.sh`). Every check that existed passed with both of them present.
+
+### D41
+
+**The scheduled jobs have never run.** Each line of the crontab ended
+`>> /proc/1/fd/1 2>&1`, to get the job's output into the container log. But cron runs each
+job as the unprivileged `app` user, and PID 1's stdout belongs to root:
+
+```
+$ docker compose exec -u app app-cron bash -c 'echo test >> /proc/1/fd/1'
+bash: /proc/1/fd/1: Permission denied
+```
+
+A shell that cannot set up a redirect does not run the command. So `expire_galleries` and
+`purge_tombstoned_galleries` were never started, on any tick, since the day they were
+written — and because the failure happened before the command, there was nothing to log
+it. A gallery set to expire a minute ago was still fully on disk after a real cron tick had
+passed. For client photographs this is the exact outcome `functional_design.md` §10 exists
+to prevent, and `architecture.md` §9 names it as the one failure that stays invisible.
+
+It survived because everything that exercised the jobs ran them some other way:
+`scripts/dev.sh cron` and the tests call the management command directly, as root or
+in-process, and the earlier check only confirmed the crontab *text* was right.
+
+*Fixed*: the jobs write to a named pipe owned by `app`, which the entrypoint drains into
+the container log. Verified under a real tick, locally and on the rehearsal server: the
+gallery expired on schedule and its directory left the disk. `scripts/prodcheck.sh` now
+runs each job's exact crontab line as `app`, with an empty environment, and fails if it
+does not run or its output does not reach the log.
+
+### D42
+
+**With HTTPS enforced, the application never becomes healthy.** The container's health
+check asks gunicorn for `/healthz` over plain HTTP from inside the container. In
+production `SECURE_SSL_REDIRECT` answered that with a 301 to `https://127.0.0.1:8000`,
+which nothing serves, so the container stayed `unhealthy` for ever — and nginx, which
+waits for it, was never started. The first deploy to any real host would have produced a
+site that never came up.
+
+Nothing local could show it: running production mode on a laptop means switching HTTPS
+off (`DJANGO_SERVE_OVER_HTTPS=0`), which switches off the redirect too.
+
+*Fixed* with `SECURE_REDIRECT_EXEMPT` for that one path, and three tests. Visitors are
+unaffected — nginx redirects port 80 before Django is asked.
+
 ---
 
-## Fourth pass: the items left open
+---
+
+## Fifth pass: the items left open
 
 D12–D22 were first recorded as features or judgement calls and left. All were closed
 before 0.4.0, because two of them only get more expensive after launch: addresses that
@@ -484,8 +536,10 @@ Recorded so they are not re-examined later:
 
 ## Known and already tracked
 
-- Custom 404 and 500 pages do not exist yet — a definition-of-done item for
-  [ROADMAP 0.3.0](../ROADMAP.md#030--production-configuration-proven-locally).
-- HSTS and TLS are absent because there is no domain yet — ROADMAP 0.5.0.
 - `app-cron` still runs a root PID 1, because the cron daemon must be root to drop to `app`.
-  Raised during the PR #2 review; `supercronic` would remove it. Undecided.
+  Raised during the PR #2 review; `supercronic` would remove it, and would have made D41
+  impossible. Undecided.
+- `certbot renew --dry-run` could not be completed in the rehearsal: a dry run talks to
+  Let's Encrypt's staging service, which will not issue for a made-up domain. A real
+  renewal against a test CA was run instead. The dry run is a
+  [ROADMAP 0.5.0](../ROADMAP.md) item, on the real domain.

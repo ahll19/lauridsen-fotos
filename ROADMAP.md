@@ -5,6 +5,10 @@ monitoring all working and proven.** Content can keep arriving afterwards — a 
 does not block the tag. What blocks it is anything that would make the site unsafe to point
 real clients at.
 
+**Where it stands.** Everything that can be built and proven without a server is. What is
+left needs things only Anders can supply — a VPS, a domain, the NAS, real photographs — and
+[docs/go-live.md](docs/go-live.md) is the list, in order, with the command for each step.
+
 Milestones are dependency-ordered, not dated. Each has a definition of done that is meant to
 be checkable rather than a matter of opinion: something either happened or it did not.
 Versions follow the rules in [CLAUDE.md](CLAUDE.md) and are cut with `scripts/release.sh`.
@@ -14,9 +18,9 @@ Versions follow the rules in [CLAUDE.md](CLAUDE.md) and are cut with `scripts/re
 | 0.1.0 | Design documents, working rules, and the application running locally | done |
 | 0.2.0 | [Visual identity](#020--visual-identity) | done |
 | 0.3.0 | [Production configuration, proven locally](#030--production-configuration-proven-locally) | done |
-| 0.4.0 | [Host tooling: the `ansible/` directory](#040--host-tooling-the-ansible-directory) | yes |
-| 0.5.0 | [The VPS exists and serves the site](#050--the-vps-exists-and-serves-the-site) | yes |
-| 0.6.0 | [Day-two operations: backups, monitoring, maintenance](#060--day-two-operations-backups-monitoring-maintenance) | yes |
+| 0.4.0 | [Host tooling: the `ansible/` directory](#040--host-tooling-the-ansible-directory) | done |
+| 0.5.0 | [The VPS exists and serves the site](#050--the-vps-exists-and-serves-the-site) | yes — rehearsed, needs the server |
+| 0.6.0 | [Day-two operations: backups, monitoring, maintenance](#060--day-two-operations-backups-monitoring-maintenance) | yes — rehearsed, needs the server |
 | 1.0.0 | [Live](#100--live) | — |
 
 ---
@@ -90,67 +94,52 @@ that accepts every message and silently delivers none. Mailpit and Postfix are n
 compose services chosen by `COMPOSE_PROFILES`, with the image pinned per service.
 
 **Deliberately left out.** "The production `.env` is a rendered artefact" was in this
-milestone's list, but a Jinja template belongs next to the vault that fills it, which is
-0.4.0's work. What 0.3.0 delivers instead is the input that template needs: every variable
-documented, with its production value and how to generate it.
+milestone's list, but a Jinja template belongs next to the vault that fills it, so it was
+delivered with 0.4.0.
 
 ---
 
 ## 0.4.0 — Host tooling: the `ansible/` directory
 
-The server should be reproducible rather than a pet. Everything from a bare Debian install
-upwards is described as playbooks in this repository and applied over SSH, so the host can be
-rebuilt from a clone rather than from memory. See
-[ADR 0002](docs/decisions/0002-manage-the-host-with-ansible.md) for the reasoning, and
-`architecture.md` §10 for where it sits in the architecture.
+**Done.** The server is described as playbooks and can be rebuilt from a clone. See
+[ADR 0002](docs/decisions/0002-manage-the-host-with-ansible.md) for why,
+[ADR 0005](docs/decisions/0005-ship-releases-from-the-operators-machine.md) for how code
+reaches the host, and [ADR 0006](docs/decisions/0006-certbot-keeps-a-certificate-where-nginx-reads-it.md)
+for certificates.
 
-**Shape**
-
-```
-ansible/
-  ansible.cfg
-  requirements.yml            collections, pinned
-  inventory/production/
-    hosts.yml
-    group_vars/all/
-      vars.yml                non-secret configuration
-      vault.yml               ansible-vault encrypted
-  playbooks/
-    provision.yml             bare host → ready to run the stack
-    deploy.yml                pull, build, migrate, restart, verify
-    update.yml                OS patches, image bumps, dependency review, redeploy
-    backup.yml                install the nightly job and its rotation
-    restore.yml               pull a backup back onto a host
-  roles/
-    common/ firewall/ docker/ app/ backup/
-```
+Proven on a disposable Debian 12 machine rather than assumed (`scripts/vm.sh`): a bare
+host, reachable only as root, taken to a serving site over HTTPS by `provision.yml` and
+`deploy.yml` and nothing else. That rehearsal found two defects that would have broken
+the first real deploy ([D41, D42](docs/defects.md)).
 
 **Definition of done**
 
-- [ ] `provision.yml` takes a bare Debian 12 host to the state `architecture.md` describes:
+- [x] `provision.yml` takes a bare Debian 12 host to the state `architecture.md` describes:
       packages, non-root user, SSH hardening, `ufw`, `unattended-upgrades`, Docker Engine and
-      the Compose plugin, and the `/data` layout with correct ownership.
-- [ ] `deploy.yml` pulls the code, builds the image on the host, runs migrations, restarts
-      the stack, and **fails if `/healthz` does not answer afterwards** — a deploy that
-      quietly leaves the site down is worse than one that errors.
-- [ ] `update.yml` performs the maintenance pass from `architecture.md` §10: OS security
-      patches, pinned image bumps, dependency review, then redeploy.
-- [ ] `backup.yml` and `restore.yml` exist; they are *exercised* in 0.6.0, not here.
-- [ ] Secrets live in `ansible-vault`-encrypted files committed to the repository; the vault
-      password is in the password manager and is not in the repository, not in `.env`, and
-      not in shell history.
-- [ ] The production `.env` is a rendered artefact rather than a hand-edited file: a
-      template in `ansible/` filled from the vault. Moved here from 0.3.0, which documented
-      every variable it needs but had nowhere to put the template itself.
-- [ ] `requirements.yml` pins the collections used, so a fresh machine resolves the same
-      versions.
-- [ ] Every playbook is idempotent: a second consecutive run reports zero changed tasks.
-      This is the check that separates a playbook from a shell script.
-- [ ] `provision.yml` and `deploy.yml` have been run end to end against a **disposable**
-      host — a throwaway VPS or a local VM — not first attempted on the real one.
-- [ ] `ansible-lint` is clean and wired into `scripts/verify.sh`.
-- [ ] No configuration step exists outside Ansible. If a document anywhere says "then SSH in
-      and…", that step is a bug.
+      the Compose plugin, and the `/data` layout with correct ownership. Afterwards root and
+      password logins are both refused, and only 22, 80 and 443 are open.
+- [x] `deploy.yml` ships the code, builds the image on the host, runs migrations, restarts
+      the stack, and **fails if `/healthz` does not answer afterwards**. Seen failing for
+      exactly that reason during the rehearsal, before D42 was fixed.
+- [x] `update.yml` performs the maintenance pass from `architecture.md` §10: OS security
+      patches, a rebuild on freshly pulled base images, a list of dependencies with newer
+      releases to review, then redeploy.
+- [x] `backup.yml` and `restore.yml` exist — and were exercised, which was 0.6.0's job.
+- [x] Secrets live in an `ansible-vault` file; `scripts/vault.sh init` generates every one
+      and writes it encrypted. **Not yet created**: the vault's password should be chosen
+      by Anders and never touch a disk, so `init` is his to run
+      ([go-live](docs/go-live.md)). `verify.sh` fails if a vault file is ever committed
+      unencrypted.
+- [x] `requirements.yml` pins the collections used.
+- [x] Every playbook is idempotent: `provision`, `deploy`, `update` and `backup` each report
+      zero changed tasks on a second consecutive run. `restore` refuses to run twice.
+- [x] `provision.yml` and `deploy.yml` have been run end to end against a disposable host.
+- [x] `ansible-lint` is clean at its strictest profile and wired into `scripts/verify.sh`.
+- [x] No configuration step exists outside Ansible. The two things done to *other* systems
+      — a DNS record, a key on the NAS — are printed by `scripts/vault.sh public`.
+- [x] The production `.env` is a rendered artefact (carried over from 0.3.0):
+      `ansible/roles/app/templates/env.j2`, and `verify.sh` fails if a key in `.env.example`
+      is missing from it.
 
 ---
 
@@ -159,65 +148,72 @@ ansible/
 `architecture.md`, made real, entirely through the playbooks from 0.4.0. The site answers on
 the domain over HTTPS but is not yet announced to anyone.
 
+Every item below that could be rehearsed has been, on the disposable machine, with Pebble
+(Let's Encrypt's test server) standing in for Let's Encrypt. A box stays unticked until it
+has happened on the real host. [docs/go-live.md](docs/go-live.md) is the order to do them in.
+
 **Definition of done**
 
 - [ ] Hetzner VPS ordered: Debian 12, roughly 4–8 GB RAM and ~200 GB disk.
 - [ ] The host reached its configured state by running `provision.yml` against it, and
-      nothing else. Anything discovered mid-flight that had to be fixed by hand is folded
-      back into a role before this milestone closes.
+      nothing else. *Rehearsed.*
 - [ ] The Hetzner Cloud Firewall allows only 80, 443 and SSH, matching what `ufw` enforces
       on the host.
 - [ ] DNS A (and AAAA if used) pointing at the VPS.
-- [ ] `certbot` added to the compose stack; a valid Let's Encrypt certificate is served,
-      HTTP redirects to HTTPS, and HSTS is on.
-- [ ] A renewal dry run succeeds (`certbot renew --dry-run`) — the certificate expiring
-      silently in 90 days is the classic way this setup dies.
+- [ ] A valid Let's Encrypt certificate is served, HTTP redirects to HTTPS, and HSTS is on.
+      *Rehearsed*: `certbot` is in the stack; a certificate was issued over HTTP-01, HTTP
+      answered 301 to HTTPS, and `Strict-Transport-Security` was present.
+- [ ] A renewal dry run succeeds (`certbot renew --dry-run`). *Partly rehearsed*: a real
+      renewal was forced against the test CA, the new certificate was put in place, and
+      nginx reloaded by itself and served it. The dry run itself needs the real domain.
 - [ ] The application was deployed by `deploy.yml`, and the stack comes back unattended
-      after a `reboot`.
+      after a `reboot`. *Rehearsed*: healthy again within a minute of the reboot.
 - [ ] Admin reachable at the secret path, with a superuser created interactively; the path
       comes from the vault, not from the repository in plaintext.
 - [ ] The application container runs entirely as uid 1000, PID 1 included, and `/data` is
-      owned by that user only. `app-cron` is the deliberate exception: its PID 1 is the cron
-      daemon, which must be root to drop to `app` for each job — the jobs themselves run
-      unprivileged. Tracked in [docs/defects.md](docs/defects.md) under "Known and already
-      tracked"; `supercronic` would remove it, and that is still undecided.
-- [ ] **Mail actually arrives.** Moved here from 0.3.0, which built the relay but could not
-      prove delivery — that depends on the host and its DNS, neither of which existed
+      owned by that user only. *Rehearsed.* `app-cron` is the deliberate exception: its
+      PID 1 is the cron daemon, which must be root to drop to `app` for each job. Tracked
+      in [docs/defects.md](docs/defects.md); `supercronic` would remove it, still undecided.
+- [ ] **Mail actually arrives.** Hetzner asked to unblock outbound port 25; reverse DNS set
+      to `MAIL_HOSTNAME`; an SPF record naming the VPS; the DKIM public key published
+      (`scripts/vault.sh public` prints it). Then a contact-form submission from the live
+      site lands in a real inbox, not the spam folder, with SPF, DKIM and DMARC passing.
+      *Rehearsed as far as the relay*: the message was accepted and DKIM-signed with the
+      vault's key, and a foreign sender was refused. Delivery cannot be rehearsed
       ([ADR 0004](docs/decisions/0004-deliver-mail-directly-rather-than-through-a-smarthost.md)).
-      Specifically: Hetzner asked to unblock outbound port 25, which is closed by default on
-      new accounts; reverse DNS set on the VPS to `MAIL_HOSTNAME`; an SPF record naming the
-      VPS; a DKIM key generated, mounted, and its public half published at
-      `mail._domainkey`. Then a contact-form submission sent from the live site lands in a
-      real inbox, in the inbox rather than the spam folder, and its headers show SPF, DKIM
-      and DMARC all passing. Checking the queue is not evidence — mail that is accepted and
-      then filed as spam looks identical to mail that worked.
 
 ---
 
 ## 0.6.0 — Day-two operations: backups, monitoring, maintenance
 
 Nothing here counts as done because it was configured. It counts as done because it was
-tested and observed to work.
+tested and observed to work — on the real host. The rehearsal is evidence the tooling
+works, not a substitute.
 
 **Definition of done**
 
 - [ ] Nightly `rsync` of `/data` to the home NAS, excluding the cache subpath, installed by
       `backup.yml` and observed to have run unattended for several consecutive nights.
+      *Rehearsed* against a second machine playing the NAS: photographs and a consistent
+      snapshot of the database arrived, the cache did not.
 - [ ] Retention keeps the most recent 14 copies, and older ones are actually being pruned.
+      *Rehearsed* with a retention of 2: the third run removed the first copy.
 - [ ] **A restore drill has been performed** by running `restore.yml` against a scratch
-      host: the site comes up with the database and photographs intact. The date it was done
-      and how long it took are written down. A restore procedure nobody has run is a
-      hypothesis.
+      host. *Rehearsed on 2026-11-11*: the server was destroyed and a bare one built,
+      provisioned and restored from the NAS alone in **2 minutes 34 seconds**. Album, photo,
+      timeline, gallery and enquiry counts were identical, and the client gallery opened
+      with its original password. To be repeated once against real data.
 - [ ] `update.yml` has been run at least once against the real host, and the site was still
-      healthy afterwards.
+      healthy afterwards. *Rehearsed.*
 - [ ] Losing the vault password is understood as a disaster-recovery scenario: the password
       manager entry holding it is itself backed up (ADR 0002).
 - [ ] UptimeRobot (or equivalent) checking `/healthz`, alerting somewhere you will actually
       see it — verified by deliberately stopping the stack and receiving the alert.
-- [ ] An unhandled error produces an email through the relay — verified deliberately, not
-      assumed.
+- [ ] An unhandled error produces an email through the relay — verified deliberately.
+      `manage.py test_error_report` sends one on demand. *Rehearsed as far as the relay.*
 - [ ] `expire_galleries` and `purge_tombstoned_galleries` confirmed from production logs to
       have run on their schedule, with a real gallery expiring and its files leaving disk.
+      *Rehearsed*, and it mattered: the jobs had never run at all ([D41](docs/defects.md)).
 
 ---
 
