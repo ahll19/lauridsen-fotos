@@ -137,10 +137,15 @@
   changed_when: false
   register: images_before
 
+# Without attestations, because they embed the time of the build: with them a rebuild of
+# identical sources gets a new image id every time, and "did anything change" — which the
+# next task answers by comparing ids — would always be yes.
 - name: Build the image on the host
   ansible.builtin.command:
     cmd: docker compose build {{ app_pull_images | ternary('--pull', '') }}
     chdir: "{{ release_dir }}"
+  environment:
+    BUILDX_NO_DEFAULT_ATTESTATIONS: "1"
   changed_when: false
 
 - name: See whether the build produced a new image

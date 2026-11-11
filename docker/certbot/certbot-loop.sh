@@ -53,6 +53,10 @@ if [ -e "$ACTIVE/PLACEHOLDER" ] && [ -s "$LIVE/fullchain.pem" ]; then
     activate
 fi
 
+# Bounded, because certbot holds a lock while it runs: one attempt stuck on an unreachable
+# server would otherwise block every later one, and renewal would stop without an error.
+run_certbot() { timeout "${CERTBOT_TIMEOUT:-600}" certbot "$@"; }
+
 obtain() {
     if [ "${LETSENCRYPT_AGREE_TOS:-0}" != "1" ]; then
         log "LETSENCRYPT_AGREE_TOS is not 1; not requesting a certificate"
@@ -67,7 +71,7 @@ obtain() {
     fi
     [ -n "${CERTBOT_SERVER:-}" ] && set -- "$@" --server "$CERTBOT_SERVER"
     # shellcheck disable=SC2086  # deliberately split: a list of extra flags
-    certbot "$@" ${CERTBOT_EXTRA_ARGS:-} && activate
+    run_certbot "$@" ${CERTBOT_EXTRA_ARGS:-} && activate
 }
 
 log "waiting for nginx to answer on port 80"
@@ -88,7 +92,7 @@ while :; do
     else
         # Does nothing unless a certificate is within thirty days of expiring.
         # shellcheck disable=SC2086
-        certbot renew --non-interactive --deploy-hook "$0 activate" ${CERTBOT_EXTRA_ARGS:-} \
+        run_certbot renew --non-interactive --deploy-hook "$0 activate" ${CERTBOT_EXTRA_ARGS:-} \
             || log "renewal run failed; it will be tried again"
     fi
     sleep "${CERTBOT_RENEW_INTERVAL:-43200}"

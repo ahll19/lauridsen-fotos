@@ -7,6 +7,7 @@ from a header the caller controls.
 """
 
 import re
+from io import StringIO
 from pathlib import Path
 
 from django.conf import settings
@@ -346,3 +347,22 @@ class HealthCheckOverHttpTests(TestCase):
         # The override above mirrors settings.py; this pins the two together.
         source = (Path(settings.BASE_DIR) / "config" / "settings.py").read_text()
         self.assertIn('SECURE_REDIRECT_EXEMPT = [r"^healthz$"]', source)
+
+
+class ErrorReportTests(TestCase):
+    def test_deliberate_error_is_mailed_to_the_owner(self):
+        from django.core import mail
+        from django.core.management import call_command
+
+        call_command("test_error_report", stdout=StringIO())
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [settings.OWNER_EMAIL])
+        self.assertIn("deliberate-test-error", mail.outbox[0].subject)
+
+    @override_settings(DEBUG=True)
+    def test_refuses_where_nothing_would_be_sent(self):
+        from django.core.management import call_command
+        from django.core.management.base import CommandError
+
+        with self.assertRaises(CommandError):
+            call_command("test_error_report", stdout=StringIO())
