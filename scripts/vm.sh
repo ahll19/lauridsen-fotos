@@ -47,7 +47,9 @@ command -v limactl >/dev/null 2>&1 || { echo "Lima is not installed: brew instal
 LIMA_KEY="${LIMA_HOME:-$HOME/.lima}/_config/user"
 SSH_OPTS=(-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i "$LIMA_KEY")
 
-exists() { limactl list --format '{{.Name}}' 2>/dev/null | grep -qx "$1"; }
+# Not `limactl list | grep -q`: grep stops reading at the first match, limactl dies of the
+# closed pipe, and under pipefail a machine that exists is reported as missing.
+exists() { local names; names=$(limactl list --format '{{.Name}}' 2>/dev/null); grep -qx "$1" <<<"$names"; }
 port()   { limactl list --format '{{.SSHLocalPort}}' "$1"; }
 as_root() { local vm=$1; shift; ssh "${SSH_OPTS[@]}" -p "$(port "$vm")" root@127.0.0.1 "$@"; }
 # As Lima's own account, which survives provisioning; root's login does not.
