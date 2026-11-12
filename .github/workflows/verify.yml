@@ -37,7 +37,9 @@ jobs:
         if: hashFiles('ansible/**') != ''
         run: |
           pip install ansible-core ansible-lint
-          ansible-galaxy collection install -r ansible/requirements.yml -p ansible/.collections
+          # --no-cache: a fresh runner has nothing worth caching, and ansible-galaxy has failed
+          # here on a malformed entry in its own response cache ("Missing expected 'results'").
+          ansible-galaxy collection install -r ansible/requirements.yml -p ansible/.collections --no-cache
 
       - name: Install project dependencies
         run: |
