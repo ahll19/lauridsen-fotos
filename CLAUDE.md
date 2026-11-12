@@ -125,12 +125,13 @@ someone's shell history.
 | `scripts/install-hooks.sh` | Points git at `.githooks/`. Run once per clone. |
 | `scripts/new-branch.sh` | Creates a correctly named branch off an up-to-date `main`. |
 | `scripts/release.sh` | Prepares and tags releases. |
-| `scripts/ansible.sh` | Runs a playbook: `provision`, `deploy`, `update`, `backup`, `restore`. |
 | `scripts/vault.sh` | Creates, edits and reads the encrypted production secrets. |
 | `scripts/vm.sh` | Disposable Debian machines for rehearsing the playbooks. |
 
 Host configuration is not a script: it lives in `ansible/` as playbooks applied over SSH, and
-the server is rebuilt by re-running them rather than by hand. If a document ever says "then
+the server is rebuilt by re-running them rather than by hand. They are run with plain
+`ansible-playbook`, not through a wrapper: [ansible/README.md](ansible/README.md) lists the
+commands ([ADR 0012](docs/decisions/0012-ansible-is-run-directly.md)). If a document ever says "then
 SSH in and…", that step belongs in a role instead. Vault files are committed **encrypted**;
 the vault password never is.
 

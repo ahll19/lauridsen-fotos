@@ -4,9 +4,9 @@
 # existing database unless told to, because the usual reason to run this is a host that
 # has lost its data, and the unusual one is a mistake.
 #
-#   scripts/ansible.sh restore                                  the newest copy
-#   scripts/ansible.sh restore -e restore_snapshot=2026-11-10T021503Z
-#   scripts/ansible.sh restore -e restore_overwrite=true
+#   ansible-playbook playbooks/restore.yml -J                                  the newest copy
+#   ansible-playbook playbooks/restore.yml -J -e restore_snapshot=2026-11-10T021503Z
+#   ansible-playbook playbooks/restore.yml -J -e restore_overwrite=true
 - name: Restore /data from the backup target
   hosts: site
   become: true

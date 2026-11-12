@@ -1,7 +1,7 @@
 # Install the nightly backup of /data to the NAS, and its rotation.
 #
-#   scripts/ansible.sh backup
-#   scripts/ansible.sh backup -e backup_run_now=true    …and take one copy immediately
+#   ansible-playbook playbooks/backup.yml -J
+#   ansible-playbook playbooks/backup.yml -J -e backup_run_now=true    …and take one copy now
 - name: Install the nightly backup
   hosts: site
   become: true

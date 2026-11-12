@@ -53,18 +53,32 @@ the two email addresses.
 
 ## 3. Build the server
 
+The playbooks are plain Ansible, run from `ansible/`.
+[ansible/README.md](../ansible/README.md) has every command; these are the ones for today.
+Once per machine:
+
 ```bash
-scripts/ansible.sh provision --first-run
+brew install ansible sshpass
 ```
 
 ```bash
-scripts/ansible.sh deploy
+cd ansible && ansible-galaxy collection install -r requirements.yml
 ```
 
-`--first-run` is for this one time, while the server does not have your SSH key yet. It asks
-for your account's password on the server and for root's, and keeps neither. It needs
-`sshpass` on your machine: `brew install sshpass`. Once it has run, the server accepts only
-your key, and `scripts/ansible.sh provision` needs no flag and no password.
+Then, still in `ansible/`:
+
+```bash
+ansible-playbook playbooks/provision.yml -J -k -K --become-method su
+```
+
+```bash
+ansible-playbook playbooks/deploy.yml -J
+```
+
+The extra flags on the first command are for this one time, while the server does not have
+your SSH key yet. It asks for your account's password on the server (`SSH password`), root's
+(`BECOME password`) and the vault's, and keeps none of them. Once it has run, the server
+accepts only your key, and provision needs only `-J`.
 
 The first takes a bare server to a hardened one running Docker. The second has the
 server pull `main` from GitHub, builds it, starts the stack and fails unless `/healthz`
@@ -106,7 +120,7 @@ Also, for mail to be accepted rather than filed as spam:
 Set `backup_target_host` (and user, port, path if they differ) in `vars.yml`, then:
 
 ```bash
-scripts/ansible.sh backup -e backup_run_now=true
+ansible-playbook playbooks/backup.yml -J -e backup_run_now=true
 ```
 
 That installs the nightly job and takes the first copy now, so you find out today whether
@@ -125,22 +139,22 @@ These are the checks that only count on the real thing. Tick them off in
 | Errors reach you | `ssh <operator>@<server> 'cd /opt/lauridsen-fotos/current && sudo docker compose exec app python manage.py test_error_report'` |
 | Uptime alert | point UptimeRobot at `https://<domain>/healthz`, which goes through the proxy; stop the stack, wait for the alert, start it again |
 | Backups run unattended | after a few nights, look for dated directories on the NAS |
-| Restore | `scripts/ansible.sh restore` against a second, scratch server |
+| Restore | `ansible-playbook playbooks/restore.yml -J` against a second, scratch server |
 | Galleries expire | create one, set its expiry to tomorrow, check the day after that its files are gone |
 
 ## Afterwards
 
 | When | Run |
 | --- | --- |
-| You have merged something | `scripts/ansible.sh deploy` — deploys `main` |
-| You have tagged a release | `scripts/ansible.sh deploy -e deploy_ref=<tag>` |
-| Monthly, or after a security announcement | `scripts/ansible.sh update` |
-| Something is badly wrong | `scripts/ansible.sh deploy -e deploy_ref=<an earlier tag>` |
+| You have merged something | `ansible-playbook playbooks/deploy.yml -J` — deploys `main` |
+| You have tagged a release | `ansible-playbook playbooks/deploy.yml -J -e deploy_ref=<tag>` |
+| Monthly, or after a security announcement | `ansible-playbook playbooks/update.yml -J` |
+| Something is badly wrong | `ansible-playbook playbooks/deploy.yml -J -e deploy_ref=<an earlier tag>` |
 
 ## Rehearsing a change first
 
 `scripts/vm.sh up` starts two throwaway Debian machines on this Mac — one as the server, one
-as the NAS — and `scripts/ansible.sh -I disposable <playbook>` runs any playbook against
-them. The second machine also plays the reverse proxy in front, with a certificate from
+as the NAS — and `ansible-playbook -i inventory/disposable playbooks/<name>.yml` runs any
+playbook against them. The second machine also plays the reverse proxy in front, with a certificate from
 Caddy's own test CA, and the server there is handed the commit you have checked out, so a
 change can be rehearsed before it is pushed. `scripts/vm.sh down` deletes both.
