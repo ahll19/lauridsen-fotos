@@ -20,7 +20,7 @@ its decision; instead a new record supersedes it and says so.
 
 | # | Decision | Status |
 | --- | --- | --- |
-| [0001](0001-local-enforcement-of-main-protection.md) | Enforce main protection locally rather than on GitHub | Accepted |
+| [0001](0001-local-enforcement-of-main-protection.md) | Enforce main protection locally rather than on GitHub | Superseded by 0009 |
 | [0002](0002-manage-the-host-with-ansible.md) | Manage the host with Ansible, with secrets in ansible-vault | Accepted |
 | [0003](0003-visual-direction-atelier-sage.md) | Visual direction: Atelier Sage | Accepted |
 | [0004](0004-deliver-mail-directly-rather-than-through-a-smarthost.md) | Deliver mail directly rather than through a smarthost | Accepted |
@@ -28,3 +28,4 @@ its decision; instead a new record supersedes it and says so.
 | [0006](0006-certbot-keeps-a-certificate-where-nginx-reads-it.md) | certbot keeps a certificate where nginx reads it, and nginx watches the file | Superseded by 0008 |
 | [0007](0007-the-host-pulls-releases-from-the-public-repository.md) | The host pulls releases from the public repository | Accepted |
 | [0008](0008-tls-ends-at-a-reverse-proxy-in-front-of-the-server.md) | TLS ends at a reverse proxy in front of the server | Accepted |
+| [0009](0009-github-protects-main.md) | GitHub protects main | Accepted |

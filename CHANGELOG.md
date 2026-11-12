@@ -38,6 +38,10 @@ gains `upstream_proxy_addresses`.
   connections only from the proxy in front, and answers anyone else 403. The check is in
   nginx because Docker publishes ports past `ufw`. The deploy warns when the list is empty.
 
+- GitHub now protects `main`: a pull request and a passing `verify` check are required, for
+  administrators too ([ADR 0009](docs/decisions/0009-github-protects-main.md)). The
+  repository is public, which makes branch protection free.
+
 ### Fixed
 
 - `scripts/vm.sh` sometimes reported a running machine as missing, which made a rehearsal

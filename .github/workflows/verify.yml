@@ -2,9 +2,9 @@ name: verify
 
 # Runs the same script that runs locally, so there is exactly one definition of "verified".
 #
-# Note: this repository is private on a free GitHub plan, where required status checks are
-# not available. This check is therefore advisory — GitHub will not block the merge button
-# on a failure. See docs/decisions/0001-local-enforcement-of-main-protection.md.
+# A required check: the branch protection rule on main will not merge a pull request until
+# this job passes (docs/decisions/0009-github-protects-main.md). Renaming the job means
+# updating that rule, or nothing can be merged.
 
 on:
   pull_request:
