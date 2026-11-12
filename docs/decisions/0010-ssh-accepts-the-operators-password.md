@@ -1,7 +1,7 @@
 # 0010. SSH accepts the operator's password, and the operator is an existing account
 
 - **Date**: 2026-11-12
-- **Status**: Accepted
+- **Status**: Superseded by [0011](0011-the-first-run-asks-for-passwords-and-stores-none.md)
 - **Affects**: architecture.md §11
 
 ## Context

@@ -29,4 +29,5 @@ its decision; instead a new record supersedes it and says so.
 | [0007](0007-the-host-pulls-releases-from-the-public-repository.md) | The host pulls releases from the public repository | Accepted |
 | [0008](0008-tls-ends-at-a-reverse-proxy-in-front-of-the-server.md) | TLS ends at a reverse proxy in front of the server | Accepted |
 | [0009](0009-github-protects-main.md) | GitHub protects main | Accepted |
-| [0010](0010-ssh-accepts-the-operators-password.md) | SSH accepts the operator's password, and the operator is an existing account | Accepted |
+| [0010](0010-ssh-accepts-the-operators-password.md) | SSH accepts the operator's password, and the operator is an existing account | Superseded by 0011 |
+| [0011](0011-the-first-run-asks-for-passwords-and-stores-none.md) | The first run asks for passwords and stores none | Accepted |

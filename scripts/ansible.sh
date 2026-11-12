@@ -11,6 +11,13 @@
 #   scripts/ansible.sh -I disposable deploy      against the rehearsal VM (scripts/vm.sh)
 #   scripts/ansible.sh deploy --check --diff     anything after the name goes to Ansible
 #
+#   scripts/ansible.sh provision --first-run     the one run that logs in with passwords
+#
+# --first-run is for a host that does not have the operator's key yet. It asks for the
+# operator's SSH password and for root's password, uses them for that run and stores
+# neither. Provision installs the key and switches password logins off, so every later run
+# needs no password at all (ADR 0011).
+#
 # Takes care of the three things that are otherwise easy to get wrong: running from the
 # directory ansible.cfg lives in, installing the pinned collections, and handing over the
 # vault password without it ever being typed into a command line.
@@ -33,6 +40,13 @@ if [[ -z "$PLAYBOOK" || ! -f "playbooks/${PLAYBOOK}.yml" ]]; then
     exit 2
 fi
 shift
+
+# Bash 3.2 (macOS) treats an empty array as unset, hence the ${x[@]+...} below.
+FIRST_RUN=0
+rest=()
+for arg in "$@"; do
+    if [[ "$arg" == --first-run ]]; then FIRST_RUN=1; else rest+=("$arg"); fi
+done
 
 if [[ ! -d "inventory/${INVENTORY}" ]]; then
     echo "No inventory at ansible/inventory/${INVENTORY}." >&2
@@ -61,14 +75,21 @@ if [[ "$INVENTORY" == production && ! -f inventory/production/group_vars/all/vau
     exit 1
 fi
 
-# A password login goes through sshpass, which macOS does not ship.
-if grep -rqs '^ansible_password:' "inventory/${INVENTORY}" && ! command -v sshpass >/dev/null 2>&1; then
-    echo "The ${INVENTORY} inventory logs in with a password, and that needs sshpass:" >&2
-    echo "    brew install sshpass" >&2
-    exit 1
-fi
-
 args=(-i "inventory/${INVENTORY}")
+if [[ "$FIRST_RUN" == 1 ]]; then
+    # A password login goes through sshpass, which macOS does not ship.
+    if ! command -v sshpass >/dev/null 2>&1; then
+        echo "--first-run logs in with a password, and that needs sshpass:" >&2
+        echo "    brew install sshpass" >&2
+        exit 1
+    fi
+    # su rather than sudo: on a host that was installed with a root password, the first
+    # account is not in sudoers. Add --become-method sudo after --first-run if yours is.
+    args+=(--ask-pass --ask-become-pass --become-method su)
+    # A login shell, so root gets its own PATH. Without it su keeps the operator's, which
+    # has no sbin directory, and installing a package fails partway through.
+    export ANSIBLE_SU_FLAGS=-l
+fi
 vault="inventory/${INVENTORY}/group_vars/all/vault.yml"
 if [[ -f "$vault" ]] && head -n1 "$vault" | grep -q ANSIBLE_VAULT; then
     if [[ -f .vault-pass ]]; then
@@ -85,4 +106,9 @@ if [[ "$INVENTORY" == disposable ]]; then
 fi
 
 echo "==> ${PLAYBOOK} (${INVENTORY})"
-exec ansible-playbook "${args[@]}" "playbooks/${PLAYBOOK}.yml" "$@"
+if [[ "$FIRST_RUN" == 1 ]]; then
+    echo "    First run: two passwords are asked for, used for this run and stored nowhere."
+    echo "      SSH password     the operator account's password on the server"
+    echo "      BECOME password  root's password on the server"
+fi
+exec ansible-playbook "${args[@]}" "playbooks/${PLAYBOOK}.yml" ${rest[@]+"${rest[@]}"}

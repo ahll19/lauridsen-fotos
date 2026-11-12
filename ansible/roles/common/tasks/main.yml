@@ -4,8 +4,8 @@
       - operator_ssh_public_keys | length > 0
       - operator_ssh_public_keys | select('match', '^(ssh|ecdsa)-') | list | length == operator_ssh_public_keys | length
     fail_msg: >-
-      operator_ssh_public_keys must list at least one SSH public key. Password logins may
-      be switched off, and without a key nobody could get back in.
+      operator_ssh_public_keys must list at least one SSH public key. Password logins are
+      about to be switched off, and without a key nobody could get back in.
 
 - name: Install base packages
   ansible.builtin.apt:
@@ -75,7 +75,7 @@
     groups: sudo
     append: true
     # Locked when this role creates the account. One that already exists keeps the
-    # password it has: on a host reached by password, that is the one being logged in with.
+    # password it has: it is its owner's, and still what the server's console asks for.
     password: "!"
     update_password: on_create
 
@@ -90,7 +90,8 @@
     dest: /etc/sudoers.d/90-operator
     content: "{{ operator_user }} ALL=(ALL) NOPASSWD:ALL\n"
     mode: "0440"
-    validate: visudo -cf %s
+    # By full path: root reached through su has no sbin directory on its PATH.
+    validate: /usr/sbin/visudo -cf %s
 
 # --- SSH ---------------------------------------------------------------------
 # Only after the operator's key is in place: this is the step that locks root out.
@@ -99,7 +100,7 @@
     src: sshd-hardening.conf.j2
     dest: /etc/ssh/sshd_config.d/10-hardening.conf
     mode: "0644"
-    validate: sshd -t -f %s
+    validate: /usr/sbin/sshd -t -f %s
   notify: Reload sshd
 
 # --- Unattended security updates ---------------------------------------------

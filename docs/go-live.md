@@ -37,16 +37,15 @@ password manager straight away, because it is the only copy.
 scripts/vault.sh init
 ```
 
-Then name the account the playbooks log in as. It is an account that already exists on the
-server, and the playbooks use its password for SSH and sudo
-([ADR 0010](decisions/0010-ssh-accepts-the-operators-password.md)). Set
-`vault_operator_user` and `vault_operator_password` in:
+Then name the account the playbooks log in as: one that already exists on the server. Set
+`vault_operator_user` in:
 
 ```bash
 scripts/vault.sh edit
 ```
 
-Logging in by password needs `sshpass` on your machine: `brew install sshpass`.
+No password goes in the vault. The first run asks for the ones it needs
+([ADR 0011](decisions/0011-the-first-run-asks-for-passwords-and-stores-none.md)).
 
 Commit all three files and merge them to `main`. The vault is encrypted and is meant to be
 committed; the other two hold nothing the site's DNS does not already publish, apart from
@@ -55,12 +54,17 @@ the two email addresses.
 ## 3. Build the server
 
 ```bash
-scripts/ansible.sh provision
+scripts/ansible.sh provision --first-run
 ```
 
 ```bash
 scripts/ansible.sh deploy
 ```
+
+`--first-run` is for this one time, while the server does not have your SSH key yet. It asks
+for your account's password on the server and for root's, and keeps neither. It needs
+`sshpass` on your machine: `brew install sshpass`. Once it has run, the server accepts only
+your key, and `scripts/ansible.sh provision` needs no flag and no password.
 
 The first takes a bare server to a hardened one running Docker. The second has the
 server pull `main` from GitHub, builds it, starts the stack and fails unless `/healthz`
