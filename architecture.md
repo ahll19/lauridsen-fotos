@@ -174,9 +174,9 @@ Kept proportionate to a low-traffic, single-owner site — no heavyweight observ
   Django/library security releases during a maintenance pass) rather than an automated
   PR-based update bot — proportionate for a single-maintainer project; easy to switch to
   Dependabot/Renovate later if that manual cadence ever slips.
-- **Deployment mechanism**: the image is built directly on the VPS (the code is shipped to
-  it rather than pulled — see
-  [docs/decisions/0005-ship-releases-from-the-operators-machine.md](docs/decisions/0005-ship-releases-from-the-operators-machine.md) —
+- **Deployment mechanism**: the image is built directly on the VPS (the host pulls the
+  code from the public repository — see
+  [docs/decisions/0007-the-host-pulls-releases-from-the-public-repository.md](docs/decisions/0007-the-host-pulls-releases-from-the-public-repository.md) —
   then `docker build` and `docker compose up -d`) rather than built elsewhere and pushed to a
   container registry — one less moving part and no registry account needed while there's no
   CI pipeline yet. That sequence is itself a playbook rather than a set of commands to run by

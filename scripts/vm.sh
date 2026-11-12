@@ -5,6 +5,7 @@
 #
 #   scripts/vm.sh up        a bare Debian 12 "VPS" and a second machine playing the NAS
 #   scripts/vm.sh rebuild   throw the VPS away and start a bare one (the NAS is kept)
+#   scripts/vm.sh sync      hand the VPS the commit you are on (ansible.sh does this itself)
 #   scripts/vm.sh ssh [nas] a shell on the VPS, or on the NAS
 #   scripts/vm.sh status    what exists
 #   scripts/vm.sh down      delete both
@@ -15,9 +16,11 @@
 #   scripts/ansible.sh -I disposable provision
 #   scripts/ansible.sh -I disposable deploy
 #
-# The rehearsal differs from production in one deliberate way. There is no real domain, so
+# The rehearsal differs from production in two deliberate ways. There is no real domain, so
 # certificates come from Pebble — Let's Encrypt's own test server — running beside the
-# stack. Everything else, certbot included, runs exactly as it will on the VPS.
+# stack. And the VPS pulls the code from a copy of this checkout placed on it rather than
+# from GitHub, so a change can be rehearsed before it is pushed. Everything else, certbot
+# and the pull included, runs exactly as it will on the real server.
 #
 set -euo pipefail
 
@@ -30,6 +33,9 @@ TEMPLATE=ansible/lima/debian12.yaml
 INVENTORY=ansible/inventory/disposable
 DOMAIN=fotos.test
 BACKUP_PATH=/srv/backups/lauridsen-fotos
+# Where the VPS finds this checkout's commits: a git bundle, which git fetches from like
+# any other repository.
+BUNDLE_PATH=/srv/rehearsal/lauridsen-fotos.bundle
 
 command -v limactl >/dev/null 2>&1 || { echo "Lima is not installed: brew install lima" >&2; exit 1; }
 
@@ -39,6 +45,8 @@ SSH_OPTS=(-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLeve
 exists() { limactl list --format '{{.Name}}' 2>/dev/null | grep -qx "$1"; }
 port()   { limactl list --format '{{.SSHLocalPort}}' "$1"; }
 as_root() { local vm=$1; shift; ssh "${SSH_OPTS[@]}" -p "$(port "$vm")" root@127.0.0.1 "$@"; }
+# As Lima's own account, which survives provisioning; root's login does not.
+as_lima() { local vm=$1; shift; ssh "${SSH_OPTS[@]}" -p "$(port "$vm")" "$(id -un)@127.0.0.1" "$@"; }
 
 start() {
     if exists "$1"; then
@@ -100,6 +108,10 @@ certbot_renew_interval: 60
 cert_reload_interval: 5
 healthcheck_verify_tls: false
 
+# The code comes from the bundle that \`scripts/vm.sh sync\` puts on the VPS; which commit
+# to deploy is in release.yml beside this file, rewritten by every sync.
+app_repo_url: $BUNDLE_PATH
+
 backup_target_host: lima-$NAS_VM.internal
 backup_target_user: backup
 backup_target_path: $BACKUP_PATH
@@ -110,6 +122,25 @@ dkim_private_key: "{{ vault_dkim_private_key }}"
 backup_ssh_private_key: "{{ vault_backup_ssh_private_key }}"
 EOF
     echo "✓ Wrote $INVENTORY"
+}
+
+# Bundles every local branch and tag and names the commit that is checked out as the one
+# to deploy. Uncommitted edits are not in a bundle, as they would not be in a push.
+sync_code() {
+    local bundle revision
+    exists "$HOST_VM" || { echo "There is no rehearsal VM: scripts/vm.sh up" >&2; exit 1; }
+    revision=$(git rev-parse HEAD)
+    bundle=$(mktemp)
+    # shellcheck disable=SC2064
+    trap "rm -f '$bundle'" RETURN
+    git bundle create --quiet "$bundle" --branches --tags HEAD
+    as_lima "$HOST_VM" "sudo install -d -m 755 '$(dirname "$BUNDLE_PATH")' && sudo tee '$BUNDLE_PATH' >/dev/null" <"$bundle"
+    mkdir -p "$INVENTORY/group_vars/all"
+    cat >"$INVENTORY/group_vars/all/release.yml" <<EOF
+# Written by scripts/vm.sh sync: the commit that was checked out when it last ran.
+deploy_ref: $revision
+EOF
+    echo "✓ $HOST_VM has ${revision:0:12} to deploy"
 }
 
 # The part of the rehearsal that is not ours to automate in production: an account on the
@@ -142,6 +173,7 @@ case "${1:-}" in
         start "$NAS_VM"
         write_inventory
         prepare_nas
+        sync_code
         cat <<EOF
 
 Rehearse with:
@@ -155,14 +187,18 @@ EOF
         exists "$HOST_VM" && limactl delete --force "$HOST_VM"
         start "$HOST_VM"
         write_inventory
+        sync_code
+        ;;
+
+    sync)
+        sync_code
         ;;
 
     ssh)
+        shift
         vm=$HOST_VM
-        [[ "${2:-}" == nas ]] && vm=$NAS_VM
-        shift $(( $# > 1 ? 2 : 1 ))
-        # As Lima's own account, which survives provisioning; root does not.
-        ssh "${SSH_OPTS[@]}" -p "$(port "$vm")" "$(id -un)@127.0.0.1" "$@"
+        if [[ "${1:-}" == nas ]]; then vm=$NAS_VM; shift; fi
+        as_lima "$vm" "$@"
         ;;
 
     status)
@@ -178,7 +214,7 @@ EOF
         ;;
 
     *)
-        echo "usage: scripts/vm.sh <up|rebuild|ssh [nas]|status|down>" >&2
+        echo "usage: scripts/vm.sh <up|rebuild|sync|ssh [nas]|status|down>" >&2
         exit 2
         ;;
 esac

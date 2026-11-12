@@ -1,7 +1,7 @@
 # 0005. Ship releases from the operator's machine rather than pulling on the host
 
 - **Date**: 2026-11-11
-- **Status**: Accepted
+- **Status**: Superseded by [0007](0007-the-host-pulls-releases-from-the-public-repository.md)
 - **Affects**: `architecture.md` §10, which says the host runs `git pull`
 
 ## Context

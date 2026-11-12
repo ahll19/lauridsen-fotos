@@ -1,7 +1,7 @@
-# Ship a revision, build it on the host, restart the stack, and fail unless the site
-# answers afterwards.
+# Pull a revision onto the host, build it there, restart the stack, and fail unless the
+# site answers afterwards.
 #
-#   scripts/ansible.sh deploy                     the commit you are on
+#   scripts/ansible.sh deploy                     what is on main
 #   scripts/ansible.sh deploy -e deploy_ref=v1.0.0
 - name: Deploy the application
   hosts: site
