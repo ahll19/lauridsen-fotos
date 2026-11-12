@@ -18,8 +18,9 @@ on, makes a one-time need permanent.
 
 ## Decision
 
-The operator is still an account that already exists on the server, named in the vault
-(`vault_operator_user`), and the role still never changes an existing account's password.
+The operator is still an account that already exists on the server, and the role still
+never changes an existing account's password. Its name is not a secret: it is
+`operator_user` in the inventory, in plain text.
 
 No password is stored. The first run is given Ansible's own flags for asking,
 `-k -K --become-method su`, and asks for two: the operator's, to log in over SSH, and root's,

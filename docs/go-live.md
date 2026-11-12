@@ -28,7 +28,7 @@ Edit two files in `ansible/inventory/production/`:
 | File | Set |
 | --- | --- |
 | `hosts.yml` | `ansible_host` — the server's IP address |
-| `group_vars/all/vars.yml` | `site_domain`, `owner_email`, and `upstream_proxy_addresses` — the reverse proxy's address as the server sees it connect |
+| `group_vars/all/vars.yml` | `operator_user` — your account on the server; `site_domain`, `owner_email`, and `upstream_proxy_addresses` — the reverse proxy's address as the server sees it connect |
 
 Then create the secrets. You will be asked to choose the vault password; put it in your
 password manager straight away, because it is the only copy.
@@ -37,14 +37,7 @@ password manager straight away, because it is the only copy.
 scripts/vault.sh init
 ```
 
-Then name the account the playbooks log in as: one that already exists on the server. Set
-`vault_operator_user` in:
-
-```bash
-scripts/vault.sh edit
-```
-
-No password goes in the vault. The first run asks for the ones it needs
+No login password goes in the vault. The first run asks for the ones it needs
 ([ADR 0011](decisions/0011-the-first-run-asks-for-passwords-and-stores-none.md)).
 
 Commit all three files and merge them to `main`. The vault is encrypted and is meant to be

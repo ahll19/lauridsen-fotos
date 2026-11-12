@@ -9,10 +9,10 @@ site_domain: lauridsen-fotos.dk
 site_alternate_domains:
   - www.lauridsen-fotos.dk
 
-# How the playbooks log in: an account that already exists on the server, named in the
-# vault, with the key below. No password is stored anywhere. The one run that needs
-# passwords, before the key is installed, asks for them (ansible/README.md, ADR 0011).
-operator_user: "{{ vault_operator_user }}"
+# How the playbooks log in: as this account, which already exists on the server, with the
+# key below. No password is stored anywhere. The one run that needs passwords, before the
+# key is installed, asks for them (ansible/README.md, ADR 0011).
+operator_user: anders
 ansible_user: "{{ operator_user }}"
 
 # The key that may log in. By default, the public half of the key on the machine running
