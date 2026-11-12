@@ -1,11 +1,31 @@
 # Rendered by the nginx image's envsubst at container start.
 #
-# NGINX_MODE picks which server block answers: `http` on a laptop, where there is no
-# certificate, and `https` on the VPS. Both are rendered into conf.d/servers/, which nginx
-# does not load by itself, and exactly one is included here.
+# Plain HTTP on port 80, on a laptop and on the server alike. On the server, TLS is
+# terminated by a reverse proxy in front of this one that is not part of this stack
+# (ADR 0008). It forwards to port 80 and says in X-Forwarded-Proto how the visitor
+# reached it.
 
 upstream app_server {
     server ${APP_HOST}:${APP_PORT};
 }
 
-include /etc/nginx/conf.d/servers/${NGINX_MODE}.inc;
+# The scheme the visitor used: what the proxy in front says, or with nothing in front, this
+# connection's own. Only the addresses allowed below get this far, so only they can say it.
+map $http_x_forwarded_proto $forwarded_proto {
+    default $http_x_forwarded_proto;
+    ""      $scheme;
+}
+
+server {
+    listen 80 default_server;
+    server_name _;
+
+    # Who may connect: this container itself, which is how the deploy checks the site
+    # answers, and the proxy in front (UPSTREAM_PROXY_ADDRESSES, written out by
+    # docker/nginx/upstream-allow.sh). Everyone, when that is empty.
+    allow 127.0.0.1;
+    include /etc/nginx/upstream-allow.conf;
+    deny all;
+
+    include /etc/nginx/conf.d/snippets/site.inc;
+}

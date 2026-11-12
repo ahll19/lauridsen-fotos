@@ -19,7 +19,7 @@
     from_ip: "{{ item }}"
   loop: "{{ ssh_allowed_cidrs }}"
 
-- name: Allow the reverse proxy's ports
+- name: Allow the stack's port
   community.general.ufw:
     rule: allow
     port: "{{ item | string }}"

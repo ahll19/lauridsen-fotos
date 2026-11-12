@@ -202,8 +202,11 @@ Both answer to the name `mail-relay`, so the application never knows which is ru
   code change the usual cause is a pending migration.
 - **A photograph 404s after moving an album** — upload paths are built from the slugs at
   upload time and renaming does not move files. Re-upload them.
-- **Every request redirects to `https://` and nothing answers** — production settings without
-  a certificate in front. Set `DJANGO_SERVE_OVER_HTTPS=0`, or use `prodcheck.sh`, which does.
+- **Every request redirects to `https://` and nothing answers** — production settings with
+  no TLS-terminating proxy in front. Set `DJANGO_SERVE_OVER_HTTPS=0`, or use `prodcheck.sh`,
+  which does.
+- **403 from nginx on the server** — the request did not come from an address in
+  `upstream_proxy_addresses`. That is nginx refusing anyone but the proxy in front.
 - **Mail disappears with no error** — either `COMPOSE_PROFILES` names a relay that is not
   running, or Postfix is running and `DEFAULT_FROM_EMAIL` is not on `MAIL_SENDER_DOMAIN`.
 
