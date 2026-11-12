@@ -2,7 +2,7 @@
 app_dir: /opt/lauridsen-fotos
 data_dir: /data
 app_user: fotos
-app_uid: 1000
+app_uid: 10001
 # Fixed by `name:` in docker-compose.yml; here so the playbooks can name containers.
 compose_project: lauridsen-fotos
 

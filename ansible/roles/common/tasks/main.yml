@@ -4,8 +4,8 @@
       - operator_ssh_public_keys | length > 0
       - operator_ssh_public_keys | select('match', '^(ssh|ecdsa)-') | list | length == operator_ssh_public_keys | length
     fail_msg: >-
-      operator_ssh_public_keys must list at least one SSH public key. Password logins are
-      about to be switched off, and without a key nobody could get back in.
+      operator_ssh_public_keys must list at least one SSH public key. Password logins may
+      be switched off, and without a key nobody could get back in.
 
 - name: Install base packages
   ansible.builtin.apt:
@@ -74,7 +74,10 @@
     shell: /bin/bash
     groups: sudo
     append: true
+    # Locked when this role creates the account. One that already exists keeps the
+    # password it has: on a host reached by password, that is the one being logged in with.
     password: "!"
+    update_password: on_create
 
 - name: Install the operator's SSH keys
   ansible.posix.authorized_key:

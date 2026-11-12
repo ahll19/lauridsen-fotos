@@ -10,10 +10,10 @@ set -euo pipefail
 ROLE="${1:-web}"
 DATA_ROOT="${DATA_ROOT:-/data}"
 APP_USER=app
-# Pinned in the Dockerfile, and used numerically so the bind mount can be given matching
-# ownership on the host before the container ever starts.
-APP_UID=1000
-APP_GID=1000
+# Fixed when the image is built (APP_UID), and used numerically so the bind mount can be
+# given matching ownership on the host before the container ever starts.
+APP_UID="$(id -u "$APP_USER")"
+APP_GID="$(id -g "$APP_USER")"
 
 log() { printf '[entrypoint] %s\n' "$*"; }
 

@@ -47,8 +47,10 @@ RUN DJANGO_SECRET_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(
 # The application runs as a non-root user (architecture.md §11). The entrypoint starts as
 # root only long enough to make the bind-mounted /data writable, then replaces itself with
 # the application under this uid via setpriv — so a running container has no root process at
-# all. The uid is pinned so the host can pre-own /data with a matching owner.
-RUN useradd --create-home --uid 1000 app \
+# all. The uid is fixed at build time so the host can pre-own /data with a matching owner,
+# and is a build argument so it can be one no account on the host already holds (APP_UID).
+ARG APP_UID=1000
+RUN useradd --create-home --uid "$APP_UID" app \
     && mkdir -p /srv/static \
     && chown -R app:app /srv/static /app
 

@@ -1,6 +1,6 @@
 data_dir: /data
 compose_project: lauridsen-fotos
-app_uid: 1000
+app_uid: 10001
 
 # Where the copies go: the home NAS, reached over SSH (architecture.md §8).
 backup_target_host: ""
