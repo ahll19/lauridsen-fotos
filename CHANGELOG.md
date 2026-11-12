@@ -10,6 +10,39 @@ anything worth saying that a commit subject doesn't capture can be written under
 
 ## [Unreleased]
 
+## [1.0.0-rc.2] - 2026-11-12
+
+TLS moves off the server. A reverse proxy in front terminates it and forwards plain HTTP to
+port 80 ([ADR 0008](docs/decisions/0008-tls-ends-at-a-reverse-proxy-in-front-of-the-server.md)).
+This changes how the site is deployed: the inventory loses its Let's Encrypt settings and
+gains `upstream_proxy_addresses`.
+
+### Changed
+
+- The stack serves plain HTTP on port 80 and holds no certificate. The `certbot` service,
+  the HTTPS server block, the certificate watcher and the `tls` compose profile are gone,
+  and so are `NGINX_MODE`, `HTTPS_PORT`, `SERVER_NAMES`, `CERT_DOMAINS`, every
+  `LETSENCRYPT_*`, `CERTBOT_*` and `CERT_RELOAD_INTERVAL` setting, and port 443 in the
+  firewall.
+- Django still treats the site as HTTPS: nginx passes on the proxy's `X-Forwarded-Proto`,
+  so cookies stay Secure, HSTS is sent and plain HTTP is redirected.
+- `TRUSTED_PROXY_COUNT` is 2 on the server, for the proxy in front and nginx.
+- The deploy's health check asks nginx from inside its own container, the one address
+  always allowed in.
+- The rehearsal plays the proxy in front with Caddy on the second disposable machine,
+  instead of running Pebble beside the stack.
+
+### Added
+
+- `UPSTREAM_PROXY_ADDRESSES` (`upstream_proxy_addresses` in the inventory): nginx accepts
+  connections only from the proxy in front, and answers anyone else 403. The check is in
+  nginx because Docker publishes ports past `ufw`. The deploy warns when the list is empty.
+
+### Fixed
+
+- `scripts/vm.sh` sometimes reported a running machine as missing, which made a rehearsal
+  deploy stop before it started.
+
 ## [1.0.0-rc.1] - 2026-11-12
 
 The first release candidate: everything that can be built and proven without a server.
