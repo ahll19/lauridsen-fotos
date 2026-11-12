@@ -10,9 +10,13 @@ compose_project: lauridsen-fotos
 compose_extra_files: []
 
 # --- What to deploy ----------------------------------------------------------
-# Any git revision in the checkout the playbook is run from. The deploy ships exactly the
-# committed tree at that revision, so uncommitted edits never reach the server.
-deploy_ref: HEAD
+# Where the host pulls the code from. It has to be readable without a credential: the host
+# holds none (ADR 0007).
+app_repo_url: https://github.com/ahll19/lauridsen-fotos.git
+# The host's bare copy of it.
+app_repo_dir: "{{ app_dir }}/repo.git"
+# A branch, tag or commit in that repository. Only what has been pushed can be deployed.
+deploy_ref: main
 # Older releases kept on disk for a quick look at what used to run.
 app_keep_releases: 3
 # Rebuild on top of freshly pulled base images. update.yml turns this on.

@@ -158,7 +158,7 @@ The rest:
 | `scripts/crawl.py <url>` | Follows every link and `src` on the running site and reports anything that is not a 200. Used by `prodcheck.sh`; useful on its own after a template change. |
 | `scripts/ansible.sh <playbook>` | `provision`, `deploy`, `update`, `backup`, `restore`. `-I disposable` targets the rehearsal machine. |
 | `scripts/vault.sh` | `init`, `edit`, `view` the production secrets; `public` prints what goes in DNS and on the NAS. |
-| `scripts/vm.sh` | `up`, `rebuild`, `ssh`, `down`: disposable machines for rehearsing playbooks. Needs Lima. |
+| `scripts/vm.sh` | `up`, `rebuild`, `sync`, `ssh`, `down`: disposable machines for rehearsing playbooks. Needs Lima. |
 | `scripts/install-hooks.sh` | Points git at `.githooks/`. Once per clone. |
 | `scripts/new-branch.sh <type> <slug>` | A correctly named branch off an up-to-date `main`. |
 | `scripts/release.sh` | `prepare <major\|minor\|patch>` then `tag`. |

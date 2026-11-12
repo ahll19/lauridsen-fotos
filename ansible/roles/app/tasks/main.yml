@@ -33,14 +33,41 @@
     label: "{{ item.path }}"
 
 # --- The code ----------------------------------------------------------------
-# Shipped from the checkout this playbook runs from, rather than pulled by the server
-# (ADR 0005): the host holds no credential for the repository.
+# Pulled by the host from the public repository (ADR 0007). The host keeps a bare copy and
+# unpacks one commit of it per release, so a release directory is exactly a commit and
+# never a checkout somebody could edit in place.
+- name: Install git
+  ansible.builtin.apt:
+    name: git
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+# The git module wants a checkout to manage; this is a bare mirror, fetched by hand below.
+- name: Create the host's copy of the repository # noqa: command-instead-of-module
+  ansible.builtin.command:
+    cmd: git init --bare "{{ app_repo_dir }}"
+    creates: "{{ app_repo_dir }}/HEAD"
+
+# Every branch and tag, so deploy_ref can name any of them. Forced, because the host's
+# copy is a mirror and has nothing of its own to protect.
+- name: Fetch from the repository
+  ansible.builtin.command:
+    argv:
+      - git
+      - fetch
+      - --force
+      - --prune
+      - --tags
+      - "{{ app_repo_url }}"
+      - "+refs/heads/*:refs/heads/*"
+    chdir: "{{ app_repo_dir }}"
+  changed_when: false
+
 - name: Resolve the revision to deploy
   ansible.builtin.command:
     cmd: git rev-parse --verify "{{ deploy_ref }}^{commit}"
-    chdir: "{{ playbook_dir }}/../.."
-  delegate_to: localhost
-  become: false
+    chdir: "{{ app_repo_dir }}"
   changed_when: false
   register: deploy_revision
 
@@ -49,56 +76,33 @@
     release_id: "{{ deploy_revision.stdout[:12] }}"
     release_dir: "{{ app_dir }}/releases/{{ deploy_revision.stdout[:12] }}"
 
-- name: See whether that release is already on the host
+- name: See whether that release is already unpacked
   ansible.builtin.stat:
     path: "{{ release_dir }}/REVISION"
   register: release_marker
 
-- name: Ship the release
+- name: Unpack the release
   when: not release_marker.stat.exists
   block:
-    - name: Make somewhere to pack it
-      ansible.builtin.tempfile:
-        state: directory
-        suffix: .release
-      delegate_to: localhost
-      become: false
-      register: release_tmp
-
-    # The git module clones; this packs a revision of the checkout already here.
-    - name: Pack the committed tree # noqa: command-instead-of-module
-      ansible.builtin.command:
-        cmd: git archive --format=tar.gz -o "{{ release_tmp.path }}/release.tar.gz" "{{ deploy_revision.stdout }}"
-        chdir: "{{ playbook_dir }}/../.."
-      delegate_to: localhost
-      become: false
-      changed_when: true
-
     - name: Create the release directory
       ansible.builtin.file:
         path: "{{ release_dir }}"
         state: directory
         mode: "0755"
 
-    - name: Unpack it on the host
-      ansible.builtin.unarchive:
-        src: "{{ release_tmp.path }}/release.tar.gz"
-        dest: "{{ release_dir }}"
+    - name: Unpack the committed tree into it
+      ansible.builtin.shell:
+        cmd: set -o pipefail; git archive "{{ deploy_revision.stdout }}" | tar -x -C "{{ release_dir }}"
+        chdir: "{{ app_repo_dir }}"
+        executable: /bin/bash
+      changed_when: true
 
-    # Written last, so a release interrupted halfway is shipped again rather than trusted.
+    # Written last, so a release interrupted halfway is unpacked again rather than trusted.
     - name: Mark the release complete
       ansible.builtin.copy:
         dest: "{{ release_dir }}/REVISION"
         content: "{{ deploy_revision.stdout }}\n"
         mode: "0644"
-  always:
-    - name: Remove the local copy
-      ansible.builtin.file:
-        path: "{{ release_tmp.path }}"
-        state: absent
-      delegate_to: localhost
-      become: false
-      when: release_tmp.path is defined
 
 # --- Configuration and secrets -----------------------------------------------
 - name: Render the environment file

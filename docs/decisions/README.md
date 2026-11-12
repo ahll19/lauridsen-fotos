@@ -24,5 +24,6 @@ its decision; instead a new record supersedes it and says so.
 | [0002](0002-manage-the-host-with-ansible.md) | Manage the host with Ansible, with secrets in ansible-vault | Accepted |
 | [0003](0003-visual-direction-atelier-sage.md) | Visual direction: Atelier Sage | Accepted |
 | [0004](0004-deliver-mail-directly-rather-than-through-a-smarthost.md) | Deliver mail directly rather than through a smarthost | Accepted |
-| [0005](0005-ship-releases-from-the-operators-machine.md) | Ship releases from the operator's machine rather than pulling on the host | Accepted |
+| [0005](0005-ship-releases-from-the-operators-machine.md) | Ship releases from the operator's machine rather than pulling on the host | Superseded by 0007 |
 | [0006](0006-certbot-keeps-a-certificate-where-nginx-reads-it.md) | certbot keeps a certificate where nginx reads it, and nginx watches the file | Accepted |
+| [0007](0007-the-host-pulls-releases-from-the-public-repository.md) | The host pulls releases from the public repository | Accepted |

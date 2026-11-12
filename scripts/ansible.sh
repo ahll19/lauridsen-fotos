@@ -3,7 +3,7 @@
 # Run one of the playbooks in ansible/.
 #
 #   scripts/ansible.sh provision                 bare host → ready to run the stack
-#   scripts/ansible.sh deploy                    ship the commit you are on
+#   scripts/ansible.sh deploy                    pull main onto the host and run it
 #   scripts/ansible.sh update                    OS patches, fresh images, redeploy
 #   scripts/ansible.sh backup                    install the nightly backup
 #   scripts/ansible.sh restore                   bring a backup back onto a host
@@ -69,6 +69,12 @@ if [[ -f "$vault" ]] && head -n1 "$vault" | grep -q ANSIBLE_VAULT; then
     else
         args+=(--ask-vault-pass)
     fi
+fi
+
+# The rehearsal VM pulls from a copy of this checkout rather than from GitHub; refresh it,
+# so what is rehearsed is the commit that is checked out now.
+if [[ "$INVENTORY" == disposable ]]; then
+    "$ROOT/scripts/vm.sh" sync
 fi
 
 echo "==> ${PLAYBOOK} (${INVENTORY})"

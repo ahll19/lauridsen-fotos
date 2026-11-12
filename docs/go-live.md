@@ -11,7 +11,9 @@ type something, that is a bug in a playbook — fix the playbook.
 1. **A server.** Hetzner Cloud, Debian 12, 4–8 GB RAM. Add your SSH public key when
    ordering, so root accepts it.
 2. **A domain**, and an A record for it (and for `www`) pointing at the server.
-3. **Ask Hetzner to open outbound port 25.** It is closed on new accounts and opened on
+3. **Make the repository public.** The server pulls the code from GitHub and holds no
+   credential for it, so a deploy fails while the repository is private.
+4. **Ask Hetzner to open outbound port 25.** It is closed on new accounts and opened on
    request; without it no mail leaves. This can take a day, so ask early.
 
 ## 2. Tell the playbooks
@@ -30,7 +32,9 @@ password manager straight away, because it is the only copy.
 scripts/vault.sh init
 ```
 
-Commit all three files. The vault is encrypted and is meant to be committed.
+Commit all three files and merge them to `main`. The vault is encrypted and is meant to be
+committed; the other two hold nothing the site's DNS does not already publish, apart from
+the two email addresses.
 
 ## 3. Build the server
 
@@ -42,8 +46,8 @@ scripts/ansible.sh provision
 scripts/ansible.sh deploy
 ```
 
-The first takes a bare server to a hardened one running Docker. The second ships the
-commit you are on, builds it, starts the stack, obtains the certificate and fails unless
+The first takes a bare server to a hardened one running Docker. The second has the
+server pull `main` from GitHub, builds it, starts the stack, obtains the certificate and fails unless
 `https://<your domain>/healthz` answers. Both are safe to run again.
 
 Then create your admin account:
@@ -107,7 +111,8 @@ These are the checks that only count on the real thing. Tick them off in
 
 | When | Run |
 | --- | --- |
-| You have merged something | `scripts/ansible.sh deploy` |
+| You have merged something | `scripts/ansible.sh deploy` — deploys `main` |
+| You have tagged a release | `scripts/ansible.sh deploy -e deploy_ref=<tag>` |
 | Monthly, or after a security announcement | `scripts/ansible.sh update` |
 | Something is badly wrong | `scripts/ansible.sh deploy -e deploy_ref=<an earlier tag>` |
 
@@ -115,4 +120,6 @@ These are the checks that only count on the real thing. Tick them off in
 
 `scripts/vm.sh up` starts two throwaway Debian machines on this Mac — one as the server, one
 as the NAS — and `scripts/ansible.sh -I disposable <playbook>` runs any playbook against
-them. Certificates there come from a test CA. `scripts/vm.sh down` deletes both.
+them. Certificates there come from a test CA, and the server
+there is handed the commit you have checked out, so a change can be rehearsed before it is
+pushed. `scripts/vm.sh down` deletes both.
