@@ -8,6 +8,8 @@ real clients at.
 **Where it stands.** Everything that can be built and proven without a server is. What is
 left needs things only Anders can supply — a VPS, a domain, the NAS, real photographs — and
 [docs/go-live.md](docs/go-live.md) is the list, in order, with the command for each step.
+That state is tagged `v1.0.0-rc.1`; further candidates follow as the server turns things up,
+and 1.0.0 is the one that is live.
 
 Milestones are dependency-ordered, not dated. Each has a definition of done that is meant to
 be checkable rather than a matter of opinion: something either happened or it did not.
@@ -103,7 +105,7 @@ delivered with 0.4.0.
 
 **Done.** The server is described as playbooks and can be rebuilt from a clone. See
 [ADR 0002](docs/decisions/0002-manage-the-host-with-ansible.md) for why,
-[ADR 0005](docs/decisions/0005-ship-releases-from-the-operators-machine.md) for how code
+[ADR 0007](docs/decisions/0007-the-host-pulls-releases-from-the-public-repository.md) for how code
 reaches the host, and [ADR 0006](docs/decisions/0006-certbot-keeps-a-certificate-where-nginx-reads-it.md)
 for certificates.
 
