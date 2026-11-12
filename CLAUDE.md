@@ -19,7 +19,7 @@ they are the source of truth for *what* gets built:
 
 **Current phase: ready for a server, without one yet.** The VPS has not been ordered. The
 playbooks in `ansible/` have been rehearsed against a disposable machine (`scripts/vm.sh`),
-not a real host; [docs/go-live.md](docs/go-live.md) lists what remains. Prove any change to
+not a real host; [README.md](README.md#deploying-to-a-server) is the procedure for one. Prove any change to
 the host tooling on the disposable machine before it is proposed.
 
 ## Nothing operational is hardcoded
