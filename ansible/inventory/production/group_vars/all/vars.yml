@@ -9,16 +9,11 @@ site_domain: lauridsen-fotos.dk
 site_alternate_domains:
   - www.lauridsen-fotos.dk
 
-# How the playbooks log in: as this account, which already exists on the server, with the
-# key below. No password is stored anywhere. The one run that needs passwords, before the
+# How the playbooks log in: as this account, which already exists on the server, with one
+# of the keys in trusted_keys.yml beside this file. No password is stored anywhere. The one run that needs passwords, before the
 # key is installed, asks for them (ansible/README.md, ADR 0011).
 operator_user: anders
 ansible_user: "{{ operator_user }}"
-
-# The key that may log in. By default, the public half of the key on the machine running
-# the playbooks.
-operator_ssh_public_keys:
-  - "{{ lookup('ansible.builtin.file', lookup('ansible.builtin.env', 'HOME') + '/.ssh/id_ed25519.pub') }}"
 
 # --- The reverse proxy in front ----------------------------------------------
 # It terminates TLS and forwards to this server's port 80 (ADR 0008). Its address as this

@@ -2,7 +2,11 @@
 # is first reached through. A fresh Hetzner server only has root.
 operator_user: deploy
 bootstrap_user: root
+# Every public key that may log in as the operator. The account's authorized_keys is made
+# to match this list exactly.
 operator_ssh_public_keys: []
+# Refuse to provision from a machine none of whose own keys is in that list.
+operator_key_check: true
 
 ssh_port: 22
 # Accounts sshd will accept at all. The operator, and nobody else.

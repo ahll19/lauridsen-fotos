@@ -63,6 +63,24 @@ From then on the server accepts only the key, and no command needs `-k`, `-K` or
 not in sudoers. If your account can already use sudo, leave it out and give your own
 password at both prompts.
 
+## Trusted machines
+
+The server accepts the SSH keys listed in
+`inventory/production/group_vars/all/trusted_keys.yml`, and no others. It is one public key
+per machine that maintains the server.
+
+To add the machine you are sitting at, from the repository root:
+
+```bash
+printf '  - %s\n' "$(cat ~/.ssh/id_ed25519.pub)" >> ansible/inventory/production/group_vars/all/trusted_keys.yml
+```
+
+Commit that, then run provision **from a machine that is already trusted**. A new machine
+cannot let itself in. To remove a machine, delete its line and run provision.
+
+Provision refuses to run from a machine none of whose own keys is in the list, so the
+first run cannot switch password logins off and leave you outside.
+
 ## The vault password
 
 `-J` asks every time. To be asked less, put the password in `ansible/.vault-pass`, which is
@@ -97,6 +115,7 @@ scripts/vm.sh sync
 | `ansible.cfg` | Defaults: inventory, roles, collections, SSH options |
 | `inventory/production/hosts.yml` | The server's address |
 | `inventory/production/group_vars/all/vars.yml` | Settings specific to the real server |
+| `inventory/production/group_vars/all/trusted_keys.yml` | The SSH public keys that may log in |
 | `inventory/production/group_vars/all/vault.yml` | The secrets, encrypted |
 | `playbooks/` | One file per command above |
 | `roles/` | What each playbook applies; each role's `defaults/main.yml` lists its settings |

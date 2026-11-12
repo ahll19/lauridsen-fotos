@@ -23,11 +23,12 @@ repository is ever made private again, deploys fail at the fetch.
 
 ## 2. Tell the playbooks
 
-Edit two files in `ansible/inventory/production/`:
+Edit three files in `ansible/inventory/production/`:
 
 | File | Set |
 | --- | --- |
 | `hosts.yml` | `ansible_host` — the server's IP address |
+| `group_vars/all/trusted_keys.yml` | your SSH public key — the file says how to add it |
 | `group_vars/all/vars.yml` | `operator_user` — your account on the server; `site_domain`, `owner_email`, and `upstream_proxy_addresses` — the reverse proxy's address as the server sees it connect |
 
 Then create the secrets. You will be asked to choose the vault password; put it in your
@@ -40,8 +41,8 @@ scripts/vault.sh init
 No login password goes in the vault. The first run asks for the ones it needs
 ([ADR 0011](decisions/0011-the-first-run-asks-for-passwords-and-stores-none.md)).
 
-Commit all three files and merge them to `main`. The vault is encrypted and is meant to be
-committed; the other two hold nothing the site's DNS does not already publish, apart from
+Commit all four files and merge them to `main`. The vault is encrypted and is meant to be
+committed; the others hold nothing the site's DNS does not already publish, apart from
 the two email addresses.
 
 ## 3. Build the server

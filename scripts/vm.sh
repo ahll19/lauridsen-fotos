@@ -94,6 +94,8 @@ site_alternate_domains:
 
 operator_ssh_public_keys:
   - "$(cat "$LIMA_KEY.pub")"
+# Lima keeps that key outside ~/.ssh, where the check for a trusted local key looks.
+operator_key_check: false
 # Lima manages the VM through its own account; shutting it out would strand the VM.
 ssh_allow_users:
   - "{{ operator_user }}"
