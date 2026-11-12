@@ -278,7 +278,7 @@ for doc in functional_design.md architecture.md technical_design.md CLAUDE.md; d
 done
 
 if [[ -f VERSION ]]; then
-    if grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$' VERSION; then
+    if grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$' VERSION; then
         ok "VERSION is valid semver ($(cat VERSION))"
     else
         fail "VERSION does not parse as semver: $(cat VERSION)"

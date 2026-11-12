@@ -4,9 +4,16 @@
 #
 # Releases happen in two steps because main cannot be pushed to directly:
 #
-#   scripts/release.sh prepare <major|minor|patch>
+#   scripts/release.sh prepare <major|minor|patch> [--rc]
 #       Bumps VERSION, writes the CHANGELOG section from the commits since the last tag,
-#       and opens a pull request. Review and merge it on GitHub.
+#       and opens a pull request. Review and merge it on GitHub. With --rc the new version
+#       is its first release candidate: 1.0.0-rc.1.
+#
+#   scripts/release.sh prepare rc
+#       From a release candidate, the next one: 1.0.0-rc.1 -> 1.0.0-rc.2.
+#
+#   scripts/release.sh prepare final
+#       From a release candidate, the release itself: 1.0.0-rc.2 -> 1.0.0.
 #
 #   scripts/release.sh tag
 #       Run on main once that pull request is merged. Creates and pushes the annotated tag.
@@ -28,25 +35,38 @@ current_version() {
 
 # ---------------------------------------------------------------------------
 prepare() {
-    local bump="${1:-}"
+    local bump="${1:-}" flag="${2:-}"
+    local usage="usage: scripts/release.sh prepare <major|minor|patch> [--rc] | prepare rc | prepare final"
     case "$bump" in
-        major|minor|patch) ;;
-        *) die "usage: scripts/release.sh prepare <major|minor|patch>" ;;
+        major|minor|patch) [[ -z "$flag" || "$flag" == --rc ]] || die "$usage" ;;
+        rc|final)          [[ -z "$flag" ]] || die "$usage" ;;
+        *) die "$usage" ;;
     esac
 
     require_clean_tree
     command -v gh >/dev/null || die "gh is required to open the release pull request."
 
-    local old new major minor patch
+    # A version is X.Y.Z, or X.Y.Z-rc.N while it is a release candidate.
+    local old new base candidate="" major minor patch
     old=$(current_version)
-    IFS='.' read -r major minor patch <<<"$old"
+    base="${old%%-rc.*}"
+    [[ "$old" == *-rc.* ]] && candidate="${old##*-rc.}"
+    IFS='.' read -r major minor patch <<<"$base"
 
     case "$bump" in
         major) major=$((major + 1)); minor=0; patch=0 ;;
         minor) minor=$((minor + 1)); patch=0 ;;
         patch) patch=$((patch + 1)) ;;
+        rc|final)
+            [[ -n "$candidate" ]] \
+                || die "$old is not a release candidate. Start one with: prepare <major|minor|patch> --rc"
+            ;;
     esac
-    new="$major.$minor.$patch"
+    case "$bump" in
+        rc)    new="$base-rc.$((candidate + 1))" ;;
+        final) new="$base" ;;
+        *)     new="$major.$minor.$patch"; [[ "$flag" == --rc ]] && new="$new-rc.1" ;;
+    esac
 
     echo "==> Releasing $old -> $new"
 
@@ -168,5 +188,5 @@ tag() {
 case "${1:-}" in
     prepare) shift; prepare "$@" ;;
     tag)     tag ;;
-    *)       die "usage: scripts/release.sh <prepare <major|minor|patch> | tag>" ;;
+    *)       die "usage: scripts/release.sh <prepare <major|minor|patch> [--rc] | prepare rc | prepare final | tag>" ;;
 esac

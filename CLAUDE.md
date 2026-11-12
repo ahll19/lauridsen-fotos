@@ -103,6 +103,9 @@ scripts/release.sh prepare minor   # on any branch: bumps VERSION, writes CHANGE
 scripts/release.sh tag             # on main, after the merge: creates and pushes the tag
 ```
 
+A release candidate is `X.Y.Z-rc.N`: `prepare major --rc` starts one, `prepare rc` cuts the
+next, and `prepare final` turns the last one into the release.
+
 Every release is tagged `vX.Y.Z` as an annotated tag. Tags are the only thing ever pushed
 straight to the remote without a PR.
 
