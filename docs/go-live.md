@@ -37,6 +37,17 @@ password manager straight away, because it is the only copy.
 scripts/vault.sh init
 ```
 
+Then name the account the playbooks log in as. It is an account that already exists on the
+server, and the playbooks use its password for SSH and sudo
+([ADR 0010](decisions/0010-ssh-accepts-the-operators-password.md)). Set
+`vault_operator_user` and `vault_operator_password` in:
+
+```bash
+scripts/vault.sh edit
+```
+
+Logging in by password needs `sshpass` on your machine: `brew install sshpass`.
+
 Commit all three files and merge them to `main`. The vault is encrypted and is meant to be
 committed; the other two hold nothing the site's DNS does not already publish, apart from
 the two email addresses.
@@ -59,7 +70,7 @@ answers. Both are safe to run again. Then check the whole path, proxy included: 
 Then create your admin account:
 
 ```bash
-ssh -t deploy@<server> 'cd /opt/lauridsen-fotos/current && sudo docker compose exec app python manage.py createsuperuser'
+ssh -t <operator>@<server> 'cd /opt/lauridsen-fotos/current && sudo docker compose exec app python manage.py createsuperuser'
 ```
 
 The admin lives at the path in the vault — `scripts/vault.sh view` shows it.
@@ -105,9 +116,9 @@ These are the checks that only count on the real thing. Tick them off in
 | Check | How |
 | --- | --- |
 | Only the proxy gets in | `curl -I http://<server IP>/` from anywhere else answers 403, or nothing if the Hetzner firewall drops it |
-| Survives a reboot | `ssh deploy@<server> sudo reboot`, then load the site |
+| Survives a reboot | `ssh <operator>@<server> sudo reboot`, then load the site |
 | Mail arrives | send yourself a message through the contact form; look at its headers for SPF, DKIM and DMARC `pass` |
-| Errors reach you | `ssh deploy@<server> 'cd /opt/lauridsen-fotos/current && sudo docker compose exec app python manage.py test_error_report'` |
+| Errors reach you | `ssh <operator>@<server> 'cd /opt/lauridsen-fotos/current && sudo docker compose exec app python manage.py test_error_report'` |
 | Uptime alert | point UptimeRobot at `https://<domain>/healthz`, which goes through the proxy; stop the stack, wait for the alert, start it again |
 | Backups run unattended | after a few nights, look for dated directories on the NAS |
 | Restore | `scripts/ansible.sh restore` against a second, scratch server |

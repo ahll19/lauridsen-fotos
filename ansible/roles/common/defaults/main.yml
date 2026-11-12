@@ -5,6 +5,9 @@ bootstrap_user: root
 operator_ssh_public_keys: []
 
 ssh_port: 22
+# Whether sshd accepts the account's password as well as a key. Off unless the network in
+# front already limits who can reach the SSH port at all (ADR 0010).
+ssh_password_authentication: false
 # Accounts sshd will accept at all. The operator, and nobody else.
 ssh_allow_users:
   - "{{ operator_user }}"

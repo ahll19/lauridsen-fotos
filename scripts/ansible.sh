@@ -61,6 +61,13 @@ if [[ "$INVENTORY" == production && ! -f inventory/production/group_vars/all/vau
     exit 1
 fi
 
+# A password login goes through sshpass, which macOS does not ship.
+if grep -rqs '^ansible_password:' "inventory/${INVENTORY}" && ! command -v sshpass >/dev/null 2>&1; then
+    echo "The ${INVENTORY} inventory logs in with a password, and that needs sshpass:" >&2
+    echo "    brew install sshpass" >&2
+    exit 1
+fi
+
 args=(-i "inventory/${INVENTORY}")
 vault="inventory/${INVENTORY}/group_vars/all/vault.yml"
 if [[ -f "$vault" ]] && head -n1 "$vault" | grep -q ANSIBLE_VAULT; then

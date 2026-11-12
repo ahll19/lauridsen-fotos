@@ -1,7 +1,7 @@
-# Managed by Ansible (roles/common). Keys only, no root, and only the accounts named here.
+# Managed by Ansible (roles/common). No root, and only the accounts named here.
 Port {{ ssh_port }}
 PermitRootLogin no
-PasswordAuthentication no
+PasswordAuthentication {{ ssh_password_authentication | ternary('yes', 'no') }}
 KbdInteractiveAuthentication no
 PubkeyAuthentication yes
 AllowUsers {{ ssh_allow_users | join(' ') }}

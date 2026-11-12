@@ -191,7 +191,9 @@ Kept proportionate to a low-traffic, single-owner site — no heavyweight observ
 
 ## 11. Security baseline
 
-- SSH access is key-only (no password auth), on a firewall-restricted basis.
+- SSH access is key-only (no password auth), on a firewall-restricted basis. *The production
+  server also accepts the operator's password, since only the local network can reach it —
+  see [ADR 0010](docs/decisions/0010-ssh-accepts-the-operators-password.md).*
 - The firewall denies all inbound traffic by default; only the reverse proxy's ports (and
   restricted SSH) are opened.
 - Containers run as non-root users wherever the base image supports it.
