@@ -14,10 +14,11 @@ ssh_allow_users:
 
 host_timezone: Europe/Copenhagen
 
-# The unprivileged account the containers run as. The uid is fixed in the image
-# (docker/app/Dockerfile), so the host must agree with it for /data to be writable.
+# The unprivileged account the containers run as. The image is built with this uid
+# (APP_UID), so the host and the containers agree on who owns /data. Well above the range
+# Debian gives login accounts, so it never collides with the first user on the host (1000).
 app_user: fotos
-app_uid: 1000
+app_uid: 10001
 # The one directory the containers write to (architecture.md §5).
 data_dir: /data
 
