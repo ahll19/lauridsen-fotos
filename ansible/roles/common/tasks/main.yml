@@ -103,6 +103,23 @@
     validate: /usr/sbin/sshd -t -f %s
   notify: Reload sshd
 
+# sshd takes the first value it reads for each setting, so a file that sorts before this
+# one could quietly keep password logins on. Ask sshd what is actually in force.
+- name: Read the SSH configuration in force
+  ansible.builtin.command:
+    cmd: /usr/sbin/sshd -T
+  register: sshd_in_force
+  changed_when: false
+
+- name: Refuse to continue if password logins are still accepted
+  ansible.builtin.assert:
+    that: "'passwordauthentication no' in sshd_in_force.stdout_lines"
+    fail_msg: >-
+      sshd still accepts passwords. Another file in /etc/ssh/sshd_config.d is read before
+      10-hardening.conf and sets PasswordAuthentication yes. Remove that line and run
+      provision again.
+    quiet: true
+
 # --- Unattended security updates ---------------------------------------------
 - name: Turn on automatic security updates
   ansible.builtin.copy:
