@@ -49,9 +49,11 @@ asked for rather than assumed. The workflow above describes how a change reaches
 is ready; it is not standing authorisation to decide that it *is* ready. Finish the work, push
 the branch, then say it is ready and ask. The same goes for merging: Claude never merges.
 
-This repository is private on a free GitHub plan, which means GitHub itself **cannot** enforce
-branch protection (see [docs/decisions/0001-local-enforcement-of-main-protection.md](docs/decisions/0001-local-enforcement-of-main-protection.md)).
-Enforcement is a local `pre-push` hook instead. Install it once per clone:
+GitHub enforces this: a branch protection rule on `main` requires a pull request and a
+passing `verify` check, for administrators too, and forbids force-pushes and deletion
+([docs/decisions/0009-github-protects-main.md](docs/decisions/0009-github-protects-main.md)).
+A local `pre-push` hook refuses the same pushes earlier, on the laptop. Install it once per
+clone:
 
 ```bash
 scripts/install-hooks.sh
@@ -148,10 +150,9 @@ scripts/verify.sh          # everything
 scripts/verify.sh --fast   # hygiene, secrets, lint — what the pre-commit hook runs
 ```
 
-The same script runs in GitHub Actions on every pull request. Because the repository is
-private on a free plan, that result is **advisory** — GitHub will not block the merge button.
-Treat a red check as blocking anyway; that discipline is the only thing standing in for
-server-side enforcement.
+The same script runs in GitHub Actions on every pull request as the `verify` check, and
+GitHub will not merge a pull request until it passes. If it fails for a reason outside the
+code, such as the runner losing its network, re-run it; never loosen the rule.
 
 ## Decision records
 

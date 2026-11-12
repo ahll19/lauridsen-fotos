@@ -2,7 +2,9 @@ ssh_port: 22
 # Networks allowed to reach SSH. Empty means anywhere; keys are the real protection, and a
 # home connection's address changes.
 ssh_allowed_cidrs: []
-# What the world may reach. The reverse proxy, and nothing else.
+# What may be reached besides SSH: port 80, where the stack's nginx listens behind the
+# TLS-terminating proxy in front (ADR 0008). Docker publishes its ports past ufw, so this
+# rule documents intent rather than enforcing it; nginx's own allow list
+# (upstream_proxy_addresses) is what keeps everyone but that proxy out.
 firewall_public_tcp_ports:
   - 80
-  - 443

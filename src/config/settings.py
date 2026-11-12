@@ -310,9 +310,10 @@ SECURE_REFERRER_POLICY = "same-origin"
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = False
 
-# Whether this deployment is actually reached over HTTPS. Production is, so it defaults to
-# on whenever DEBUG is off. The exception is running the production configuration locally to
-# check it: nginx has no certificate here, so the site answers on plain http://localhost —
+# Whether visitors reach this deployment over HTTPS. Production's do — through the reverse
+# proxy in front of the server, which terminates TLS (ADR 0008) — so it defaults to on
+# whenever DEBUG is off. The exception is running the production configuration locally to
+# check it: nothing in front terminates TLS here, so the site answers on http://localhost —
 # and the three settings below would each break it. SECURE_SSL_REDIRECT would bounce every
 # request to an https:// port nothing listens on, and the two Secure cookie flags would make
 # the browser discard the session and CSRF cookies, so the admin could not be logged into
@@ -321,7 +322,7 @@ CSRF_COOKIE_HTTPONLY = False
 SERVE_OVER_HTTPS = env_bool("DJANGO_SERVE_OVER_HTTPS", not DEBUG)
 
 if SERVE_OVER_HTTPS:
-    # Behind nginx, which terminates TLS on the VPS.
+    # Set by the proxy in front and passed on by nginx, which only that proxy may reach.
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
@@ -329,7 +330,7 @@ if SERVE_OVER_HTTPS:
     # The container's health check asks gunicorn directly, over plain HTTP, from inside
     # the container. Redirected to HTTPS it has nowhere to go — gunicorn speaks no TLS —
     # so the container never reports healthy, and nginx, which waits for it, never starts.
-    # Visitors are unaffected: nginx redirects port 80 itself before Django is asked.
+    # Visitors are unaffected: the proxy in front redirects plain HTTP before Django is asked.
     SECURE_REDIRECT_EXEMPT = [r"^healthz$"]
     SECURE_HSTS_SECONDS = env_int("DJANGO_HSTS_SECONDS", 31536000)
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True

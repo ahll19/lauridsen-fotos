@@ -1,5 +1,5 @@
 # The stack described in architecture.md, as it runs on a laptop. The VPS adds
-# docker-compose.prod.yml on top: real ports, no mounted source, and certbot.
+# docker-compose.prod.yml on top: port 80, and no mounted source.
 #
 # Every port, path, schedule and image tag comes from .env — see .env.example.
 
@@ -15,13 +15,14 @@ services:
       # Consumed by the official image's envsubst templating of docker/nginx/templates/.
       APP_HOST: app
       APP_PORT: ${APP_PORT:-8000}
-      # http here; https on the VPS, where docker-compose.prod.yml adds the certificate.
-      NGINX_MODE: ${NGINX_MODE:-http}
+      # The reverse proxy in front on the server, which alone may connect. Empty: anyone.
+      UPSTREAM_PROXY_ADDRESSES: ${UPSTREAM_PROXY_ADDRESSES:-}
       MAX_UPLOAD_SIZE: ${MAX_UPLOAD_SIZE:-100m}
       # Safe default: revalidate. Only hashed filenames may be called immutable.
       STATIC_CACHE_CONTROL: ${STATIC_CACHE_CONTROL:-public, max-age=0, must-revalidate}
     volumes:
       - ./docker/nginx/templates:/etc/nginx/templates:ro
+      - ./docker/nginx/upstream-allow.sh:/docker-entrypoint.d/15-upstream-allow.sh:ro
       # Read-only: nginx serves these, the app writes them.
       - ${DATA_DIR:-./data}:/data:ro
       - static_files:/srv/static:ro

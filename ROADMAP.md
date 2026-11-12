@@ -1,6 +1,7 @@
 # Roadmap to 1.0.0
 
-**1.0.0 means the site is live on the VPS at the real domain, with TLS, backups and
+**1.0.0 means the site is live on the VPS at the real domain, served over HTTPS through the
+reverse proxy in front of it, with backups and
 monitoring all working and proven.** Content can keep arriving afterwards — a thin portfolio
 does not block the tag. What blocks it is anything that would make the site unsafe to point
 real clients at.
@@ -8,8 +9,7 @@ real clients at.
 **Where it stands.** Everything that can be built and proven without a server is. What is
 left needs things only Anders can supply — a VPS, a domain, the NAS, real photographs — and
 [docs/go-live.md](docs/go-live.md) is the list, in order, with the command for each step.
-That state is tagged `v1.0.0-rc.1`; further candidates follow as the server turns things up,
-and 1.0.0 is the one that is live.
+Release candidates (`v1.0.0-rc.N`) are cut as that changes; 1.0.0 is the one that is live.
 
 Milestones are dependency-ordered, not dated. Each has a definition of done that is meant to
 be checkable rather than a matter of opinion: something either happened or it did not.
@@ -106,8 +106,8 @@ delivered with 0.4.0.
 **Done.** The server is described as playbooks and can be rebuilt from a clone. See
 [ADR 0002](docs/decisions/0002-manage-the-host-with-ansible.md) for why,
 [ADR 0007](docs/decisions/0007-the-host-pulls-releases-from-the-public-repository.md) for how code
-reaches the host, and [ADR 0006](docs/decisions/0006-certbot-keeps-a-certificate-where-nginx-reads-it.md)
-for certificates.
+reaches the host, and [ADR 0008](docs/decisions/0008-tls-ends-at-a-reverse-proxy-in-front-of-the-server.md)
+for where TLS ends.
 
 Proven on a disposable Debian 12 machine rather than assumed (`scripts/vm.sh`): a bare
 host, reachable only as root, taken to a serving site over HTTPS by `provision.yml` and
@@ -119,7 +119,8 @@ the first real deploy ([D41, D42](docs/defects.md)).
 - [x] `provision.yml` takes a bare Debian 12 host to the state `architecture.md` describes:
       packages, non-root user, SSH hardening, `ufw`, `unattended-upgrades`, Docker Engine and
       the Compose plugin, and the `/data` layout with correct ownership. Afterwards root and
-      password logins are both refused, and only 22, 80 and 443 are open.
+      password logins are both refused, and only 22 and 80 are open (443 too, until
+      [ADR 0008](docs/decisions/0008-tls-ends-at-a-reverse-proxy-in-front-of-the-server.md) moved TLS off the server).
 - [x] `deploy.yml` ships the code, builds the image on the host, runs migrations, restarts
       the stack, and **fails if `/healthz` does not answer afterwards**. Seen failing for
       exactly that reason during the rehearsal, before D42 was fixed.
@@ -150,8 +151,8 @@ the first real deploy ([D41, D42](docs/defects.md)).
 `architecture.md`, made real, entirely through the playbooks from 0.4.0. The site answers on
 the domain over HTTPS but is not yet announced to anyone.
 
-Every item below that could be rehearsed has been, on the disposable machine, with Pebble
-(Let's Encrypt's test server) standing in for Let's Encrypt. A box stays unticked until it
+Every item below that could be rehearsed has been, on the disposable machine, with Caddy on a
+second machine standing in for the TLS-terminating proxy. A box stays unticked until it
 has happened on the real host. [docs/go-live.md](docs/go-live.md) is the order to do them in.
 
 **Definition of done**
@@ -159,15 +160,14 @@ has happened on the real host. [docs/go-live.md](docs/go-live.md) is the order t
 - [ ] Hetzner VPS ordered: Debian 12, roughly 4–8 GB RAM and ~200 GB disk.
 - [ ] The host reached its configured state by running `provision.yml` against it, and
       nothing else. *Rehearsed.*
-- [ ] The Hetzner Cloud Firewall allows only 80, 443 and SSH, matching what `ufw` enforces
-      on the host.
-- [ ] DNS A (and AAAA if used) pointing at the VPS.
-- [ ] A valid Let's Encrypt certificate is served, HTTP redirects to HTTPS, and HSTS is on.
-      *Rehearsed*: `certbot` is in the stack; a certificate was issued over HTTP-01, HTTP
-      answered 301 to HTTPS, and `Strict-Transport-Security` was present.
-- [ ] A renewal dry run succeeds (`certbot renew --dry-run`). *Partly rehearsed*: a real
-      renewal was forced against the test CA, the new certificate was put in place, and
-      nginx reloaded by itself and served it. The dry run itself needs the real domain.
+- [ ] The Hetzner Cloud Firewall allows SSH, and port 80 only from the reverse proxy in
+      front.
+- [ ] DNS A (and AAAA if used) pointing at the reverse proxy, which forwards to the VPS.
+- [ ] The site is served over HTTPS through the proxy, plain HTTP redirects to HTTPS, HSTS
+      is on, and the server refuses anyone but the proxy ([ADR 0008](docs/decisions/0008-tls-ends-at-a-reverse-proxy-in-front-of-the-server.md)).
+      *Rehearsed*: through Caddy, the home page answered 200 over HTTPS with
+      `Strict-Transport-Security` and Secure cookies, plain HTTP was redirected, and a
+      client other than the proxy got 403 from nginx.
 - [ ] The application was deployed by `deploy.yml`, and the stack comes back unattended
       after a `reboot`. *Rehearsed*: healthy again within a minute of the reboot.
 - [ ] Admin reachable at the secret path, with a superuser created interactively; the path
@@ -209,7 +209,8 @@ works, not a substitute.
       healthy afterwards. *Rehearsed.*
 - [ ] Losing the vault password is understood as a disaster-recovery scenario: the password
       manager entry holding it is itself backed up (ADR 0002).
-- [ ] UptimeRobot (or equivalent) checking `/healthz`, alerting somewhere you will actually
+- [ ] UptimeRobot (or equivalent) checking `https://<domain>/healthz` through the reverse
+      proxy, so the proxy is watched too, alerting somewhere you will actually
       see it — verified by deliberately stopping the stack and receiving the alert.
 - [ ] An unhandled error produces an email through the relay — verified deliberately.
       `manage.py test_error_report` sends one on demand. *Rehearsed as far as the relay.*

@@ -1,7 +1,7 @@
 # 0001. Enforce main protection locally rather than on GitHub
 
 - **Date**: 2026-09-12
-- **Status**: Accepted
+- **Status**: Superseded by [0009](0009-github-protects-main.md)
 - **Affects**: none of the design documents; this concerns the development workflow only
 
 ## Context

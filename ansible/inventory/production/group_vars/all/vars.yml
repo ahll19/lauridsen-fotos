@@ -14,12 +14,10 @@ site_alternate_domains:
 operator_ssh_public_keys:
   - "{{ lookup('ansible.builtin.file', lookup('ansible.builtin.env', 'HOME') + '/.ssh/id_ed25519.pub') }}"
 
-# --- Certificates ------------------------------------------------------------
-# Let's Encrypt sends expiry warnings here. Setting agree_tos to true is you accepting
-# their subscriber agreement (https://letsencrypt.org/repository/); the deploy refuses to
-# request a certificate until you have.
-letsencrypt_email: ""
-letsencrypt_agree_tos: false
+# --- The reverse proxy in front ----------------------------------------------
+# It terminates TLS and forwards to this server's port 80 (ADR 0008). Its address as this
+# server sees it connect; nginx refuses everyone else. Empty lets anyone connect.
+upstream_proxy_addresses: []
 
 # --- Mail --------------------------------------------------------------------
 # A mailbox you read, not on the site's own domain: contact-form messages and error

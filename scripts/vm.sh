@@ -3,7 +3,8 @@
 # Disposable machines for rehearsing the playbooks, so the real server is never the first
 # place one is run. Needs Lima (brew install lima).
 #
-#   scripts/vm.sh up        a bare Debian 12 "VPS" and a second machine playing the NAS
+#   scripts/vm.sh up        a bare Debian 12 "VPS", and a second machine playing both the
+#                           NAS and the TLS-terminating reverse proxy in front of the VPS
 #   scripts/vm.sh rebuild   throw the VPS away and start a bare one (the NAS is kept)
 #   scripts/vm.sh sync      hand the VPS the commit you are on (ansible.sh does this itself)
 #   scripts/vm.sh ssh [nas] a shell on the VPS, or on the NAS
@@ -16,11 +17,15 @@
 #   scripts/ansible.sh -I disposable provision
 #   scripts/ansible.sh -I disposable deploy
 #
-# The rehearsal differs from production in two deliberate ways. There is no real domain, so
-# certificates come from Pebble — Let's Encrypt's own test server — running beside the
-# stack. And the VPS pulls the code from a copy of this checkout placed on it rather than
-# from GitHub, so a change can be rehearsed before it is pushed. Everything else, certbot
-# and the pull included, runs exactly as it will on the real server.
+# The rehearsal differs from production in two deliberate ways. The reverse proxy in front
+# of the VPS, which in production is not ours to build, is Caddy on the second machine with
+# a certificate from its own internal CA. And the VPS pulls the code from a copy of this
+# checkout placed on it rather than from GitHub, so a change can be rehearsed before it is
+# pushed. Everything else runs exactly as it will on the real server.
+#
+# To see the site the way a visitor would, ask the proxy:
+#
+#   scripts/vm.sh ssh nas curl -sk --resolve fotos.test:443:127.0.0.1 https://fotos.test/
 #
 set -euo pipefail
 
@@ -42,7 +47,9 @@ command -v limactl >/dev/null 2>&1 || { echo "Lima is not installed: brew instal
 LIMA_KEY="${LIMA_HOME:-$HOME/.lima}/_config/user"
 SSH_OPTS=(-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i "$LIMA_KEY")
 
-exists() { limactl list --format '{{.Name}}' 2>/dev/null | grep -qx "$1"; }
+# Not `limactl list | grep -q`: grep stops reading at the first match, limactl dies of the
+# closed pipe, and under pipefail a machine that exists is reported as missing.
+exists() { local names; names=$(limactl list --format '{{.Name}}' 2>/dev/null); grep -qx "$1" <<<"$names"; }
 port()   { limactl list --format '{{.SSHLocalPort}}' "$1"; }
 as_root() { local vm=$1; shift; ssh "${SSH_OPTS[@]}" -p "$(port "$vm")" root@127.0.0.1 "$@"; }
 # As Lima's own account, which survives provisioning; root's login does not.
@@ -96,17 +103,9 @@ ssh_allow_users:
 # and then goes nowhere, so a rehearsal cannot send anything to a real mailbox.
 owner_email: owner@example.com
 
-# Certificates from Pebble, Let's Encrypt's test server, started beside the stack by the
-# extra compose file. Its API certificate is self-signed, hence --no-verify-ssl.
-compose_extra_files:
-  - ansible/lima/docker-compose.rehearsal.yml
-letsencrypt_agree_tos: true
-certbot_server: https://pebble:14000/dir
-certbot_extra_args: --no-verify-ssl
-certbot_retry_interval: 20
-certbot_renew_interval: 60
-cert_reload_interval: 5
-healthcheck_verify_tls: false
+# The reverse proxy in front: Caddy on $NAS_VM, the only machine nginx lets in.
+upstream_proxy_addresses:
+  - $(as_lima "$HOST_VM" getent hosts "lima-$NAS_VM.internal" | awk '{print $1}')
 
 # The code comes from the bundle that \`scripts/vm.sh sync\` puts on the VPS; which commit
 # to deploy is in release.yml beside this file, rewritten by every sync.
@@ -143,8 +142,8 @@ EOF
     echo "✓ $HOST_VM has ${revision:0:12} to deploy"
 }
 
-# The part of the rehearsal that is not ours to automate in production: an account on the
-# NAS that accepts the backup key.
+# The parts of the rehearsal that are not ours to automate in production: an account on the
+# NAS that accepts the backup key, and the TLS-terminating proxy in front of the VPS.
 prepare_nas() {
     local key pub
     key=$(mktemp)
@@ -165,6 +164,20 @@ prepare_nas() {
         install -d -o backup -g backup -m 700 '$BACKUP_PATH'
     "
     echo "✓ $NAS_VM accepts the backup key"
+    # Caddy forwards Host unchanged and sets X-Forwarded-For and X-Forwarded-Proto, which is
+    # all the stack asks of whatever stands in front of it.
+    as_root "$NAS_VM" "
+        set -e
+        command -v caddy >/dev/null || { apt-get update -qq && apt-get install -y -qq caddy >/dev/null; }
+        cat >/etc/caddy/Caddyfile <<CADDY
+$DOMAIN, www.$DOMAIN {
+    tls internal
+    reverse_proxy lima-$HOST_VM.internal:80
+}
+CADDY
+        systemctl reload-or-restart caddy
+    "
+    echo "✓ $NAS_VM terminates TLS for $DOMAIN in front of $HOST_VM"
 }
 
 case "${1:-}" in

@@ -27,21 +27,13 @@ site_domain: ""
 site_alternate_domains: []
 site_domains: "{{ [site_domain] + site_alternate_domains }}"
 
-# --- HTTPS -------------------------------------------------------------------
-# Off only for a host that has no domain pointed at it yet.
-tls_enabled: true
+# --- In front of the server (ADR 0008) ---------------------------------------
+# The stack serves plain HTTP on this port. TLS is terminated by a reverse proxy in front,
+# which is not managed here.
 http_port: 80
-https_port: 443
-letsencrypt_email: ""
-letsencrypt_agree_tos: false
-# Empty means Let's Encrypt itself. The rehearsal points this at a local test CA.
-certbot_server: ""
-certbot_extra_args: ""
-certbot_image: certbot/certbot:v2.11.0
-certbot_renew_interval: 43200
-certbot_retry_interval: 900
-certbot_timeout: 600
-cert_reload_interval: 60
+# That proxy, as this server sees it connect: addresses or CIDR ranges. nginx refuses
+# everyone else. Empty means anyone may connect, and the deploy says so.
+upstream_proxy_addresses: []
 
 # --- The application ---------------------------------------------------------
 django_time_zone: Europe/Copenhagen
@@ -52,7 +44,8 @@ app_port: 8000
 gunicorn_workers: 3
 gunicorn_timeout: 120
 max_upload_size: 100m
-trusted_proxy_count: 1
+# The proxy in front, and nginx.
+trusted_proxy_count: 2
 
 cron_schedule_expire_galleries: "0 3 * * *"
 cron_schedule_purge_tombstones: "30 3 * * *"
@@ -75,6 +68,3 @@ dkim_private_key: ""
 # How long to wait for the site to answer before calling the deploy failed.
 healthcheck_retries: 36
 healthcheck_delay: 5
-# Whether the health check insists on a certificate a browser would accept. Only the
-# rehearsal, whose certificates come from a test CA, turns this off.
-healthcheck_verify_tls: true

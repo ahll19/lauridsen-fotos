@@ -16,12 +16,15 @@ operate than a distributed system, for one owner-operator.
 
 ```
 Internet
-   │
+   │  HTTPS
+   ▼
+[ TLS-terminating reverse proxy, outside this stack (ADR 0008) ]
+   │  plain HTTP, port 80
    ▼
 [ VPS: public IP, firewall ]
-   │  ports 80/443 (and 25/587 if mail is exposed externally)
+   │
    ▼
-[ reverse-proxy container: nginx + certbot ]
+[ reverse-proxy container: nginx, accepts only the proxy above ]
    │  internal Docker network only
    ├──▶ [ app container: gunicorn + application code ]
    ├──▶ [ app-cron container: same image, scheduled jobs ]
@@ -36,7 +39,8 @@ Internet
 [ backup target: NAS or separate provider storage ]
 ```
 
-Only the reverse proxy is reachable from the internet. Every other container talks to it (or
+Only nginx has a published port, and it answers only the TLS-terminating proxy in front of
+the server. Every other container talks to it (or
 to each other) over the internal Docker network and is never directly exposed.
 
 ## 2. Host (VPS)
@@ -57,20 +61,23 @@ to each other) over the internal Docker network and is never directly exposed.
 
 ## 3. Networking
 
-- **Public entry points**: only ports 80 and 443 need to be open to the world (plus a mail
+- **Public entry points**: only port 80, and only to the TLS-terminating proxy in front
+  ([ADR 0008](docs/decisions/0008-tls-ends-at-a-reverse-proxy-in-front-of-the-server.md)), plus a mail
   submission port only if the relay ever needs to accept mail from outside the Docker
   network, which it shouldn't in the current design — see §6).
 - **Firewall**: `ufw` at the host level denies everything by default and explicitly allows
-  80/443 (and SSH, restricted as below). Since the VPS is hosted at Hetzner, Hetzner's own
+  80 (and SSH, restricted as below). Docker publishes container ports past `ufw`, so the
+  rule that actually limits port 80 to the proxy is nginx's own allow list. Since the VPS is hosted at Hetzner, Hetzner's own
   Cloud Firewall sits in front of it as a second, free layer of defense-in-depth — belt and
   suspenders, not a substitute for `ufw`. Every other container port is only reachable over
   the internal Docker network, never published to the host's public interface.
-- **DNS**: the domain's A/AAAA record points at the VPS's public IP. If the mail relay ever
+- **DNS**: the domain's A/AAAA record points at the TLS-terminating proxy, which forwards
+  to the VPS. If the mail relay ever
   needs to hand off to the public internet directly (rather than to a smarthost), matching
   SPF/DKIM/rDNS records are set up on that same domain — good practice regardless of which
   mailbox ultimately receives the mail.
-- **TLS termination**: happens once, at the reverse proxy. Nothing behind it needs to know
-  about certificates.
+- **TLS termination**: happens once, at the proxy in front of the VPS. Nothing on the VPS
+  holds a certificate.
 
 ## 4. Containerized setup
 
@@ -78,8 +85,7 @@ Everything runs as Docker Compose services on one internal network:
 
 | Service         | Role                                                              |
 | ---------------- | ------------------------------------------------------------------ |
-| `reverse-proxy`  | nginx; TLS termination; the only container with published ports.  |
-| `certbot`        | Requests/renews Let's Encrypt certificates on a schedule; shares a volume with the reverse proxy so renewed certs are picked up without manual steps. |
+| `reverse-proxy`  | nginx on port 80, behind the TLS-terminating proxy; the only container with published ports. |
 | `app`            | The application server (e.g. gunicorn) serving requests, built from the application's own image. |
 | `app-cron`       | The **same image** as `app`, but run with a different entrypoint/command dedicated to scheduled jobs (see §5). Sharing the image avoids drift between "what runs the app" and "what runs its scheduled jobs." |
 | `mail-relay`     | A minimal outbound-only SMTP relay container. Accepts mail only from the internal Docker network and delivers it onward; never accepts connections from the public internet. |
@@ -108,16 +114,13 @@ bespoke job queue or scheduler framework is introduced for this.
 
 ## 7. TLS & certificates
 
-Certificates are obtained and renewed by the `certbot` container against Let's Encrypt using
-the HTTP-01 challenge, served through the reverse proxy — the simplest option, and sufficient
-since nothing in the functional design calls for wildcard subdomains (client galleries are
-paths under the main domain, not subdomains). Renewal runs on a recurring schedule well
-before expiry, and the reverse proxy is signaled to reload once a renewal succeeds. If a
-wildcard cert is ever needed later (e.g. a `*.domain` scheme), that would mean switching to
-the DNS-01 challenge against the domain's DNS provider — worth flagging now only because it
-would be a deliberate later change, not the default. How the certificate reaches nginx, and how
-nginx starts before there is one, is in
-[docs/decisions/0006-certbot-keeps-a-certificate-where-nginx-reads-it.md](docs/decisions/0006-certbot-keeps-a-certificate-where-nginx-reads-it.md).
+> Superseded by [docs/decisions/0008-tls-ends-at-a-reverse-proxy-in-front-of-the-server.md](docs/decisions/0008-tls-ends-at-a-reverse-proxy-in-front-of-the-server.md).
+
+TLS is terminated by a reverse proxy in front of the VPS that is not part of this stack, and
+that proxy holds and renews the certificate. The stack serves plain HTTP on port 80 and
+learns from `X-Forwarded-Proto` that the visitor used HTTPS, so Django still marks cookies
+Secure, sends HSTS and redirects plain HTTP. nginx accepts connections only from the
+proxy's address, because those forwarded headers are trusted.
 
 ## 8. Backups
 

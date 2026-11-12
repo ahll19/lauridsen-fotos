@@ -5,13 +5,19 @@
       - owner_email | length > 0
       - django_secret_key | length >= 50
       - django_admin_path | length >= 8
-      - not tls_enabled or letsencrypt_agree_tos
     fail_msg: >-
-      The inventory is incomplete. site_domain and owner_email must be set, the vault must
-      hold a secret key and an admin path, and with tls_enabled the Let's Encrypt
-      agreement must have been accepted (letsencrypt_agree_tos). See
+      The inventory is incomplete. site_domain and owner_email must be set, and the vault
+      must hold a secret key and an admin path. See
       ansible/inventory/production/group_vars/all/vars.yml.
     quiet: true
+
+- name: Warn that anyone may connect
+  ansible.builtin.debug:
+    msg: >-
+      upstream_proxy_addresses is empty, so nginx accepts connections from anyone, and
+      anyone can claim a visitor address or HTTPS in the forwarded headers. Set it to the
+      address of the reverse proxy in front of this server.
+  when: upstream_proxy_addresses | length == 0
 
 # --- Layout ------------------------------------------------------------------
 - name: Create the application's directories
@@ -178,18 +184,27 @@
     chdir: "{{ release_dir }}"
   changed_when: false
 
-# Asked the way a visitor would ask it — through nginx, by name, over HTTPS — because a
-# deploy that quietly leaves the site down is worse than one that fails.
+# Asked through nginx, by name, marked as HTTPS the way the proxy in front marks it —
+# because a deploy that quietly leaves the site down is worse than one that fails. From
+# inside the nginx container, the one address that is always allowed to connect.
 - name: Wait for the site to answer /healthz
   ansible.builtin.command:
-    argv: >-
-      {{
-        ['curl', '--fail', '--silent', '--show-error', '--max-time', '10',
-         '--resolve', site_domain ~ ':' ~ (tls_enabled | ternary(https_port, http_port)) ~ ':127.0.0.1']
-        + ((tls_enabled and not healthcheck_verify_tls) | ternary(['--insecure'], []))
-        + [(tls_enabled | ternary('https', 'http')) ~ '://' ~ site_domain ~ ':'
-           ~ (tls_enabled | ternary(https_port, http_port)) ~ '/healthz']
-      }}
+    argv:
+      - docker
+      - compose
+      - exec
+      - -T
+      - reverse-proxy
+      - wget
+      - -q
+      - -O
+      - "-"
+      - --header
+      - "Host: {{ site_domain }}"
+      - --header
+      - "X-Forwarded-Proto: https"
+      - http://127.0.0.1/healthz
+    chdir: "{{ release_dir }}"
   register: healthz
   until: healthz.rc == 0 and healthz.stdout == 'ok'
   retries: "{{ healthcheck_retries }}"

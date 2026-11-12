@@ -13,9 +13,9 @@ def real_client_ip(request):
     caller and can say anything at all.
 
     TRUSTED_PROXY_COUNT is how many hops at that end belong to us — one for nginx alone,
-    two if a CDN is ever put in front of it. Counting in from the right by exactly that
-    many is what makes the result unspoofable: a forged entry can only ever land further
-    left than the hops we control.
+    as on a laptop, and two on the server, where the TLS-terminating proxy is in front.
+    Counting in from the right by exactly that many is what makes the result unspoofable:
+    a forged entry can only ever land further left than the hops we control.
     """
     remote_addr = request.META.get("REMOTE_ADDR")
     trusted = settings.TRUSTED_PROXY_COUNT

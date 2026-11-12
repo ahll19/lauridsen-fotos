@@ -1,7 +1,7 @@
 # 0006. certbot keeps a certificate where nginx reads it, and nginx watches the file
 
 - **Date**: 2026-11-11
-- **Status**: Accepted
+- **Status**: Superseded by [0008](0008-tls-ends-at-a-reverse-proxy-in-front-of-the-server.md)
 - **Affects**: `architecture.md` §7, which says the proxy "is signaled to reload"
 
 ## Context

@@ -27,7 +27,7 @@
       when: reboot_required.stat.exists and (update_allow_reboot | bool)
   roles:
     # With app_pull_images set: rebuilds on the newest patch release of the pinned base
-    # images, pulls the pinned relay, proxy and certbot images again, and redeploys.
+    # images, pulls the pinned relay and proxy images again, and redeploys.
     - app
   post_tasks:
     # A review is a person reading a list; this produces the list. Majors are fixed in

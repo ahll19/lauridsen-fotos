@@ -50,8 +50,3 @@ mediafiles/
 .mypy_cache/
 .coverage
 htmlcov/
-
-# --- TLS / certbot state (never committed) ---
-# Anchored to the root: docker/certbot/ holds the renewal script and is very much committed.
-/certbot/
-/letsencrypt/
