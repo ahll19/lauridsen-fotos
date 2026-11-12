@@ -9,3 +9,4 @@
 # Then commit, and run provision from a machine that is already trusted. These are public
 # keys: safe to commit, useless without the private half that never leaves each machine.
 operator_ssh_public_keys:
+  - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOu1JzpQVRhe910L/zfQFduUucMR5so1YP1qURE/htqk anders@Mac.localdomain
