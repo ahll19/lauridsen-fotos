@@ -21,15 +21,17 @@ configured. What was built on the way here is in [CHANGELOG.md](CHANGELOG.md).
 - [x] The server refuses anyone but the proxy: a direct request answers 403.
 - [x] SSH accepts only the keys in `trusted_keys.yml`. Root and password logins are refused.
 - [ ] `www.lauridsen-fotos.dk` answers too. The proxy's certificate does not cover it yet.
-- [ ] Visitors' own addresses reach the application. The contact form's rate limit is per
-      address, so it must not see every visitor as the router.
+- [ ] Visitors' own addresses reach the application. Today every request arrives at the
+      proxy from the router's address, 192.168.1.1, so the router is rewriting the source
+      of forwarded connections. Until it stops, the contact form's rate limit is shared by
+      all visitors.
 - [ ] The stack comes back unattended after a reboot.
 - [ ] Admin reachable at the secret path, with a superuser created.
 
 ## Mail
 
 - [x] Outbound port 25 is open from the server.
-- [ ] The DKIM, SPF and `mail.<domain>` records are published
+- [x] The DKIM, SPF and `mail.<domain>` records are published
       (`scripts/vault.sh public` prints the DKIM value).
 - [ ] A contact-form message from the live site lands in a real inbox, not the spam folder,
       with SPF, DKIM and DMARC passing.
