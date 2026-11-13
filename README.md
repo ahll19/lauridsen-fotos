@@ -323,6 +323,12 @@ sudo docker logs lauridsen-fotos-postfix-1 2>&1 | grep status=
 
 ### 8. Backups
 
+> **Not usable on the live server yet.** The backup job runs on the server and pushes to the
+> NAS over SSH. The live server sits in its own network segment and cannot reach anything on
+> the LAN, the NAS included, so the job has nowhere to send to. Backups need to be turned
+> around, so that something on the LAN collects them from the server. Until then, the live
+> site has no backups. The steps below are for a server that can reach its backup target.
+
 Set `backup_target_host` in `vars.yml` (and the user, port and path if they differ). Add the
 backup key that `scripts/vault.sh public` prints to that account's `authorized_keys` on the
 NAS. Then:

@@ -36,8 +36,11 @@ configured. What was built on the way here is in [CHANGELOG.md](CHANGELOG.md).
 
 ## Backups and upkeep
 
-- [ ] `backup.yml` installed the nightly copy of `/data` to the NAS, and it has run
-      unattended for several nights.
+- [ ] Backups work from the segmented network. The server cannot reach the LAN, so the
+      current job, which pushes from the server to the NAS, cannot run. Backups have to be
+      pulled from the server by something on the LAN instead.
+- [ ] The nightly copy of `/data` reaches the NAS, and it has run unattended for several
+      nights.
 - [ ] Retention keeps the most recent 14 copies, and older ones are being pruned.
 - [ ] A restore drill against real data: `restore.yml` on a scratch machine, with the
       content and a client gallery's password intact afterwards.
