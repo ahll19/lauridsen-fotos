@@ -10,7 +10,7 @@ from .models import Album, Category
 def index(request):
     """Portfolio landing: the categories, each with its albums' cover images."""
     categories = (
-        Category.objects.visible()
+        Category.objects.published()
         # Prefetched into an attribute the template reads directly. Prefetching "albums"
         # and then calling category.visible_albums in the template threw the prefetch away
         # — that is a fresh query — and cost two more per category on top.
@@ -31,7 +31,7 @@ def index(request):
 
 
 def category(request, slug):
-    category_obj = get_object_or_404(Category.objects.visible(), slug=slug)
+    category_obj = get_object_or_404(Category.objects.published(), slug=slug)
     albums = category_obj.visible_albums().prefetch_related("photos")
     return render(
         request,

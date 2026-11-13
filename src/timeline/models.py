@@ -65,14 +65,6 @@ class TimelineEntry(models.Model):
         verbose_name=_("tags"),
         help_text=_("Choose from the tags already used; the + adds a new one."),
     )
-    related_category = models.ForeignKey(
-        "portfolio.Category",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="timeline_entries",
-        verbose_name=_("related portfolio category"),
-    )
     visible = models.BooleanField(_("visible"), default=False)
 
     objects = TimelineEntryQuerySet.as_manager()

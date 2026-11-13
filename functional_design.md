@@ -113,7 +113,8 @@ dashboard** — no code changes are ever needed to update the site day-to-day.
 
 **Soft requirements**
 - Entries can optionally be tagged (e.g. by theme or location) for light filtering.
-- An entry can link back to a related Portfolio category if relevant.
+- An entry can link back to a related Portfolio category if relevant. *(Removed: the timeline
+  is grouped by tags only — see [ADR 0016](docs/decisions/0016-the-timeline-stands-apart-from-the-portfolio.md).)*
 
 ---
 

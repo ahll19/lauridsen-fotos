@@ -42,7 +42,7 @@ class CategorySitemap(Sitemap):
     priority = 0.8
 
     def items(self):
-        return Category.objects.visible()
+        return Category.objects.published()
 
 
 class AlbumSitemap(Sitemap):

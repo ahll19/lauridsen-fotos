@@ -244,7 +244,6 @@ h2 { font-size: clamp(1.4rem, 3vw, 1.9rem); }
 .entry__title a { text-decoration: none; }
 .entry__title a:hover { color: var(--accent); }
 .entry__caption { color: var(--ink-soft); max-width: 68ch; }
-.entry__related { font-size: 0.8rem; color: var(--ink-faint); }
 .entry__photos { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); margin-top: 1.5rem; }
 .entry__photos img { aspect-ratio: 1; object-fit: cover; border-radius: var(--radius); }
 

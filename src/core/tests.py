@@ -502,3 +502,35 @@ class TextLinkTests(TestCase):
             response, '<a href="https://www.instagram.com/lyndi_sales/">Lyndi Sales</a>'
         )
         self.assertNotContains(response, "[Lyndi Sales]")
+
+
+class EmptyCategoryTests(TestCase):
+    """A visible category is public only once it has a public album."""
+
+    def setUp(self):
+        self.empty = Category.objects.create(name="Tom", slug="tom", visible=True)
+        self.draft = Category.objects.create(name="Kladde", slug="kladde", visible=True)
+        Album.objects.create(category=self.draft, name="A", slug="a", visible=False)
+        self.full = Category.objects.create(name="Fuld", slug="fuld", visible=True)
+        Album.objects.create(category=self.full, name="B", slug="b", visible=True)
+
+    def test_portfolio_lists_only_categories_with_a_public_album(self):
+        response = self.client.get(reverse("portfolio:index"))
+        self.assertEqual([c.slug for c in response.context["categories"]], ["fuld"])
+
+    def test_empty_category_page_is_not_found(self):
+        for slug in ("tom", "kladde"):
+            with self.subTest(slug=slug):
+                response = self.client.get(reverse("portfolio:category", args=[slug]))
+                self.assertEqual(response.status_code, 404)
+
+    def test_sitemap_leaves_out_empty_categories(self):
+        body = self.client.get("/sitemap.xml").content.decode()
+        self.assertIn("/portfolio/fuld/", body)
+        self.assertNotIn("/portfolio/tom/", body)
+        self.assertNotIn("/portfolio/kladde/", body)
+
+    def test_publishing_the_first_album_shows_the_category(self):
+        Album.objects.filter(category=self.draft).update(visible=True)
+        response = self.client.get(reverse("portfolio:category", args=["kladde"]))
+        self.assertEqual(response.status_code, 200)

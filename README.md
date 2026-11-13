@@ -51,8 +51,9 @@ below are the ones on screen.
 
 ### Publish an album
 
-1. **Kategorier → Tilføj** if the album needs a new category, such as Bryllup or Portræt.
-   Leave **Synlig** unticked until the category has something in it.
+1. **Kategorier → Tilføj** if the album needs a new category, such as Bryllup or Portræt,
+   and tick **Synlig**. A category stays off the site until it has a public album, so it
+   never shows empty.
 2. **Albummer → Tilføj**. Choose the category and give the album a name. **Kort-navn** fills
    itself in from the Danish name and becomes the album's address, so don't change it once
    the album is public.
@@ -62,8 +63,9 @@ below are the ones on screen.
    straight away, so save any text you have typed first.
 5. Give each photograph a caption if you want one shown, and an **alt-tekst** describing what
    is in it, for visitors who cannot see it and for search engines.
-6. Tick **Synlig** on the album and on its category, then save. Both have to be ticked
-   before the album is public, so a whole category can be prepared in private.
+6. Tick **Synlig** on the album and save. The album is public when both it and its category
+   are ticked; leaving the category unticked keeps a whole category private while you
+   prepare it.
 
 The first visit to a new album takes a few seconds, while the site makes the sizes it
 shows. After that it is instant.
@@ -106,8 +108,9 @@ a field is shown as text, never run.
 ### Timeline entries
 
 **Tidslinjeindlæg → Tilføj**: a title, a date, a short story and a set of photographs, added
-and ordered the same way as an album. An entry is public when **Synlig** is ticked. A related
-portfolio category is optional.
+and ordered the same way as an album. An entry is public when **Synlig** is ticked. The
+timeline is separate from the portfolio: entries are grouped by tags, not categories. To
+point an entry at an album, link to it in the story.
 
 **Tags** are picked from one shared list, so the same subject is spelled the same way year
 after year. Start typing in the tags field to search the list; the **+** beside it adds a

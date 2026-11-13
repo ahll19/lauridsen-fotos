@@ -67,3 +67,12 @@ class TagMergeTests(TestCase):
         self.assertEqual(list(Tag.objects.values_list("name", flat=True)), ["vinter"])
         self.assertEqual(third.tag_list(), ["vinter"])
         self.assertEqual(first.tag_list(), ["vinter"])
+
+
+class TimelineStandsAloneTests(TestCase):
+    def test_timeline_does_not_point_into_the_portfolio(self):
+        """The timeline is grouped by tags only (ADR 0016)."""
+        entry("lysmalerier")
+        response = self.client.get(reverse("timeline:index"))
+        self.assertNotContains(response, "entry__related")
+        self.assertFalse(hasattr(TimelineEntry, "related_category"))

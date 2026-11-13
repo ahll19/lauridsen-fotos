@@ -37,7 +37,7 @@ class TimelineEntryAdmin(OrderedInlineModelAdminMixin, TranslationAdmin):
     form = TimelineEntryForm
     inlines = [TimelinePhotoInline]
     list_display = ("title", "date", "photo_count", "tag_names", "visible")
-    list_filter = ("visible", "tags", "related_category")
+    list_filter = ("visible", "tags")
     autocomplete_fields = ("tags",)
     list_editable = ("visible",)
     date_hierarchy = "date"

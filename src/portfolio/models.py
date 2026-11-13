@@ -11,8 +11,20 @@ class VisibleQuerySet(OrderedModelQuerySet):
         return self.filter(visible=True)
 
 
+class CategoryQuerySet(VisibleQuerySet):
+    def published(self):
+        """
+        Visible, with at least one visible album: what the public site lists.
+
+        A visible category with nothing public in it showed as an empty heading on the
+        portfolio page. It appears by itself once its first album is published.
+        """
+        return self.visible().filter(albums__visible=True).distinct()
+
+
 # Must keep the ordering manager's behaviour, or move up/down in the admin breaks.
 VisibleManager = OrderedModelManager.from_queryset(VisibleQuerySet)
+CategoryManager = OrderedModelManager.from_queryset(CategoryQuerySet)
 
 
 class Category(OrderedModel):
@@ -27,7 +39,7 @@ class Category(OrderedModel):
         help_text=_("Unpublished categories are hidden from the public site."),
     )
 
-    objects = VisibleManager()
+    objects = CategoryManager()
 
     class Meta(OrderedModel.Meta):
         verbose_name = _("category")
