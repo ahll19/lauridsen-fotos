@@ -109,6 +109,20 @@ class DateFormatTests(TestCase):
         self.assertContains(response, 'value="2026-11-03"')
 
 
+class FeaturedAlbumTests(TestCase):
+    def test_album_in_a_hidden_category_is_not_featured(self):
+        from portfolio.models import Album, Category
+
+        shown = Category.objects.create(name="Shown", slug="shown", visible=True)
+        hidden = Category.objects.create(name="Hidden", slug="hidden", visible=False)
+        Album.objects.create(category=shown, name="Published", slug="published", visible=True)
+        Album.objects.create(category=hidden, name="Prepared", slug="prepared", visible=True)
+
+        response = self.client.get(reverse("pages:home"))
+        self.assertEqual(response.context["featured_album"].slug, "published")
+        self.assertNotContains(response, "/hidden/prepared/")
+
+
 class PublicPageTests(TestCase):
     def test_every_navigation_page_responds(self):
         for name in [

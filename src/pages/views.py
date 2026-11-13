@@ -29,7 +29,14 @@ def home(request):
 
     if home_settings.show_featured_album:
         context["featured_album"] = (
-            Album.objects.visible().select_related("category").order_by("-id").first()
+            # Both the album and its category must be published, as on the album's own
+            # page; otherwise an album prepared in a hidden category leaked onto the home
+            # page and linked to a 404.
+            Album.objects.visible()
+            .filter(category__visible=True)
+            .select_related("category")
+            .order_by("-id")
+            .first()
         )
     if home_settings.show_latest_timeline_entry:
         context["latest_entry"] = TimelineEntry.objects.visible().first()
