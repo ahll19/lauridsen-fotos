@@ -1,5 +1,5 @@
 # DKIM signing keys are mounted into the Postfix relay from here. They are private keys,
-# so nothing in this directory is ever committed — Ansible places them on the VPS. This
+# so nothing in this directory is ever committed — Ansible places them on the server. This
 # file exists only so the directory does, which is what the bind mount needs.
 *
 !.gitignore

@@ -1,5 +1,5 @@
 # The account the playbooks log in as once the host is provisioned, and the one a new host
-# is first reached through. A fresh Hetzner server only has root.
+# is first reached through. A freshly rented server often only has root.
 operator_user: deploy
 bootstrap_user: root
 # Every public key that may log in as the operator. The account's authorized_keys is made

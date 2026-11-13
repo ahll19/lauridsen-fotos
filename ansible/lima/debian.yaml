@@ -1,9 +1,9 @@
-# A disposable Debian 12 machine for rehearsing the playbooks, started by scripts/vm.sh.
+# A disposable Debian 13 machine, the release the server runs, for rehearsing the playbooks, started by scripts/vm.sh.
 #
-# Shaped to look like a freshly ordered VPS rather than like a Lima guest: nothing from the
-# Mac is mounted into it, and root can log in with a key — which is how a new Hetzner
-# server arrives, and is the state provision.yml has to be able to start from.
-base: template://debian-12
+# Shaped to look like a bare server rather than like a Lima guest: nothing from the Mac is
+# mounted into it, and root can log in with a key, which is a state provision.yml has to be
+# able to start from.
+base: template://debian-13
 
 cpus: 2
 memory: 2GiB
@@ -15,7 +15,7 @@ containerd:
   user: false
 
 # Lets the rehearsal machines reach each other by name (lima-<name>.internal), which the
-# backup rehearsal needs: one plays the VPS and another plays the NAS.
+# backup rehearsal needs: one plays the server and another plays the NAS.
 networks:
   - lima: user-v2
 

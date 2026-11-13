@@ -7,7 +7,7 @@ depending on anyone remembering the conventions.
 ## The project
 
 A photography portfolio and client delivery site. The design is fixed in three documents and
-they are the source of truth for *what* gets built:
+they are the source of truth for *what* gets built. The roadmap says what is left:
 
 | Document | Covers |
 | --- | --- |
@@ -15,12 +15,12 @@ they are the source of truth for *what* gets built:
 | [architecture.md](architecture.md) | How the hosting environment is built and operated. |
 | [technical_design.md](technical_design.md) | How the application implements the functional design. |
 | [ROADMAP.md](ROADMAP.md) | Milestones to 1.0.0, each with a definition of done. |
-| [docs/defects.md](docs/defects.md) | Known defects found on the running site, with severity and status. |
 
-**Current phase: ready for a server, without one yet.** The VPS has not been ordered. The
-playbooks in `ansible/` have been rehearsed against a disposable machine (`scripts/vm.sh`),
-not a real host; [README.md](README.md#deploying-to-a-server) is the procedure for one. Prove any change to
-the host tooling on the disposable machine before it is proposed.
+**Current phase: live, on the way to 1.0.0.** The site runs at <https://lauridsen-fotos.dk> on
+a server at home, built and deployed by the playbooks in `ansible/`
+([README.md](README.md#deploying-to-a-server)). [ROADMAP.md](ROADMAP.md) lists what is still
+to be proven there. Prove any change to the playbooks on the disposable machine
+(`scripts/vm.sh`) before it is proposed.
 
 ## Nothing operational is hardcoded
 
@@ -90,7 +90,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 
 The repository uses [SemVer](https://semver.org/). `VERSION` at the repo root holds the
 current version and is the single source of truth. `0.x` means pre-launch; `1.0.0` is cut when
-the site first goes live on the VPS.
+everything in [ROADMAP.md](ROADMAP.md) is proven on the live site.
 
 - **patch** — bug fixes, content-only changes, dependency bumps.
 - **minor** — new functionality that doesn't change how the site is deployed or operated.

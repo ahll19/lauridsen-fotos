@@ -47,7 +47,7 @@ vault_django_admin_path: "$(python3 -c 'import secrets; print(secrets.token_hex(
 vault_dkim_private_key: |
 $(indent <"$tmp/dkim.pem")
 
-# What the VPS logs in to the NAS with. Its public half goes in the NAS's authorized_keys.
+# What the server logs in to the NAS with. Its public half goes in the NAS's authorized_keys.
 vault_backup_ssh_private_key: |
 $(indent <"$tmp/backup")
 YAML

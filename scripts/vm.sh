@@ -3,11 +3,11 @@
 # Disposable machines for rehearsing the playbooks, so the real server is never the first
 # place one is run. Needs Lima (brew install lima).
 #
-#   scripts/vm.sh up        a bare Debian 12 "VPS", and a second machine playing both the
-#                           NAS and the TLS-terminating reverse proxy in front of the VPS
-#   scripts/vm.sh rebuild   throw the VPS away and start a bare one (the NAS is kept)
-#   scripts/vm.sh sync      hand the VPS the commit you are on, before a deploy
-#   scripts/vm.sh ssh [nas] a shell on the VPS, or on the NAS
+#   scripts/vm.sh up        a bare Debian 13 server, and a second machine playing both the
+#                           NAS and the TLS-terminating reverse proxy in front of the server
+#   scripts/vm.sh rebuild   throw the server away and start a bare one (the NAS is kept)
+#   scripts/vm.sh sync      hand the server the commit you are on, before a deploy
+#   scripts/vm.sh ssh [nas] a shell on the server, or on the NAS
 #   scripts/vm.sh status    what exists
 #   scripts/vm.sh down      delete both
 #
@@ -18,8 +18,8 @@
 #   ansible-playbook -i inventory/disposable playbooks/deploy.yml
 #
 # The rehearsal differs from production in two deliberate ways. The reverse proxy in front
-# of the VPS, which in production is not ours to build, is Caddy on the second machine with
-# a certificate from its own internal CA. And the VPS pulls the code from a copy of this
+# of the server, which in production is not ours to build, is Caddy on the second machine with
+# a certificate from its own internal CA. And the server pulls the code from a copy of this
 # checkout placed on it rather than from GitHub, so a change can be rehearsed before it is
 # pushed. Everything else runs exactly as it will on the real server.
 #
@@ -34,11 +34,11 @@ cd "$ROOT"
 
 HOST_VM=lf-host
 NAS_VM=lf-nas
-TEMPLATE=ansible/lima/debian12.yaml
+TEMPLATE=ansible/lima/debian.yaml
 INVENTORY=ansible/inventory/disposable
 DOMAIN=fotos.test
 BACKUP_PATH=/srv/backups/lauridsen-fotos
-# Where the VPS finds this checkout's commits: a git bundle, which git fetches from like
+# Where the server finds this checkout's commits: a git bundle, which git fetches from like
 # any other repository.
 BUNDLE_PATH=/srv/rehearsal/lauridsen-fotos.bundle
 
@@ -109,7 +109,7 @@ owner_email: owner@example.com
 upstream_proxy_addresses:
   - $(as_lima "$HOST_VM" getent hosts "lima-$NAS_VM.internal" | awk '{print $1}')
 
-# The code comes from the bundle that \`scripts/vm.sh sync\` puts on the VPS; which commit
+# The code comes from the bundle that \`scripts/vm.sh sync\` puts on the server; which commit
 # to deploy is in release.yml beside this file, rewritten by every sync.
 app_repo_url: $BUNDLE_PATH
 
@@ -145,7 +145,7 @@ EOF
 }
 
 # The parts of the rehearsal that are not ours to automate in production: an account on the
-# NAS that accepts the backup key, and the TLS-terminating proxy in front of the VPS.
+# NAS that accepts the backup key, and the TLS-terminating proxy in front of the server.
 prepare_nas() {
     local key pub
     key=$(mktemp)

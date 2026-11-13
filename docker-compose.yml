@@ -1,4 +1,4 @@
-# The stack described in architecture.md, as it runs on a laptop. The VPS adds
+# The stack described in architecture.md, as it runs on a laptop. The server adds
 # docker-compose.prod.yml on top: port 80, and no mounted source.
 #
 # Every port, path, schedule and image tag comes from .env — see .env.example.
@@ -51,7 +51,7 @@ services:
       - ${DATA_DIR:-./data}:/data
       - static_files:/srv/static
       # Source is mounted so edits are picked up without a rebuild during local
-      # development. docker-compose.prod.yml drops it on the VPS, where the image is the
+      # development. docker-compose.prod.yml drops it on the server, where the image is the
       # source of truth.
       - ./src:/app/src
     healthcheck:
@@ -125,7 +125,7 @@ services:
     volumes:
       # DKIM signing keys, one <domain>.private per sending domain. Absent locally, where
       # nothing is delivered and so nothing needs signing; placed here by Ansible on the
-      # VPS. Read-only: the relay signs with them and never rewrites them.
+      # server. Read-only: the relay signs with them and never rewrites them.
       - ${MAIL_DKIM_KEYS_DIR:-./docker/mail/dkim}:/etc/opendkim/keys:ro
       # A named volume rather than a bind mount: Postfix is strict about the ownership and
       # permissions of its queue directories, and it keeps them correct itself as long as

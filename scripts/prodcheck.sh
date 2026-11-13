@@ -53,8 +53,8 @@ restore() {
     local status=$?
     if (( KEEP )); then
         step "Leaving the stack in production mode (--keep)"
-        printf '    The site is at http://localhost:%s in the configuration the VPS will\n' "${HTTP_PORT:-8080}"
-        printf '    use. Static files are content-hashed, errors are pages rather than\n'
+        printf '    The site is at http://localhost:%s in the configuration the server\n' "${HTTP_PORT:-8080}"
+        printf '    uses. Static files are content-hashed, errors are pages rather than\n'
         printf '    tracebacks, and %s holds the settings.\n\n' "$PROD_ENV"
         printf '    Back to development:  scripts/dev.sh up\n'
         exit "$status"
@@ -149,7 +149,7 @@ ok "answering on ${BASE}"
 
 # --- Django's own deployment checklist ---------------------------------------
 # Run with DJANGO_SERVE_OVER_HTTPS forced back on, so what is checked is the posture the
-# VPS will have rather than the one this machine is running. Without that, the check would
+# server has rather than the one this machine is running. Without that, the check would
 # report the three settings prodcheck deliberately relaxed and be no use.
 step "manage.py check --deploy"
 
@@ -341,7 +341,7 @@ case "$relay" in
             fail "a relayhost is set; ADR 0004 says delivery is direct"
         fi
         printf '      note: whether mail actually arrives depends on rDNS, SPF and DKIM,\n'
-        printf '            which are properties of the host and its DNS. Proven in 0.5.0.\n'
+        printf '            which are properties of the host and its DNS. Proven on the real server.\n'
         ;;
 esac
 
