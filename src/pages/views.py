@@ -94,7 +94,9 @@ def contact(request):
 
     if request.method == "POST":
         # Counted per IP, before any work is done. Applied to POST only, so simply
-        # reading the page is never rate limited.
+        # reading the page is never rate limited. Where every visitor arrives from one
+        # address the count is for the whole site, and CONTACT_RATELIMIT is set to suit
+        # (ADR 0014).
         limited = is_ratelimited(
             request,
             group="pages.contact",

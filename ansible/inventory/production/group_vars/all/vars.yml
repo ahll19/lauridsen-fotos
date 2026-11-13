@@ -26,6 +26,10 @@ upstream_proxy_addresses:
 # reports go here.
 owner_email: "kontakt@lauridsen-fotos.dk"
 
+# The router rewrites the source of every connection it forwards, so all visitors arrive
+# from one address and this is a limit for the whole site, not per visitor (ADR 0014).
+contact_ratelimit: 30/h
+
 # --- Backups -----------------------------------------------------------------
 # The NAS, as the server reaches it over SSH. Empty until there is one to point at;
 # backup.yml refuses to install a job that has nowhere to send to.

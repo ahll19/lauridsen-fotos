@@ -62,12 +62,13 @@ def detail(request, slug):
 
     if request.method == "POST":
         # Guessing a generated password is hopeless, but an unthrottled endpoint that
-        # checks a credential is worth closing anyway. Keyed per gallery as well as per
+        # checks a credential is worth closing anyway. Counted per gallery as well as per
         # caller, so someone hammering one link cannot lock another client out of theirs.
+        # The gallery matters most where every visitor arrives from one address (ADR 0014).
         if is_ratelimited(
             request,
             group="galleries.unlock",
-            key="ip",
+            key=lambda group, request: f"{gallery.slug}:{request.META.get('REMOTE_ADDR')}",
             rate=settings.GALLERY_UNLOCK_RATELIMIT,
             method=["POST"],
             increment=True,

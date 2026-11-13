@@ -148,6 +148,18 @@ class GalleryUnlockRateLimitTests(TestCase):
         response = client.post(gallery.get_absolute_url(), {"password": "wrong"})
         self.assertEqual(response.status_code, 429)
 
+    def test_hammering_one_gallery_does_not_lock_another(self):
+        """Every visitor can arrive from one address (ADR 0014), so the address alone
+        must not be what is counted."""
+        hammered = make_gallery()
+        other = make_gallery()
+        client = Client()
+        for _ in range(4):
+            client.post(hammered.get_absolute_url(), {"password": "wrong"})
+
+        response = client.post(other.get_absolute_url(), {"password": "wrong"})
+        self.assertNotEqual(response.status_code, 429)
+
     def test_throttling_does_not_reveal_the_correct_password(self):
         """Once throttled, even the right password is refused rather than accepted."""
         gallery = make_gallery()
