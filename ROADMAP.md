@@ -28,7 +28,7 @@ configured. What was built on the way here is in [CHANGELOG.md](CHANGELOG.md).
 
 ## Mail
 
-- [ ] Outbound port 25 is open from the server.
+- [x] Outbound port 25 is open from the server.
 - [ ] The DKIM, SPF and `mail.<domain>` records are published
       (`scripts/vault.sh public` prints the DKIM value).
 - [ ] A contact-form message from the live site lands in a real inbox, not the spam folder,

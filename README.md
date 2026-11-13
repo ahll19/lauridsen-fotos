@@ -217,7 +217,19 @@ prints the DKIM value. Then publish:
 | TXT on the domain | `v=spf1 ip4:<the address mail leaves from> -all` |
 | A for `mail.<domain>` | that same address |
 
-Test it by sending yourself a message through the contact form.
+If the domain already has a mailbox provider, it already has an SPF record. A domain may
+only have one, so add `ip4:<address>` to it rather than publishing a second:
+`v=spf1 include:zohomail.eu ip4:<address> ~all`.
+
+Test it by sending yourself a message through the contact form. The message is kept under
+**Contact submissions** in the admin whether or not the mail arrives. If it does not arrive,
+the relay's log on the server says what the receiving server answered:
+
+```bash
+sudo docker logs lauridsen-fotos-postfix-1 2>&1 | grep status=
+```
+
+`status=sent` means it was accepted. `status=bounced` is followed by the reason.
 
 ### 8. Backups
 

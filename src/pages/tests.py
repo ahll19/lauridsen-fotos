@@ -1,8 +1,11 @@
+import datetime
 import re
 
+from django import forms
 from django.core import mail
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.utils import translation
 
 from .models import ContactSubmission
 
@@ -86,11 +89,6 @@ class DateFormatTests(TestCase):
     """Dates are day first in both languages (config/formats/day_first.py)."""
 
     def test_forms_show_and_accept_day_first_dates_in_both_languages(self):
-        import datetime
-
-        from django import forms
-        from django.utils import translation
-
         class DateForm(forms.Form):
             day = forms.DateField()
 
@@ -106,7 +104,7 @@ class DateFormatTests(TestCase):
         """A rejected submission is shown again; a picker given 03/11/2026 shows nothing."""
         response = self.client.post(
             reverse("pages:contact"),
-            {"name": "", "email": "sofie@example.com", "message": "Hi", "preferred_date": "2026-11-03"},
+            {"name": "", "email": "s@example.com", "message": "Hi", "preferred_date": "2026-11-03"},
         )
         self.assertContains(response, 'value="2026-11-03"')
 
