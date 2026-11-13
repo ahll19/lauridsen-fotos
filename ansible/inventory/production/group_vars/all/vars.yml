@@ -19,7 +19,7 @@ ansible_user: "{{ operator_user }}"
 # It terminates TLS and forwards to this server's port 80 (ADR 0008). Its address as this
 # server sees it connect; nginx refuses everyone else. Empty lets anyone connect.
 upstream_proxy_addresses:
-  - "192.168.1.64"
+  - "192.168.1.251"
 
 # --- Mail --------------------------------------------------------------------
 # A mailbox you read, not on the site's own domain: contact-form messages and error
