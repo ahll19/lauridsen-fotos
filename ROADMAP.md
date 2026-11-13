@@ -21,18 +21,16 @@ configured. What was built on the way here is in [CHANGELOG.md](CHANGELOG.md).
 - [x] The server refuses anyone but the proxy: a direct request answers 403.
 - [x] SSH accepts only the keys in `trusted_keys.yml`. Root and password logins are refused.
 - [ ] `www.lauridsen-fotos.dk` answers too. The proxy's certificate does not cover it yet.
-- [ ] Visitors' own addresses reach the application. The contact form's rate limit is per
-      address, so it must not see every visitor as the router.
 - [ ] The stack comes back unattended after a reboot.
 - [ ] Admin reachable at the secret path, with a superuser created.
 
 ## Mail
 
-- [ ] Outbound port 25 is open from the server.
-- [ ] The DKIM, SPF and `mail.<domain>` records are published
+- [x] Outbound port 25 is open from the server.
+- [x] The DKIM, SPF and `mail.<domain>` records are published
       (`scripts/vault.sh public` prints the DKIM value).
 - [ ] A contact-form message from the live site lands in a real inbox, not the spam folder,
-      with SPF, DKIM and DMARC passing.
+      with SPF and DKIM passing.
 - [ ] An unhandled error produces an email. `manage.py test_error_report` sends one on
       demand.
 
@@ -79,6 +77,10 @@ doing.
   photographs.
 - **Accessibility pass.** Keyboard navigation, visible focus states, colour contrast and
   alt-text discipline in the admin. Partly there.
+- **Visitors' own addresses.** The router hides them, so the limits on the contact form
+  and on gallery passwords cannot tell visitors apart
+  ([ADR 0014](docs/decisions/0014-the-application-cannot-see-visitors-addresses.md)).
+  A proxy outside the network that passes the address on in a header would bring them back.
 - **A backup copy somewhere else.** The server and the NAS are in the same building
   ([ADR 0013](docs/decisions/0013-the-server-is-at-home.md)).
 - **No root process in the cron container.** Its PID 1 is the cron daemon, which must be

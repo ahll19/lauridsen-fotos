@@ -49,6 +49,8 @@ running inside it.
   service is needed to start.
 - **Spam protection**: a honeypot field plus `django-ratelimit` as the baseline (cheap,
   no external dependency), capping contact-form submissions to 5 per IP address per hour;
+  *(on the live server every visitor shares one address — see
+  [ADR 0014](docs/decisions/0014-the-application-cannot-see-visitors-addresses.md))*
   Cloudflare Turnstile is a documented drop-in upgrade if spam becomes a real problem later
   — deliberately not built in from day one, per "keep it simple until proven necessary."
 - **Frontend**: server-rendered Django templates, hand-written CSS (no build step, no

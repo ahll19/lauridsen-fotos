@@ -22,7 +22,9 @@ class ContactForm(forms.ModelForm):
             "name": forms.TextInput(attrs={"autocomplete": "name"}),
             "email": forms.EmailInput(attrs={"autocomplete": "email"}),
             "shoot_type": forms.TextInput(attrs={"placeholder": _("Wedding, portrait, event…")}),
-            "preferred_date": forms.DateInput(attrs={"type": "date"}),
+            # A browser's date picker only understands ISO dates, so the value is always
+            # rendered that way. How the picker displays it is the visitor's browser's choice.
+            "preferred_date": forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
             "message": forms.Textarea(attrs={"rows": 6}),
         }
 

@@ -224,6 +224,8 @@ USE_TZ = True
 
 LANGUAGES = [("da", "Dansk"), ("en", "English")]
 LOCALE_PATHS = [BASE_DIR / "locale"]
+# Day-first dates in both languages: see config/formats/day_first.py.
+FORMAT_MODULE_PATH = ["config.formats"]
 
 MODELTRANSLATION_DEFAULT_LANGUAGE = "da"
 MODELTRANSLATION_LANGUAGES = ("da", "en")
