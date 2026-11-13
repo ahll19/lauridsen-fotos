@@ -7,10 +7,21 @@ expire.
 Django behind nginx on a single Docker Compose stack, in Danish and English. No build step —
 server-rendered templates and hand-written CSS.
 
+Live at <https://lauridsen-fotos.dk>.
+
+| To | Read |
+| --- | --- |
+| Run it on your own machine | [Running it](#running-it) |
+| Publish albums and prices | [Publishing](#publishing) |
+| Deliver photographs to a client | [Client galleries](#client-galleries) |
+| Change a port, a schedule or a limit | [Configuration](#configuration) |
+| Set up or update the server | [Deploying to a server](#deploying-to-a-server) |
+| Change the code | [Working on the code](#working-on-the-code) |
+| Look something up | [Reference](#reference) |
+
 ## Running it
 
-Docker is the only requirement. This runs the site on your own machine; the server comes
-later, under [Deploying to a server](#deploying-to-a-server).
+Docker is the only requirement.
 
 ```bash
 cp .env.example .env
@@ -28,6 +39,65 @@ of them.
 Danish is the default and has no URL prefix; English lives under `/en/`. The URL decides the
 language, so a link opens in the language you sent it in.
 
+## Publishing
+
+Everything is managed in the admin. You never edit code to publish.
+
+Albums live under Portfolio, inside a category. Upload as many photographs at once as you
+like, drag them into order, and set a cover if you don't want the first one used. An album
+is public only when both it and its category are marked *synlig*, which lets you prepare a
+whole category in private. Timeline entries work the same way — a title, a date, a short
+story, a photo set.
+
+Page text and prices are single records rather than lists: one Forside, one Om-side, one
+Kontaktside, plus the pricing packages. Each package's enquiry button links to the contact
+form with the package name already filled in, so you know what prompted an enquiry.
+
+Translatable fields show Danish and English side by side. Fill in Danish first — anything
+left untranslated falls back to it rather than rendering an empty page.
+
+## Client galleries
+
+The part with real consequences, so it is worth knowing how it behaves.
+
+Create one under Klientgallerier with a label for your own reference, the client's name, an
+expiry date (90 days out by default) and the photographs. On save the admin shows the
+password once. It is hashed immediately and cannot be recovered, though you can issue a new
+one later. Then run the *Byg download-ZIP igen* action, or the download-all button has
+nothing behind it.
+
+Send the client the link and the password. Until they enter it the page reveals nothing — no
+thumbnails, no filenames, not even how many photographs there are.
+
+On the expiry date a scheduled job deletes the photographs from disk. The URL keeps
+answering for another month with a "no longer available" notice, so a client arriving late
+gets an explanation rather than a dead link, and then the record goes too. Deleting a gallery
+by hand removes its files the same way.
+
+## Configuration
+
+Ports, schedules, expiry windows, the admin path and upload limits all come from `.env`, and
+`.env.example` documents every one. Edit it, then restart:
+
+```bash
+scripts/dev.sh down && scripts/dev.sh up
+```
+
+Quote any value containing a space or an asterisk — `"0 3 * * *"` — because the scripts read
+the file with the shell.
+
+Switching the mail relay means changing three values together:
+
+| | Mailpit, for development | Postfix, as production runs |
+| --- | --- | --- |
+| `COMPOSE_PROFILES` | `dev` | `prod` |
+| `EMAIL_PORT` | `1025` | `587` |
+| `DEFAULT_FROM_EMAIL` | anything | must be on `MAIL_SENDER_DOMAIN`, or the relay refuses it |
+
+`DJANGO_DEBUG` and `STATIC_CACHE_CONTROL` travel together too: `immutable` is only ever a
+true thing to say about a filename carrying a content hash, which is what `DJANGO_DEBUG=0`
+produces. `scripts/prodcheck.sh` sets both correctly, so prefer it to changing them by hand.
+
 ## Deploying to a server
 
 The server is built and deployed with Ansible, run from `ansible/` on your own machine.
@@ -42,7 +112,7 @@ cd ansible && ansible-playbook playbooks/deploy.yml -J
 
 ### What you need
 
-- **A server** running Debian 12 or 13 that you can SSH to with your own account and
+- **A server** running Debian 13 (12 works too) that you can SSH to with your own account and
   password, and its root password.
 - **A reverse proxy in front** that holds the TLS certificate and forwards to the server's
   port 80 over plain HTTP. It must pass `Host` through, set `X-Forwarded-Proto: https`,
@@ -174,65 +244,6 @@ That installs the nightly job and takes the first copy now.
 To try any of this on a throwaway machine first, see
 [Rehearsing on a disposable machine](ansible/README.md#rehearsing-on-a-disposable-machine).
 
-## Publishing
-
-Everything is managed in the admin. You never edit code to publish.
-
-Albums live under Portfolio, inside a category. Upload as many photographs at once as you
-like, drag them into order, and set a cover if you don't want the first one used. An album
-is public only when both it and its category are marked *synlig*, which lets you prepare a
-whole category in private. Timeline entries work the same way — a title, a date, a short
-story, a photo set.
-
-Page text and prices are single records rather than lists: one Forside, one Om-side, one
-Kontaktside, plus the pricing packages. Each package's enquiry button links to the contact
-form with the package name already filled in, so you know what prompted an enquiry.
-
-Translatable fields show Danish and English side by side. Fill in Danish first — anything
-left untranslated falls back to it rather than rendering an empty page.
-
-## Client galleries
-
-The part with real consequences, so it is worth knowing how it behaves.
-
-Create one under Klientgallerier with a label for your own reference, the client's name, an
-expiry date (90 days out by default) and the photographs. On save the admin shows the
-password once. It is hashed immediately and cannot be recovered, though you can issue a new
-one later. Then run the *Byg download-ZIP igen* action, or the download-all button has
-nothing behind it.
-
-Send the client the link and the password. Until they enter it the page reveals nothing — no
-thumbnails, no filenames, not even how many photographs there are.
-
-On the expiry date a scheduled job deletes the photographs from disk. The URL keeps
-answering for another month with a "no longer available" notice, so a client arriving late
-gets an explanation rather than a dead link, and then the record goes too. Deleting a gallery
-by hand removes its files the same way.
-
-## Configuration
-
-Ports, schedules, expiry windows, the admin path and upload limits all come from `.env`, and
-`.env.example` documents every one. Edit it, then restart:
-
-```bash
-scripts/dev.sh down && scripts/dev.sh up
-```
-
-Quote any value containing a space or an asterisk — `"0 3 * * *"` — because the scripts read
-the file with the shell.
-
-Switching the mail relay means changing three values together:
-
-| | Mailpit, for development | Postfix, as production runs |
-| --- | --- | --- |
-| `COMPOSE_PROFILES` | `dev` | `prod` |
-| `EMAIL_PORT` | `1025` | `587` |
-| `DEFAULT_FROM_EMAIL` | anything | must be on `MAIL_SENDER_DOMAIN`, or the relay refuses it |
-
-`DJANGO_DEBUG` and `STATIC_CACHE_CONTROL` travel together too: `immutable` is only ever a
-true thing to say about a filename carrying a content hash, which is what `DJANGO_DEBUG=0`
-produces. `scripts/prodcheck.sh` sets both correctly, so prefer it to changing them by hand.
-
 ## Working on the code
 
 Branch, verify, then open a pull request:
@@ -297,8 +308,6 @@ The rest:
 | `scripts/new-branch.sh <type> <slug>` | A correctly named branch off an up-to-date `main`. |
 | `scripts/release.sh` | `prepare <major\|minor\|patch>` then `tag`. |
 
-Checks with nothing to verify yet are skipped loudly rather than passing silently.
-
 ### Layout
 
 ```
@@ -312,8 +321,8 @@ src/
   pages/         home/about/contact/pricing, packages, contact submissions
   galleries/     password gate, expiry, ZIP delivery
   templates/ static/ locale/
-scripts/         dev, verify, release, hooks, branch creation
-docs/            decision records, defect register
+scripts/         dev, verify, release, hooks, branch creation, vault, rehearsal machines
+docs/            decision records
 ```
 
 Four containers: nginx, the application, a cron container for the scheduled jobs, and a mail
@@ -352,7 +361,10 @@ Both answer to the name `mail-relay`, so the application never knows which is ru
 [technical_design.md](technical_design.md) how the application implements it. These three are
 the source of truth for what gets built.
 
-[ROADMAP.md](ROADMAP.md) tracks what stands between here and 1.0.0.
-[CHANGELOG.md](CHANGELOG.md) records what has changed. [docs/decisions/](docs/decisions/)
-holds the choices that would surprise someone who had read only the design documents, and
-[docs/defects.md](docs/defects.md) the known defects.
+| Document | Holds |
+| --- | --- |
+| [ROADMAP.md](ROADMAP.md) | What stands between here and 1.0.0 |
+| [CHANGELOG.md](CHANGELOG.md) | What changed in each release |
+| [docs/decisions/](docs/decisions/) | Choices that differ from the design documents, and why |
+| [ansible/README.md](ansible/README.md) | Every playbook command |
+| [CLAUDE.md](CLAUDE.md) | The working rules: branching, commits, releases |

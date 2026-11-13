@@ -27,7 +27,7 @@ upstream_proxy_addresses:
 owner_email: "kontakt@lauridsen-fotos.dk"
 
 # --- Backups -----------------------------------------------------------------
-# The home NAS, as the VPS reaches it over SSH. Empty until there is one to point at;
+# The NAS, as the server reaches it over SSH. Empty until there is one to point at;
 # backup.yml refuses to install a job that has nowhere to send to.
 backup_target_host: ""
 backup_target_user: backup

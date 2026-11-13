@@ -45,6 +45,9 @@ to each other) over the internal Docker network and is never directly exposed.
 
 ## 2. Host (VPS)
 
+*The server is a machine on the owner's home network running Debian 13, not a rented VPS —
+see [ADR 0013](docs/decisions/0013-the-server-is-at-home.md). Read "the server" for "VPS" throughout.*
+
 - **Sizing**: a single VPS with ~4–8 GB RAM and ~200 GB disk is comfortably enough for this
   class of application (low traffic, image-heavy storage, no heavy compute). Sizing is a
   knob to revisit later if traffic or storage needs grow — it isn't an architectural
@@ -126,7 +129,8 @@ proxy's address, because those forwarded headers are trusted.
 
 - **What's backed up**: the entire persistent data directory (database + original media),
   excluding the disposable derived/cache subpath.
-- **Where**: the VPS is hosted at Hetzner, so backups target the owner's home NAS —
+- **Where**: *(the server is now in the same building as the NAS — see
+  [ADR 0013](docs/decisions/0013-the-server-is-at-home.md))* the VPS is hosted at Hetzner, so backups target the owner's home NAS —
   independent of Hetzner, so a Hetzner-side outage or account issue can't take out both the
   live system and its backups.
 - **How**: a nightly `rsync` of the data directory to the NAS. A later upgrade to a

@@ -32,3 +32,4 @@ its decision; instead a new record supersedes it and says so.
 | [0010](0010-ssh-accepts-the-operators-password.md) | SSH accepts the operator's password, and the operator is an existing account | Superseded by 0011 |
 | [0011](0011-the-first-run-asks-for-passwords-and-stores-none.md) | The first run asks for passwords and stores none | Accepted |
 | [0012](0012-ansible-is-run-directly.md) | Ansible is run directly, not through a wrapper script | Accepted |
+| [0013](0013-the-server-is-at-home.md) | The server is a machine at home, not a rented VPS | Accepted |

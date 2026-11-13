@@ -318,7 +318,7 @@ CSRF_COOKIE_HTTPONLY = False
 # request to an https:// port nothing listens on, and the two Secure cookie flags would make
 # the browser discard the session and CSRF cookies, so the admin could not be logged into
 # and no form could be submitted. Turning this off is what makes a local production-mode run
-# possible; it must never be off on the VPS, and `check --deploy` says so if it is.
+# possible; it must never be off on the server, and `check --deploy` says so if it is.
 SERVE_OVER_HTTPS = env_bool("DJANGO_SERVE_OVER_HTTPS", not DEBUG)
 
 if SERVE_OVER_HTTPS:

@@ -25,43 +25,12 @@ production inventory, the roles, and where the collections live.
 
 Every playbook is safe to run again. Rolling back is deploying an earlier tag.
 
-## Once per machine
+## Setting up a machine or a server
 
-```bash
-brew install ansible sshpass
-```
-
-```bash
-cd ansible && ansible-galaxy collection install -r requirements.yml
-```
-
-The second installs the pinned collections into `ansible/.collections`. Run it again with
-`--force` after `requirements.yml` changes. `sshpass` is only needed for the first run on a
-new server.
-
-## The first run on a new server
-
-A new server does not have your SSH key yet, so one run logs in with passwords:
-
-```bash
-ansible-playbook playbooks/provision.yml -J -k -K --become-method su
-```
-
-It asks three things, and stores none of them:
-
-| Prompt | Give it |
-| --- | --- |
-| `SSH password` | your account's password on the server |
-| `BECOME password` | root's password on the server |
-| `Vault password` | the vault password |
-
-That run installs your key, lets your account use sudo, and switches password logins off.
-From then on the server accepts only the key, and no command needs `-k`, `-K` or
-`--become-method` ([ADR 0011](../docs/decisions/0011-the-first-run-asks-for-passwords-and-stores-none.md)).
-
-`--become-method su` is for a server installed with a root password, where your account is
-not in sudoers. If your account can already use sudo, leave it out and give your own
-password at both prompts.
+[Deploying to a server](../README.md#deploying-to-a-server) in the main README is the
+procedure, in order: the tools to install, the inventory files to fill in, and the first
+run, which is the only one that asks for passwords
+([ADR 0011](../docs/decisions/0011-the-first-run-asks-for-passwords-and-stores-none.md)).
 
 ## Trusted machines
 

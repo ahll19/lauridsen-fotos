@@ -1,4 +1,4 @@
-# What the VPS runs on top of docker-compose.yml. Never used on a laptop.
+# What the server runs on top of docker-compose.yml. Never used on a laptop.
 #
 # The host's .env sets COMPOSE_FILE to both files, so every `docker compose` command there
 # picks this up without being told. It is written by Ansible (roles/app), not by hand.
