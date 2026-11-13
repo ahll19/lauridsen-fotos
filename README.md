@@ -12,7 +12,7 @@ Live at <https://lauridsen-fotos.dk>.
 | To | Read |
 | --- | --- |
 | Run it on your own machine | [Running it](#running-it) |
-| Publish albums and prices | [Publishing](#publishing) |
+| Publish photographs, text and prices | [Using the admin](#using-the-admin) |
 | Deliver photographs to a client | [Client galleries](#client-galleries) |
 | Change a port, a schedule or a limit | [Configuration](#configuration) |
 | Set up or update the server | [Deploying to a server](#deploying-to-a-server) |
@@ -39,40 +39,101 @@ of them.
 Danish is the default and has no URL prefix; English lives under `/en/`. The URL decides the
 language, so a link opens in the language you sent it in.
 
-## Publishing
+## Using the admin
 
-Everything is managed in the admin. You never edit code to publish.
+Everything on the site that is not code is edited in the admin: photographs, albums, page
+text, prices and client galleries. You never edit code to publish.
 
-Albums live under Portfolio, inside a category. Upload as many photographs at once as you
-like, drag them into order, and set a cover if you don't want the first one used. An album
-is public only when both it and its category are marked *synlig*, which lets you prepare a
-whole category in private. Timeline entries work the same way — a title, a date, a short
-story, a photo set.
+The admin is at `https://lauridsen-fotos.dk/<admin path>/`, where the path is a secret
+(`scripts/vault.sh view` shows it as `vault_django_admin_path`). The login is the one made in
+[step 6](#6-create-your-admin-login) of the server setup. The admin is in Danish, so the names
+below are the ones on screen.
 
-Page text and prices are single records rather than lists: one Forside, one Om-side, one
-Kontaktside, plus the pricing packages. Each package's enquiry button links to the contact
-form with the package name already filled in, so you know what prompted an enquiry.
+### Publish an album
 
-Translatable fields show Danish and English side by side. Fill in Danish first — anything
-left untranslated falls back to it rather than rendering an empty page.
+1. **Kategorier → Tilføj** if the album needs a new category, such as Bryllup or Portræt.
+   Leave **Synlig** unticked until the category has something in it.
+2. **Albummer → Tilføj**. Choose the category and give the album a name. **Kort-navn** fills
+   itself in from the Danish name and becomes the album's address, so don't change it once
+   the album is public.
+3. Under **Tilføj billeder**, select all the photographs at once and press **Gem og fortsæt med
+   at redigere**. They are added in the order you selected them.
+4. Put them in order with the arrows on each row (top, up, down, bottom). An arrow saves
+   straight away, so save any text you have typed first.
+5. Give each photograph a caption if you want one shown, and an **alt-tekst** describing what
+   is in it, for visitors who cannot see it and for search engines.
+6. Tick **Synlig** on the album and on its category, then save. Both have to be ticked
+   before the album is public, so a whole category can be prepared in private.
 
-## Client galleries
+The first visit to a new album takes a few seconds, while the site makes the sizes it
+shows. After that it is instant.
+
+**Cover.** An album's first photograph is its cover on the portfolio pages, unless you upload
+a different one under **Forsidebillede**.
+
+**The front page** shows the newest public album and the newest timeline entry. **Forside**
+switches either off, and is where the large image at the top is set.
+
+### What to upload
+
+JPEG. A file the site cannot open as an image, such as a phone's HEIC, a RAW file or a PDF,
+is refused, and then nothing in that save is stored: the message names the files to export
+as JPEG and upload again.
+
+Full-size exports are fine, but the public site never shows more than 2000 pixels across.
+Exporting at 2500 pixels on the long edge uploads several times faster and looks the same.
+
+One save takes up to 1000 MB, which is 40 or more full-size camera JPEGs. For more than that,
+upload in batches and save between them.
+
+Location data in the files is removed from everything on the public pages, whose images are
+resized copies. The originals are kept on the server but never served. Client galleries are
+the exception: the client downloads the files exactly as uploaded.
+
+### Timeline entries
+
+**Tidslinjeindlæg → Tilføj**: a title, a date, a short story and a set of photographs, added
+and ordered the same way as an album. An entry is public when **Synlig** is ticked. Tags and
+a related portfolio category are optional.
+
+### Page text and prices
+
+**Forside**, **Om-side**, **Kontaktside** and **Prisside** each have one page of settings
+instead of a list. That is where the front page's tagline and introduction, the About text
+and portrait, and the contact details are.
+
+**Prispakker** are the packages on the pricing page, ordered with the arrows. Each one's
+enquiry button opens the contact form with the package already filled in, so you know what
+prompted an enquiry.
+
+Messages sent through the contact form are kept under **Henvendelser**, whether or not their
+email arrived.
+
+### Danish and English
+
+Text fields come in pairs marked **[da]** and **[en]**. Fill in Danish first: anything left
+without an English version shows the Danish text on the English site rather than an empty
+page.
+
+### Client galleries
 
 The part with real consequences, so it is worth knowing how it behaves.
 
-Create one under Klientgallerier with a label for your own reference, the client's name, an
-expiry date (90 days out by default) and the photographs. On save the admin shows the
-password once. It is hashed immediately and cannot be recovered, though you can issue a new
-one later. Then run the *Byg download-ZIP igen* action, or the download-all button has
-nothing behind it.
+1. **Klientgallerier → Tilføj**. Give it a label for your own use, the client's name and an
+   expiry date (90 days out by default), add the photographs and save. Upload full size:
+   the client downloads exactly what you upload.
+2. **Copy the password from the message at the top.** It is shown once and cannot be
+   recovered, though **Generer ny adgangskode** issues a new one.
+3. Tick the gallery in the list and run **Byg download-ZIP igen**, or the download-all button
+   has nothing behind it. Do it again whenever photographs are added.
+4. Send the client the link and the password. Until they enter it the page reveals nothing:
+   no thumbnails, no filenames, not even how many photographs there are.
 
-Send the client the link and the password. Until they enter it the page reveals nothing — no
-thumbnails, no filenames, not even how many photographs there are.
-
-On the expiry date a scheduled job deletes the photographs from disk. The URL keeps
+On the expiry date a scheduled job deletes the photographs from disk. The link keeps
 answering for another month with a "no longer available" notice, so a client arriving late
-gets an explanation rather than a dead link, and then the record goes too. Deleting a gallery
-by hand removes its files the same way.
+gets an explanation rather than a dead link, and then the record goes too. **Forlæng med 30
+dage** postpones it; **Luk nu** deletes the photographs at once. Deleting a gallery by hand
+removes its files the same way.
 
 ## Configuration
 
