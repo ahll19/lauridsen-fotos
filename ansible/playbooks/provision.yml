@@ -1,7 +1,8 @@
 # Take a bare Debian 12 host to the state architecture.md describes. Safe to run again at
 # any time: a host already in that state reports nothing changed.
 #
-#   scripts/ansible.sh provision
+#   ansible-playbook playbooks/provision.yml -J
+#   ansible-playbook playbooks/provision.yml -J -k -K --become-method su    the first run
 
 # A new server only has root; a provisioned one refuses root and answers to the operator.
 # Rather than making whoever runs this remember which it is, ask the host.

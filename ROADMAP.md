@@ -8,7 +8,7 @@ real clients at.
 
 **Where it stands.** Everything that can be built and proven without a server is. What is
 left needs things only Anders can supply — a VPS, a domain, the NAS, real photographs — and
-[docs/go-live.md](docs/go-live.md) is the list, in order, with the command for each step.
+[README.md](README.md#deploying-to-a-server) is the list, in order, with the command for each step.
 Release candidates (`v1.0.0-rc.N`) are cut as that changes; 1.0.0 is the one that is live.
 
 Milestones are dependency-ordered, not dated. Each has a definition of done that is meant to
@@ -131,7 +131,7 @@ the first real deploy ([D41, D42](docs/defects.md)).
 - [x] Secrets live in an `ansible-vault` file; `scripts/vault.sh init` generates every one
       and writes it encrypted. **Not yet created**: the vault's password should be chosen
       by Anders and never touch a disk, so `init` is his to run
-      ([go-live](docs/go-live.md)). `verify.sh` fails if a vault file is ever committed
+      ([README](README.md#deploying-to-a-server)). `verify.sh` fails if a vault file is ever committed
       unencrypted.
 - [x] `requirements.yml` pins the collections used.
 - [x] Every playbook is idempotent: `provision`, `deploy`, `update` and `backup` each report
@@ -153,7 +153,7 @@ the domain over HTTPS but is not yet announced to anyone.
 
 Every item below that could be rehearsed has been, on the disposable machine, with Caddy on a
 second machine standing in for the TLS-terminating proxy. A box stays unticked until it
-has happened on the real host. [docs/go-live.md](docs/go-live.md) is the order to do them in.
+has happened on the real host. [README.md](README.md#deploying-to-a-server) is the order to do them in.
 
 **Definition of done**
 

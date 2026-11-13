@@ -6,16 +6,16 @@
 #   scripts/vm.sh up        a bare Debian 12 "VPS", and a second machine playing both the
 #                           NAS and the TLS-terminating reverse proxy in front of the VPS
 #   scripts/vm.sh rebuild   throw the VPS away and start a bare one (the NAS is kept)
-#   scripts/vm.sh sync      hand the VPS the commit you are on (ansible.sh does this itself)
+#   scripts/vm.sh sync      hand the VPS the commit you are on, before a deploy
 #   scripts/vm.sh ssh [nas] a shell on the VPS, or on the NAS
 #   scripts/vm.sh status    what exists
 #   scripts/vm.sh down      delete both
 #
 # `up` writes ansible/inventory/disposable/, which is gitignored: it holds this machine's
-# SSH port and a set of throwaway secrets generated for the rehearsal. Then:
+# SSH port and a set of throwaway secrets generated for the rehearsal. Then, from ansible/:
 #
-#   scripts/ansible.sh -I disposable provision
-#   scripts/ansible.sh -I disposable deploy
+#   ansible-playbook -i inventory/disposable playbooks/provision.yml
+#   ansible-playbook -i inventory/disposable playbooks/deploy.yml
 #
 # The rehearsal differs from production in two deliberate ways. The reverse proxy in front
 # of the VPS, which in production is not ours to build, is Caddy on the second machine with
@@ -94,6 +94,8 @@ site_alternate_domains:
 
 operator_ssh_public_keys:
   - "$(cat "$LIMA_KEY.pub")"
+# Lima keeps that key outside ~/.ssh, where the check for a trusted local key looks.
+operator_key_check: false
 # Lima manages the VM through its own account; shutting it out would strand the VM.
 ssh_allow_users:
   - "{{ operator_user }}"
@@ -189,10 +191,12 @@ case "${1:-}" in
         sync_code
         cat <<EOF
 
-Rehearse with:
-    scripts/ansible.sh -I disposable provision
-    scripts/ansible.sh -I disposable deploy
-    scripts/ansible.sh -I disposable backup -e backup_run_now=true
+Rehearse with, from ansible/:
+    ansible-playbook -i inventory/disposable playbooks/provision.yml
+    ansible-playbook -i inventory/disposable playbooks/deploy.yml
+    ansible-playbook -i inventory/disposable playbooks/backup.yml -e backup_run_now=true
+
+After a new commit, run scripts/vm.sh sync before deploying again.
 EOF
         ;;
 

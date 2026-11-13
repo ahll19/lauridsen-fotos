@@ -1,7 +1,7 @@
 # The maintenance pass from architecture.md §10: OS patches, fresh base images, a look at
 # the application's dependencies, then a redeploy that fails unless the site answers.
 #
-#   scripts/ansible.sh update
+#   ansible-playbook playbooks/update.yml -J
 - name: Maintenance pass
   hosts: site
   become: true

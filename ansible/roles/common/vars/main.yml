@@ -1,0 +1,3 @@
+# The trusted keys as a list, whatever the inventory holds: a key with nothing under it
+# in YAML is null, not an empty list.
+common_operator_keys: "{{ operator_ssh_public_keys | default([], true) }}"

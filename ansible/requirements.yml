@@ -1,6 +1,6 @@
 # Pinned, so a fresh machine resolves the same versions. Bumped deliberately during a
-# maintenance pass, like the container images. scripts/ansible.sh installs these into
-# ansible/.collections.
+# maintenance pass, like the container images. Installed into ansible/.collections with:
+#   ansible-galaxy collection install -r requirements.yml --force
 collections:
   - name: community.docker
     version: 5.4.0

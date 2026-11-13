@@ -1,0 +1,12 @@
+# The SSH public keys that may log in to the server as the operator: one line per machine
+# that maintains it. Provision makes the server's list match this one exactly, so removing
+# a line here and running provision takes that machine's access away.
+#
+# Add the machine you are sitting at, from the repository root:
+#
+#   printf '  - %s\n' "$(cat ~/.ssh/id_ed25519.pub)" >> ansible/inventory/production/group_vars/all/trusted_keys.yml
+#
+# Then commit, and run provision from a machine that is already trusted. These are public
+# keys: safe to commit, useless without the private half that never leaves each machine.
+operator_ssh_public_keys:
+  - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOu1JzpQVRhe910L/zfQFduUucMR5so1YP1qURE/htqk anders@Mac.localdomain

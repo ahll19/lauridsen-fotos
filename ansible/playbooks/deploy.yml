@@ -1,8 +1,8 @@
 # Pull a revision onto the host, build it there, restart the stack, and fail unless the
 # site answers afterwards.
 #
-#   scripts/ansible.sh deploy                     what is on main
-#   scripts/ansible.sh deploy -e deploy_ref=v1.0.0
+#   ansible-playbook playbooks/deploy.yml -J                     what is on main
+#   ansible-playbook playbooks/deploy.yml -J -e deploy_ref=v1.0.0
 - name: Deploy the application
   hosts: site
   become: true

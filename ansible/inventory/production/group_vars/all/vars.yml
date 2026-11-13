@@ -9,20 +9,11 @@ site_domain: lauridsen-fotos.dk
 site_alternate_domains:
   - www.lauridsen-fotos.dk
 
-# How the playbooks log in: an account that already exists on the server, named in the
-# vault with its password. SSH accepts that password as well as the key below, because
-# the network in front only lets the local network reach the server (ADR 0010). sudo gets
-# the same password until provision has installed the operator's passwordless sudo rule.
-operator_user: "{{ vault_operator_user }}"
+# How the playbooks log in: as this account, which already exists on the server, with one
+# of the keys in trusted_keys.yml beside this file. No password is stored anywhere. The one run that needs passwords, before the
+# key is installed, asks for them (ansible/README.md, ADR 0011).
+operator_user: anders
 ansible_user: "{{ operator_user }}"
-ansible_password: "{{ vault_operator_password }}"
-ansible_become_password: "{{ vault_operator_password }}"
-ssh_password_authentication: true
-
-# The key that may log in. By default, the public half of the key on the machine running
-# the playbooks.
-operator_ssh_public_keys:
-  - "{{ lookup('ansible.builtin.file', lookup('ansible.builtin.env', 'HOME') + '/.ssh/id_ed25519.pub') }}"
 
 # --- The reverse proxy in front ----------------------------------------------
 # It terminates TLS and forwards to this server's port 80 (ADR 0008). Its address as this
@@ -33,7 +24,7 @@ upstream_proxy_addresses:
 # --- Mail --------------------------------------------------------------------
 # A mailbox you read, not on the site's own domain: contact-form messages and error
 # reports go here.
-owner_email: ""
+owner_email: "kontakt@lauridsen-fotos.dk"
 
 # --- Backups -----------------------------------------------------------------
 # The home NAS, as the VPS reaches it over SSH. Empty until there is one to point at;

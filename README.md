@@ -9,7 +9,8 @@ server-rendered templates and hand-written CSS.
 
 ## Running it
 
-Docker is the only requirement. There is no server yet; this all runs on your machine.
+Docker is the only requirement. This runs the site on your own machine; the server comes
+later, under [Deploying to a server](#deploying-to-a-server).
 
 ```bash
 cp .env.example .env
@@ -27,17 +28,151 @@ of them.
 Danish is the default and has no URL prefix; English lives under `/en/`. The URL decides the
 language, so a link opens in the language you sent it in.
 
-## Running it for real
+## Deploying to a server
 
-The server is built and deployed by playbooks in `ansible/`, never by hand.
-[docs/go-live.md](docs/go-live.md) is the whole procedure; day to day it is one command:
+The server is built and deployed with Ansible, run from `ansible/` on your own machine.
+Nothing is done by hand on the server. Once it is set up, a deploy is one command:
 
 ```bash
-scripts/ansible.sh deploy
+cd ansible && ansible-playbook playbooks/deploy.yml -J
 ```
 
-`scripts/vm.sh up` starts a throwaway Debian machine to rehearse any playbook against
-first: `scripts/ansible.sh -I disposable deploy`.
+`-J` asks for the vault password. The steps below are the first time, in order.
+[ansible/README.md](ansible/README.md) is the reference for every command.
+
+### What you need
+
+- **A server** running Debian 12 or 13 that you can SSH to with your own account and
+  password, and its root password.
+- **A reverse proxy in front** that holds the TLS certificate and forwards to the server's
+  port 80 over plain HTTP. It must pass `Host` through, set `X-Forwarded-Proto: https`,
+  append the visitor's address to `X-Forwarded-For`, and allow uploads of 100 MB taking up
+  to five minutes.
+- **A domain** pointing at that proxy.
+- **An SSH key** on your machine. `ssh-keygen -t ed25519` makes one.
+
+### 1. Install the tools
+
+Once per machine:
+
+```bash
+brew install ansible sshpass
+```
+
+```bash
+cd ansible && ansible-galaxy collection install -r requirements.yml
+```
+
+### 2. Describe the server
+
+Four files in `ansible/inventory/production/`:
+
+| File | Set |
+| --- | --- |
+| `hosts.yml` | `ansible_host`: the server's address |
+| `group_vars/all/vars.yml` | `operator_user`: your account on the server |
+| | `site_domain` and `site_alternate_domains` |
+| | `owner_email`: where contact messages and error reports go. Deploy refuses to run while it is empty |
+| | `upstream_proxy_addresses`: the proxy's address as the server sees it connect. nginx refuses everyone else |
+| `group_vars/all/trusted_keys.yml` | Your SSH public key. The file says how to add it |
+| `group_vars/all/vault.yml` | The secrets. Created once with `scripts/vault.sh init`, which asks you to choose the vault password. Keep that in a password manager: it is the only copy |
+
+Commit them. The vault is encrypted and is meant to be committed.
+
+### 3. Provision
+
+From `ansible/`. This one run logs in with passwords, because the server does not have your
+key yet:
+
+```bash
+ansible-playbook playbooks/provision.yml -J -k -K --become-method su
+```
+
+| Prompt | Give it |
+| --- | --- |
+| `SSH password` | your account's password on the server |
+| `BECOME password` | root's password on the server |
+| `Vault password` | the vault password |
+
+None of the three is stored. The run installs your key, lets your account use sudo, turns
+password logins off, sets up the firewall and installs Docker. It refuses to start if your
+machine's key is not in `trusted_keys.yml`, so it cannot lock you out.
+
+From now on the server accepts only the trusted keys, and every command needs only `-J`.
+
+### 4. Deploy
+
+```bash
+ansible-playbook playbooks/deploy.yml -J
+```
+
+The server pulls `main` from GitHub, builds it, starts the stack, and the run fails unless
+the site answers. Only what has been pushed can be deployed. To deploy a branch or a tag:
+
+```bash
+ansible-playbook playbooks/deploy.yml -J -e deploy_ref=<branch or tag>
+```
+
+### 5. Check it
+
+| Check | How |
+| --- | --- |
+| The site answers through the proxy | open `https://<your domain>/healthz` |
+| Only the proxy gets in | `curl -I http://<server address>/` from any other machine answers 403 |
+| Password logins are off | `ssh -o PubkeyAuthentication=no <you>@<server>` is refused |
+
+### 6. Create your admin login
+
+```bash
+ssh -t <you>@<server> 'cd /opt/lauridsen-fotos/current && sudo docker compose exec app python manage.py createsuperuser'
+```
+
+The admin is at `https://<your domain>/<admin path>`. The path is a secret:
+`scripts/vault.sh view` shows it as `vault_django_admin_path`.
+
+### 7. Mail
+
+The server delivers mail itself, so it needs outbound port 25 and three DNS records.
+Many home and cloud networks block port 25; if yours does, no mail leaves.
+
+```bash
+scripts/vault.sh public
+```
+
+prints the DKIM value. Then publish:
+
+| Record | Value |
+| --- | --- |
+| TXT at `mail._domainkey.<domain>` | the DKIM value |
+| TXT on the domain | `v=spf1 ip4:<the address mail leaves from> -all` |
+| A for `mail.<domain>` | that same address |
+
+Test it by sending yourself a message through the contact form.
+
+### 8. Backups
+
+Set `backup_target_host` in `vars.yml` (and the user, port and path if they differ). Add the
+backup key that `scripts/vault.sh public` prints to that account's `authorized_keys` on the
+NAS. Then:
+
+```bash
+ansible-playbook playbooks/backup.yml -J -e backup_run_now=true
+```
+
+That installs the nightly job and takes the first copy now.
+
+### Afterwards
+
+| When | Run, from `ansible/` |
+| --- | --- |
+| You have merged something | `ansible-playbook playbooks/deploy.yml -J` |
+| Something is badly wrong | `ansible-playbook playbooks/deploy.yml -J -e deploy_ref=<an earlier tag>` |
+| Monthly, or after a security announcement | `ansible-playbook playbooks/update.yml -J` |
+| Another machine should maintain the server | add its key to `trusted_keys.yml`, then `ansible-playbook playbooks/provision.yml -J` |
+| The server lost its data | `ansible-playbook playbooks/restore.yml -J` |
+
+To try any of this on a throwaway machine first, see
+[Rehearsing on a disposable machine](ansible/README.md#rehearsing-on-a-disposable-machine).
 
 ## Publishing
 
@@ -156,7 +291,6 @@ The rest:
 | `scripts/verify.sh` | Hygiene, secrets, lint, Django checks, migrations, tests, compose validation. Run before a pull request; `--fast` is the subset the pre-commit hook runs. |
 | `scripts/prodcheck.sh` | Runs the stack with production settings and checks it, then restores development mode. `--keep` leaves it in production mode to look around. |
 | `scripts/crawl.py <url>` | Follows every link and `src` on the running site and reports anything that is not a 200. Used by `prodcheck.sh`; useful on its own after a template change. |
-| `scripts/ansible.sh <playbook>` | `provision`, `deploy`, `update`, `backup`, `restore`. `-I disposable` targets the rehearsal machine. |
 | `scripts/vault.sh` | `init`, `edit`, `view` the production secrets; `public` prints what goes in DNS and on the NAS. |
 | `scripts/vm.sh` | `up`, `rebuild`, `sync`, `ssh`, `down`: disposable machines for rehearsing playbooks. Needs Lima. |
 | `scripts/install-hooks.sh` | Points git at `.githooks/`. Once per clone. |
@@ -168,6 +302,7 @@ Checks with nothing to verify yet are skipped loudly rather than passing silentl
 ### Layout
 
 ```
+ansible/         playbooks and roles that build and deploy the server
 docker/          Dockerfile, entrypoint, nginx and cron templates
 src/
   config/        settings, URLs, WSGI, test runner
