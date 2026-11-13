@@ -116,6 +116,9 @@ point an entry at an album, link to it in the story.
 after year. Start typing in the tags field to search the list; the **+** beside it adds a
 tag that isn't there yet. Names differing only in capitals count as the same tag.
 
+Each tag has a Danish and an English name, shown on the site in the visitor's language. The
+English name can wait: until it is filled in, the English site shows the Danish one.
+
 The list itself is under **Tags**, with how many entries use each. If two tags mean the same
 thing, tick both and run **Slå de valgte tags sammen til ét**: every entry moves to the more
 used one and the other is deleted. Renaming a tag renames it on every entry.

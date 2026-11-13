@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.db.models.functions import Lower
 from django.urls import reverse
 from django.utils.text import format_lazy
@@ -19,6 +20,9 @@ class Tag(models.Model):
 
     Free text spelled the same idea several ways over the years; a list to pick from, and
     names that differ only in case counting as the same tag, keeps it to one spelling.
+
+    The name has a Danish and an English version (translation.py). English may be left
+    empty, and the English site then shows the Danish name.
     """
 
     name = models.CharField(_("name"), max_length=60)
@@ -26,21 +30,36 @@ class Tag(models.Model):
     class Meta:
         verbose_name = _("tag")
         verbose_name_plural = _("tags")
-        ordering = [Lower("name")]
+        ordering = [Lower("name_da")]
         constraints = [
             models.UniqueConstraint(
-                Lower("name"),
-                name="unique_tag_name_ignoring_case",
+                Lower("name_da"),
+                name="unique_tag_name_da_ignoring_case",
                 violation_error_message=_("A tag with this name already exists."),
-            )
+            ),
+            # English is optional, so only names actually filled in must be unique.
+            models.UniqueConstraint(
+                Lower("name_en"),
+                condition=Q(name_en__isnull=False) & ~Q(name_en=""),
+                name="unique_tag_name_en_ignoring_case",
+                violation_error_message=_("A tag with this English name already exists."),
+            ),
         ]
 
     def __str__(self):
         return self.name
 
     def save(self, *args, **kwargs):
-        self.name = " ".join(self.name.split())
+        for field in ("name_da", "name_en"):
+            value = getattr(self, field)
+            if value is not None:
+                setattr(self, field, " ".join(value.split()))
         super().save(*args, **kwargs)
+
+    @classmethod
+    def find(cls, name):
+        """The tag with this name in either language, ignoring case, or None."""
+        return cls.objects.filter(Q(name_da__iexact=name) | Q(name_en__iexact=name)).first()
 
 
 class TimelineEntry(models.Model):

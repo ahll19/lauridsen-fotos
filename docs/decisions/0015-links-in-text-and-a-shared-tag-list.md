@@ -33,7 +33,9 @@ text was converted by a data migration, which can be reversed.
 
 Existing text renders as before, except that addresses in it are now links.
 
-Tags are the same in both languages, as they were before.
+Each tag has a Danish and an English name. English is optional and falls back to Danish,
+and the timeline filter finds a tag by either name, so a filtered link survives switching
+language.
 
 Square brackets followed by a parenthesised address are always read as a link. Text that
 needs to show that literally cannot.

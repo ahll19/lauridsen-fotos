@@ -1,6 +1,11 @@
 from modeltranslation.translator import TranslationOptions, register
 
-from .models import TimelineEntry, TimelineEntryPhoto
+from .models import Tag, TimelineEntry, TimelineEntryPhoto
+
+
+@register(Tag)
+class TagTranslation(TranslationOptions):
+    fields = ("name",)
 
 
 @register(TimelineEntry)

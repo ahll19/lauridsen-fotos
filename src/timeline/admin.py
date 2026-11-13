@@ -68,7 +68,7 @@ class TimelineEntryAdmin(OrderedInlineModelAdminMixin, TranslationAdmin):
 
 
 @admin.register(Tag)
-class TagAdmin(admin.ModelAdmin):
+class TagAdmin(TranslationAdmin):
     """
     The one list of tags. Entries pick from it; this is where it is tidied.
 
@@ -76,8 +76,8 @@ class TagAdmin(admin.ModelAdmin):
     onto one tag and deletes the other, rather than by editing entries one at a time.
     """
 
-    list_display = ("name", "entry_count")
-    search_fields = ("name",)
+    list_display = ("name_da", "name_en", "entry_count")
+    search_fields = ("name_da", "name_en")
     actions = ["merge_tags"]
 
     def get_queryset(self, request):
@@ -90,7 +90,7 @@ class TagAdmin(admin.ModelAdmin):
     @admin.action(description=_("Merge the selected tags into one"))
     def merge_tags(self, request, queryset):
         """Keeps the most used of the selected tags; ties go to the alphabetically first."""
-        tags = sorted(queryset, key=lambda tag: (-tag.entry_total, tag.name.lower()))
+        tags = sorted(queryset, key=lambda tag: (-tag.entry_total, tag.name_da.lower()))
         if len(tags) < 2:
             self.message_user(
                 request, _("Select at least two tags to merge."), level=messages.WARNING

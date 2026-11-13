@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lauridsen-fotos\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 14:04+0100\n"
+"POT-Creation-Date: 2026-11-13 14:11+0100\n"
 "Language: da\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -251,7 +251,7 @@ msgstr "klientgallerier"
 msgid "gallery"
 msgstr "galleri"
 
-#: galleries/models.py:220 portfolio/models.py:114 timeline/models.py:95
+#: galleries/models.py:220 portfolio/models.py:114 timeline/models.py:114
 msgid "image"
 msgstr "billede"
 
@@ -384,7 +384,7 @@ msgid "Pricing page"
 msgstr "Prisside"
 
 #: pages/models.py:78 pages/models.py:108 portfolio/models.py:33
-#: portfolio/models.py:68 timeline/models.py:24
+#: portfolio/models.py:68 timeline/models.py:28
 msgid "name"
 msgstr "navn"
 
@@ -405,7 +405,7 @@ msgid "Free text so the currency and any 'from' wording stay editable."
 msgstr "Fritekst, så valuta og et eventuelt 'fra'-forbehold kan redigeres."
 
 #: pages/models.py:87 portfolio/models.py:37 portfolio/models.py:73
-#: timeline/models.py:68
+#: timeline/models.py:87
 msgid "visible"
 msgstr "synlig"
 
@@ -529,7 +529,7 @@ msgstr "Tilføjede %(count)d billede(r)."
 msgid "Portfolio"
 msgstr "Portfolio"
 
-#: portfolio/models.py:34 portfolio/models.py:69 timeline/models.py:50
+#: portfolio/models.py:34 portfolio/models.py:69 timeline/models.py:69
 msgid "slug"
 msgstr "kort-navn"
 
@@ -561,15 +561,15 @@ msgstr "Albummer, der ikke er udgivet, vises ikke på det offentlige site."
 msgid "album"
 msgstr "album"
 
-#: portfolio/models.py:115 timeline/models.py:53 timeline/models.py:96
+#: portfolio/models.py:115 timeline/models.py:72 timeline/models.py:115
 msgid "caption"
 msgstr "billedtekst"
 
-#: portfolio/models.py:117 timeline/models.py:98
+#: portfolio/models.py:117 timeline/models.py:117
 msgid "alt text"
 msgstr "alt-tekst"
 
-#: portfolio/models.py:121 timeline/models.py:102
+#: portfolio/models.py:121 timeline/models.py:121
 msgid ""
 "Describes what is in the photograph, for visitors who cannot see it and for "
 "search engines. Not shown on the page. The caption is used if this is empty."
@@ -659,7 +659,7 @@ msgstr "Hovedmenu"
 
 #: templates/base.html:31 templates/pages/home.html:16
 #: templates/timeline/entry.html:9 templates/timeline/index.html:4
-#: templates/timeline/index.html:10 timeline/apps.py:9 timeline/views.py:29
+#: templates/timeline/index.html:10 timeline/apps.py:9 timeline/views.py:34
 msgid "Timeline"
 msgstr "Tidslinje"
 
@@ -829,11 +829,11 @@ msgstr ""
 msgid "All"
 msgstr "Alle"
 
-#: timeline/admin.py:50 timeline/models.py:28 timeline/models.py:65
+#: timeline/admin.py:50 timeline/models.py:32 timeline/models.py:84
 msgid "tags"
 msgstr "tags"
 
-#: timeline/admin.py:86 timeline/models.py:74
+#: timeline/admin.py:86 timeline/models.py:93
 msgid "timeline entries"
 msgstr "tidslinjeindlæg"
 
@@ -853,43 +853,47 @@ msgstr ""
 "%(names)s er slået sammen med “%(kept)s”. Omdøb det, hvis en anden stavemåde "
 "er bedre."
 
-#: timeline/models.py:27
+#: timeline/models.py:31
 msgid "tag"
 msgstr "tag"
 
-#: timeline/models.py:34
+#: timeline/models.py:38
 msgid "A tag with this name already exists."
 msgstr "Der findes allerede et tag med det navn."
 
-#: timeline/models.py:49
+#: timeline/models.py:45
+msgid "A tag with this English name already exists."
+msgstr "Der findes allerede et tag med det engelske navn."
+
+#: timeline/models.py:68
 msgid "title"
 msgstr "titel"
 
-#: timeline/models.py:51
+#: timeline/models.py:70
 msgid "date"
 msgstr "dato"
 
-#: timeline/models.py:57
+#: timeline/models.py:76
 msgid "A short story about the session — a paragraph or two, not an article."
 msgstr ""
 "En kort fortælling om optagelsen — et afsnit eller to, ikke en artikel."
 
-#: timeline/models.py:66
+#: timeline/models.py:85
 msgid "Choose from the tags already used; the + adds a new one."
 msgstr "Vælg blandt de tags, der allerede er brugt; + tilføjer et nyt."
 
-#: timeline/models.py:73
+#: timeline/models.py:92
 msgid "timeline entry"
 msgstr "tidslinjeindlæg"
 
-#: timeline/models.py:93
+#: timeline/models.py:112
 msgid "entry"
 msgstr "indlæg"
 
-#: timeline/models.py:110
+#: timeline/models.py:129
 msgid "timeline photo"
 msgstr "tidslinjebillede"
 
-#: timeline/models.py:111
+#: timeline/models.py:130
 msgid "timeline photos"
 msgstr "tidslinjebilleder"

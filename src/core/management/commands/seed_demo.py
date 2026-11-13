@@ -269,7 +269,7 @@ class Command(BaseCommand):
             )
             entry.tags.set(
                 [
-                    Tag.objects.get_or_create(name__iexact=name, defaults={"name": name})[0]
+                    Tag.objects.get_or_create(name_da__iexact=name, defaults={"name_da": name})[0]
                     for name in (part.strip() for part in tags.split(","))
                     if name
                 ]
