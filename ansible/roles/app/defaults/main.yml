@@ -43,7 +43,7 @@ django_log_level: INFO
 app_port: 8000
 gunicorn_workers: 3
 gunicorn_timeout: 120
-max_upload_size: 100m
+max_upload_size: 1000m
 # The proxy in front, and nginx.
 trusted_proxy_count: 2
 

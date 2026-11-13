@@ -7,7 +7,7 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from ordered_model.admin import OrderedTabularInline
 
-from core.forms import MultipleFileField
+from core.forms import MultipleImageField
 
 from .models import ClientGallery, GalleryPhoto
 
@@ -25,7 +25,7 @@ class GalleryPhotoInline(OrderedTabularInline):
 class ClientGalleryForm(forms.ModelForm):
     """Adds the bulk upload field and a one-off password override to the change form."""
 
-    upload = MultipleFileField(
+    upload = MultipleImageField(
         required=False,
         label=_("Add photographs"),
         help_text=_("Select as many files as you like. They are appended to the gallery."),

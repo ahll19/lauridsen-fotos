@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from modeltranslation.admin import TranslationAdmin, TranslationTabularInline
 from ordered_model.admin import OrderedInlineModelAdminMixin, OrderedTabularInline
 
-from core.forms import MultipleFileField
+from core.forms import MultipleImageField
 from portfolio.admin import thumb
 
 from .models import TimelineEntry, TimelineEntryPhoto
@@ -23,7 +23,7 @@ class TimelinePhotoInline(TranslationTabularInline, OrderedTabularInline):
 
 
 class TimelineEntryForm(forms.ModelForm):
-    upload = MultipleFileField(required=False, label=_("Add photographs"))
+    upload = MultipleImageField(required=False, label=_("Add photographs"))
 
     class Meta:
         model = TimelineEntry

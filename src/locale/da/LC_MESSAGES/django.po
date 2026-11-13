@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lauridsen-fotos\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-11 07:36+0100\n"
+"POT-Creation-Date: 2026-11-13 12:31+0100\n"
 "Language: da\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -21,6 +21,15 @@ msgstr "Administration"
 #: core/apps.py:9
 msgid "Shared"
 msgstr "Fælles"
+
+#: core/forms.py:41
+#, python-format
+msgid ""
+"Not saved. These files are not images this site can show: %(names)s. Export "
+"them as JPEG and try again."
+msgstr ""
+"Intet blev gemt. Disse filer er ikke billeder, siden kan vise: %(names)s. "
+"Eksportér dem som JPEG, og prøv igen."
 
 #: galleries/admin.py:30 portfolio/admin.py:56 timeline/admin.py:26
 msgid "Add photographs"
@@ -246,11 +255,11 @@ msgstr "galleribillede"
 msgid "gallery photos"
 msgstr "galleribilleder"
 
-#: galleries/views.py:81
+#: galleries/views.py:82
 msgid "Too many attempts. Please wait a little and try again."
 msgstr "For mange forsøg. Vent lidt, og prøv igen."
 
-#: galleries/views.py:95
+#: galleries/views.py:96
 msgid "That password is not correct."
 msgstr "Adgangskoden er ikke korrekt."
 
@@ -454,23 +463,23 @@ msgstr "kontakt/"
 msgid "about/"
 msgstr "om/"
 
-#: pages/views.py:50 templates/base.html:33 templates/pages/about.html:4
+#: pages/views.py:49 templates/base.html:33 templates/pages/about.html:4
 #: templates/pages/about.html:13
 msgid "About"
 msgstr "Om mig"
 
-#: pages/views.py:68 templates/base.html:32 templates/pages/pricing.html:4
+#: pages/views.py:67 templates/base.html:32 templates/pages/pricing.html:4
 #: templates/pages/pricing.html:9
 msgid "Pricing"
 msgstr "Priser"
 
-#: pages/views.py:111
+#: pages/views.py:112
 msgid ""
 "Too many messages have been sent from here recently. Please try again later."
 msgstr ""
 "Der er sendt for mange beskeder herfra for nylig. Prøv venligst igen senere."
 
-#: pages/views.py:131
+#: pages/views.py:132
 msgid ""
 "Your message was received, but the confirmation email could not be sent. "
 "Please get in touch directly if you don't hear back."
@@ -478,13 +487,13 @@ msgstr ""
 "Din besked er modtaget, men bekræftelsesmailen kunne ikke sendes. Skriv "
 "gerne direkte, hvis du ikke hører fra mig."
 
-#: pages/views.py:145 templates/base.html:34
+#: pages/views.py:146 templates/base.html:34
 #: templates/galleries/unavailable.html:26 templates/pages/contact.html:4
 #: templates/pages/contact.html:9 templates/pages/home.html:17
 msgid "Contact"
 msgstr "Kontakt"
 
-#: pages/views.py:177
+#: pages/views.py:178
 #, python-format
 msgid "Contact form: %(name)s"
 msgstr "Kontaktformular: %(name)s"

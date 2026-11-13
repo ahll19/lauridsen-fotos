@@ -10,7 +10,7 @@ from ordered_model.admin import (
     OrderedTabularInline,
 )
 
-from core.forms import MultipleFileField
+from core.forms import MultipleImageField
 
 from .models import Album, Category, Photo
 
@@ -51,7 +51,7 @@ class PhotoInline(TranslationTabularInline, OrderedTabularInline):
 
 
 class AlbumForm(forms.ModelForm):
-    upload = MultipleFileField(
+    upload = MultipleImageField(
         required=False,
         label=_("Add photographs"),
         help_text=_("Select several at once; they are appended in the order chosen."),

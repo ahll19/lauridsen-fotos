@@ -366,3 +366,74 @@ class ErrorReportTests(TestCase):
 
         with self.assertRaises(CommandError):
             call_command("test_error_report", stdout=StringIO())
+
+
+class PhotoUploadTests(TestCase):
+    """The admin's bulk upload refuses anything Pillow cannot open, before saving any."""
+
+    def _jpeg(self, name):
+        from io import BytesIO
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from PIL import Image
+
+        buffer = BytesIO()
+        Image.new("RGB", (40, 30), (200, 40, 40)).save(buffer, "JPEG")
+        return SimpleUploadedFile(name, buffer.getvalue(), content_type="image/jpeg")
+
+    def test_images_are_accepted(self):
+        from core.forms import MultipleImageField
+
+        field = MultipleImageField(required=False)
+        cleaned = field.clean([self._jpeg("a.jpg"), self._jpeg("b.jpg")])
+        self.assertEqual([f.name for f in cleaned], ["a.jpg", "b.jpg"])
+
+    def test_nothing_chosen_is_nothing_saved(self):
+        from core.forms import MultipleImageField
+
+        self.assertEqual(MultipleImageField(required=False).clean([]), [])
+
+    def test_non_images_are_refused_by_name(self):
+        from django.core.exceptions import ValidationError
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        from core.forms import MultipleImageField
+
+        field = MultipleImageField(required=False)
+        with self.assertRaises(ValidationError) as caught:
+            field.clean(
+                [
+                    self._jpeg("good.jpg"),
+                    SimpleUploadedFile("notes.pdf", b"%PDF-1.4"),
+                    SimpleUploadedFile("IMG_0001.HEIC", b"\x00" * 64),
+                ]
+            )
+        message = " ".join(caught.exception.messages)
+        self.assertIn("notes.pdf", message)
+        self.assertIn("IMG_0001.HEIC", message)
+        self.assertNotIn("good.jpg", message)
+
+    def test_album_save_with_a_bad_file_stores_nothing(self):
+        from django.contrib.auth.models import User
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        category = Category.objects.create(name="C", slug="c")
+        album = Album.objects.create(category=category, name="A", slug="a")
+        admin = User.objects.create_superuser("owner", "o@example.com", "pw-for-tests-only")
+        self.client.force_login(admin)
+        url = reverse("admin:portfolio_album_change", args=[album.pk])
+        data = {}
+        data.update(
+            {
+                "category": category.pk,
+                "name_da": "A",
+                "slug": "a",
+                "photos-TOTAL_FORMS": 0,
+                "photos-INITIAL_FORMS": 0,
+                "upload": [self._jpeg("good.jpg"), SimpleUploadedFile("notes.pdf", b"%PDF")],
+            }
+        )
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 200, "the form is shown again with the error")
+        self.assertContains(response, "notes.pdf")
+        self.assertEqual(album.photos.count(), 0)
