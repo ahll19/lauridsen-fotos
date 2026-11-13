@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n richtext %}
 
 {% block title %}{% translate "Contact" %} — {{ site_name }}{% endblock %}
 
@@ -7,7 +7,7 @@
 <div class="wrap section">
   <header class="page-head">
     <h1>{{ contact.heading|default:_("Contact") }}</h1>
-    {% if contact.intro %}<p class="lede">{{ contact.intro|linebreaksbr }}</p>{% endif %}
+    {% if contact.intro %}<p class="lede">{{ contact.intro|rich }}</p>{% endif %}
   </header>
 
   <div class="contact">

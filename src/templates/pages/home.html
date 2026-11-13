@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n thumbnail %}
+{% load i18n thumbnail richtext %}
 
 {% block title %}{{ site_name }}{% if site_tagline %} — {{ site_tagline }}{% endif %}{% endblock %}
 
@@ -21,7 +21,7 @@
 
 {% if home.intro %}
 <section class="wrap section section--narrow">
-  <p class="lede">{{ home.intro|linebreaksbr }}</p>
+  <p class="lede">{{ home.intro|rich }}</p>
 </section>
 {% endif %}
 

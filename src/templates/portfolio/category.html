@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n thumbnail %}
+{% load i18n thumbnail richtext %}
 
 {% block body_attrs %} class="protect-images"{% endblock %}
 {% block title %}{{ category.name }} — {{ site_name }}{% endblock %}
@@ -10,7 +10,7 @@
 
   <header class="page-head">
     <h1>{{ category.name }}</h1>
-    {% if category.description %}<p class="lede">{{ category.description|linebreaksbr }}</p>{% endif %}
+    {% if category.description %}<p class="lede">{{ category.description|rich }}</p>{% endif %}
   </header>
 
   {% if albums %}

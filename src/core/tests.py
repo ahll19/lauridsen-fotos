@@ -437,3 +437,68 @@ class PhotoUploadTests(TestCase):
         self.assertEqual(response.status_code, 200, "the form is shown again with the error")
         self.assertContains(response, "notes.pdf")
         self.assertEqual(album.photos.count(), 0)
+
+
+class TextLinkTests(TestCase):
+    """Links in text from the admin (core/text.py)."""
+
+    def render(self, text):
+        from core.text import render_text
+
+        return str(render_text(text))
+
+    def test_plain_text_renders_as_before(self):
+        self.assertEqual(
+            self.render("Første linje\nAnden & tredje"), "Første linje<br>Anden &amp; tredje"
+        )
+
+    def test_bare_address_becomes_a_link(self):
+        html = self.render("Læs mere her: https://example.com/udstilling")
+        self.assertIn(
+            '<a href="https://example.com/udstilling">https://example.com/udstilling</a>', html
+        )
+
+    def test_label_and_address(self):
+        html = self.render("Se [udstillingen](https://example.com/a?b=1&c=2) i dag.")
+        self.assertEqual(
+            html, 'Se <a href="https://example.com/a?b=1&amp;c=2">udstillingen</a> i dag.'
+        )
+
+    def test_mail_and_site_paths(self):
+        self.assertIn(
+            'href="mailto:hej@example.com"', self.render("[skriv](mailto:hej@example.com)")
+        )
+        self.assertIn('href="/kontakt/"', self.render("[kontakt mig](/kontakt/)"))
+
+    def test_html_is_never_taken_from_the_text(self):
+        html = self.render("<script>x</script> [<b>klik</b>](https://example.com)")
+        self.assertNotIn("<script>", html)
+        self.assertNotIn("<b>", html)
+        self.assertIn("&lt;script&gt;", html)
+
+    def test_other_schemes_are_left_as_typed(self):
+        html = self.render("[klik](javascript:alert(1))")
+        self.assertNotIn("<a", html)
+        self.assertIn("[klik](javascript:alert(1))", html)
+
+    def test_plain_text_keeps_only_the_words(self):
+        from core.text import plain_text
+
+        self.assertEqual(
+            plain_text("Se [udstillingen](https://example.com) nu"), "Se udstillingen nu"
+        )
+
+    def test_album_page_shows_the_link(self):
+        category = Category.objects.create(name="C", slug="c", visible=True)
+        Album.objects.create(
+            category=category,
+            name="A",
+            slug="a",
+            visible=True,
+            description="Se [Lyndi Sales](https://www.instagram.com/lyndi_sales/).",
+        )
+        response = self.client.get(reverse("portfolio:album", args=["c", "a"]))
+        self.assertContains(
+            response, '<a href="https://www.instagram.com/lyndi_sales/">Lyndi Sales</a>'
+        )
+        self.assertNotContains(response, "[Lyndi Sales]")

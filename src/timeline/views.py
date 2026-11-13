@@ -3,7 +3,7 @@ from django.utils.translation import gettext as _
 
 from core.meta import page_meta
 
-from .models import TimelineEntry
+from .models import Tag, TimelineEntry
 
 
 def index(request):
@@ -12,9 +12,12 @@ def index(request):
 
     tag = request.GET.get("tag", "").strip()
     if tag:
-        entries = entries.filter(tags__icontains=tag)
+        entries = entries.filter(tags__name__iexact=tag)
 
-    all_tags = sorted({t for entry in TimelineEntry.objects.visible() for t in entry.tag_list()})
+    # Only tags some published entry carries, so no filter ever leads to an empty page.
+    all_tags = list(
+        Tag.objects.filter(entries__visible=True).distinct().values_list("name", flat=True)
+    )
 
     return render(
         request,

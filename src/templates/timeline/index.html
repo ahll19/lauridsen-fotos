@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n thumbnail %}
+{% load i18n thumbnail richtext %}
 
 {% block title %}{% translate "Timeline" %} — {{ site_name }}{% endblock %}
 {% block body_attrs %} class="protect-images"{% endblock %}
@@ -25,7 +25,7 @@
       <header class="entry__head">
         <time class="entry__date" datetime="{{ entry.date|date:'Y-m-d' }}">{{ entry.date|date:"j F Y" }}</time>
         <h2 class="entry__title"><a href="{{ entry.get_absolute_url }}">{{ entry.title }}</a></h2>
-        {% if entry.caption %}<p class="entry__caption">{{ entry.caption|truncatewords:45|linebreaksbr }}</p>{% endif %}
+        {% if entry.caption %}<p class="entry__caption">{{ entry.caption|rich|truncatewords_html:45 }}</p>{% endif %}
         {% if entry.related_category %}
           <p class="entry__related">
             {% blocktranslate with name=entry.related_category.name %}Related: {{ name }}{% endblocktranslate %}

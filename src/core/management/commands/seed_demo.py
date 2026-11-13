@@ -25,7 +25,7 @@ from pages.models import (
     PricingSettings,
 )
 from portfolio.models import Album, Category, Photo
-from timeline.models import TimelineEntry, TimelineEntryPhoto
+from timeline.models import Tag, TimelineEntry, TimelineEntryPhoto
 
 # Muted, photographic palettes — enough to read as images at thumbnail size.
 PALETTES = [
@@ -221,6 +221,7 @@ class Command(BaseCommand):
         self.stdout.write("Clearing existing demo content…")
         Category.objects.all().delete()
         TimelineEntry.objects.all().delete()
+        Tag.objects.all().delete()
         PricingPackage.objects.all().delete()
         ClientGallery.objects.all().delete()
 
@@ -263,9 +264,15 @@ class Command(BaseCommand):
                 title_en=en[0],
                 caption_da=da[1],
                 caption_en=en[1],
-                tags=tags,
                 date=date.today() - timedelta(days=days_ago),
                 visible=True,
+            )
+            entry.tags.set(
+                [
+                    Tag.objects.get_or_create(name__iexact=name, defaults={"name": name})[0]
+                    for name in (part.strip() for part in tags.split(","))
+                    if name
+                ]
             )
             for n in range(count):
                 photo = TimelineEntryPhoto(entry=entry)

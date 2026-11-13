@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n thumbnail %}
+{% load i18n thumbnail richtext %}
 
 {% block title %}{{ entry.title }} — {{ site_name }}{% endblock %}
 {% block body_attrs %} class="protect-images"{% endblock %}
@@ -11,7 +11,7 @@
   <header class="page-head">
     <time class="entry__date" datetime="{{ entry.date|date:'Y-m-d' }}">{{ entry.date|date:"j F Y" }}</time>
     <h1>{{ entry.title }}</h1>
-    {% if entry.caption %}<p class="lede">{{ entry.caption|linebreaksbr }}</p>{% endif %}
+    {% if entry.caption %}<p class="lede">{{ entry.caption|rich }}</p>{% endif %}
     {% if entry.tag_list %}
       <p class="tags">
         {% for tag in entry.tag_list %}<a class="tag" href="{% url 'timeline:index' %}?tag={{ tag|urlencode }}">{{ tag }}</a>{% endfor %}

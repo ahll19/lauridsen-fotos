@@ -67,7 +67,7 @@ schema):
 - **Category** — `name` (DA/EN), `slug`, `order`, `visible`
 - **Album** — `category` (FK), `name` (DA/EN), `description` (DA/EN), `slug`, `order`, `visible`, `cover_photo`
 - **Photo** — `album` (FK), `image`, `order`, `caption` (DA/EN)
-- **TimelineEntry** — `title` (DA/EN), `date`, `caption` (DA/EN), `slug`, `visible`, `related_category` (FK, nullable), optional `tags`
+- **TimelineEntry** — `title` (DA/EN), `date`, `caption` (DA/EN), `slug`, `visible`, `related_category` (FK, nullable), optional `tags` *(chosen from a shared `Tag` list, and admin text may hold links — see [ADR 0015](docs/decisions/0015-links-in-text-and-a-shared-tag-list.md))*
 - **TimelineEntryPhoto** — `entry` (FK), `image`, `order`
 - **PricingPackage** — `name` (DA/EN), `description` (DA/EN), `price`, `order`, `visible`
 - **HomeSettings / AboutSettings / ContactSettings** — `django-solo` singletons holding the static per-language text for those pages

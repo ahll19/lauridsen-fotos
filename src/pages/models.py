@@ -1,7 +1,10 @@
 from django.db import models
+from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 from ordered_model.models import OrderedModel
 from solo.models import SingletonModel
+
+from core.text import LINK_HELP
 
 
 class HomeSettings(SingletonModel):
@@ -10,7 +13,7 @@ class HomeSettings(SingletonModel):
     hero_image = models.ImageField(_("hero image"), upload_to="pages/home/", blank=True)
     business_name = models.CharField(_("business name"), max_length=120, default="Lauridsen Fotos")
     tagline = models.CharField(_("tagline"), max_length=240, blank=True)
-    intro = models.TextField(_("introduction"), blank=True)
+    intro = models.TextField(_("introduction"), blank=True, help_text=LINK_HELP)
     show_featured_album = models.BooleanField(
         _("show a featured album"),
         default=True,
@@ -30,8 +33,8 @@ class HomeSettings(SingletonModel):
 class AboutSettings(SingletonModel):
     portrait = models.ImageField(_("portrait"), upload_to="pages/about/", blank=True)
     heading = models.CharField(_("heading"), max_length=180, blank=True)
-    biography = models.TextField(_("biography"), blank=True)
-    how_i_work = models.TextField(_("how I work"), blank=True)
+    biography = models.TextField(_("biography"), blank=True, help_text=LINK_HELP)
+    how_i_work = models.TextField(_("how I work"), blank=True, help_text=LINK_HELP)
 
     class Meta:
         verbose_name = _("about page")
@@ -42,7 +45,7 @@ class AboutSettings(SingletonModel):
 
 class ContactSettings(SingletonModel):
     heading = models.CharField(_("heading"), max_length=180, blank=True)
-    intro = models.TextField(_("introduction"), blank=True)
+    intro = models.TextField(_("introduction"), blank=True, help_text=LINK_HELP)
     email = models.EmailField(_("public email address"), blank=True)
     phone = models.CharField(_("phone"), max_length=40, blank=True)
     instagram_url = models.URLField(_("Instagram"), blank=True)
@@ -57,11 +60,11 @@ class ContactSettings(SingletonModel):
 
 class PricingSettings(SingletonModel):
     heading = models.CharField(_("heading"), max_length=180, blank=True)
-    intro = models.TextField(_("introduction"), blank=True)
+    intro = models.TextField(_("introduction"), blank=True, help_text=LINK_HELP)
     faq = models.TextField(
         _("FAQ / how booking works"),
         blank=True,
-        help_text=_("Shown beneath the packages."),
+        help_text=format_lazy("{} {}", _("Shown beneath the packages."), LINK_HELP),
     )
 
     class Meta:

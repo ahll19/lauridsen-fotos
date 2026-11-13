@@ -87,6 +87,8 @@ img { max-width: 100%; height: auto; display: block; }
 
 a { color: inherit; text-decoration-color: var(--line); text-underline-offset: 0.25em; }
 a:hover { text-decoration-color: var(--accent); }
+/* Links written into text in the admin may be long bare addresses; let them wrap. */
+p a { overflow-wrap: anywhere; }
 
 h1, h2, h3 { font-family: var(--display); font-weight: 300; line-height: 1.15; margin: 0 0 0.5em; }
 h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.02em; }

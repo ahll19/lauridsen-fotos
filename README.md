@@ -90,11 +90,34 @@ Location data in the files is removed from everything on the public pages, whose
 resized copies. The originals are kept on the server but never served. Client galleries are
 the exception: the client downloads the files exactly as uploaded.
 
+### Links in text
+
+Descriptions, captions and page text can link elsewhere. A web address written out in full,
+`https://…` or `www.…`, becomes a link by itself. To make words the link instead, write:
+
+```text
+Læs mere om [udstillingen](https://www.museumforpapirkunst.dk/dk/lyndi-sales-genskaer).
+```
+
+The address can also be a page on this site, such as `[kontakt mig](/kontakt/)`, or an email
+address as `mailto:navn@domæne.dk`. Nothing else is turned into a link, and HTML typed into
+a field is shown as text, never run.
+
 ### Timeline entries
 
 **Tidslinjeindlæg → Tilføj**: a title, a date, a short story and a set of photographs, added
-and ordered the same way as an album. An entry is public when **Synlig** is ticked. Tags and
-a related portfolio category are optional.
+and ordered the same way as an album. An entry is public when **Synlig** is ticked. A related
+portfolio category is optional.
+
+**Tags** are picked from one shared list, so the same subject is spelled the same way year
+after year. Start typing in the tags field to search the list; the **+** beside it adds a
+tag that isn't there yet. Names differing only in capitals count as the same tag.
+
+The list itself is under **Tags**, with how many entries use each. If two tags mean the same
+thing, tick both and run **Slå de valgte tags sammen til ét**: every entry moves to the more
+used one and the other is deleted. Renaming a tag renames it on every entry.
+
+Visitors can filter the timeline by any tag that a public entry carries.
 
 ### Page text and prices
 

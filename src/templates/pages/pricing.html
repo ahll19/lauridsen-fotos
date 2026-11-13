@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n richtext %}
 
 {% block title %}{% translate "Pricing" %} — {{ site_name }}{% endblock %}
 
@@ -7,7 +7,7 @@
 <div class="wrap section">
   <header class="page-head">
     <h1>{{ pricing.heading|default:_("Pricing") }}</h1>
-    {% if pricing.intro %}<p class="lede">{{ pricing.intro|linebreaksbr }}</p>{% endif %}
+    {% if pricing.intro %}<p class="lede">{{ pricing.intro|rich }}</p>{% endif %}
   </header>
 
   {% if packages %}
@@ -34,7 +34,7 @@
   {% if pricing.faq %}
     <section class="section section--narrow faq">
       <h2>{% translate "How booking works" %}</h2>
-      <p>{{ pricing.faq|linebreaksbr }}</p>
+      <p>{{ pricing.faq|rich }}</p>
     </section>
   {% endif %}
 </div>

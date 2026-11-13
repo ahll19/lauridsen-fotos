@@ -34,3 +34,4 @@ its decision; instead a new record supersedes it and says so.
 | [0012](0012-ansible-is-run-directly.md) | Ansible is run directly, not through a wrapper script | Accepted |
 | [0013](0013-the-server-is-at-home.md) | The server is a machine at home, not a rented VPS | Accepted |
 | [0014](0014-the-application-cannot-see-visitors-addresses.md) | The application cannot see visitors' addresses | Accepted |
+| [0015](0015-links-in-text-and-a-shared-tag-list.md) | Links in admin text, and timeline tags from a shared list | Accepted |

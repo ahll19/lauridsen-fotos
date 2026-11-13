@@ -3,6 +3,8 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from ordered_model.models import OrderedModel, OrderedModelManager, OrderedModelQuerySet
 
+from core.text import LINK_HELP
+
 
 class VisibleQuerySet(OrderedModelQuerySet):
     def visible(self):
@@ -18,7 +20,7 @@ class Category(OrderedModel):
 
     name = models.CharField(_("name"), max_length=120)
     slug = models.SlugField(_("slug"), max_length=140, unique=True)
-    description = models.TextField(_("description"), blank=True)
+    description = models.TextField(_("description"), blank=True, help_text=LINK_HELP)
     visible = models.BooleanField(
         _("visible"),
         default=False,
@@ -53,7 +55,7 @@ class Album(OrderedModel):
     )
     name = models.CharField(_("name"), max_length=160)
     slug = models.SlugField(_("slug"), max_length=180)
-    description = models.TextField(_("description"), blank=True)
+    description = models.TextField(_("description"), blank=True, help_text=LINK_HELP)
     cover = models.ImageField(_("cover image"), upload_to=album_cover_path, blank=True)
     visible = models.BooleanField(
         _("visible"),

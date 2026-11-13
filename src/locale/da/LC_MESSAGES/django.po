@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lauridsen-fotos\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 12:31+0100\n"
+"POT-Creation-Date: 2026-11-13 13:31+0100\n"
 "Language: da\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -31,7 +31,15 @@ msgstr ""
 "Intet blev gemt. Disse filer er ikke billeder, siden kan vise: %(names)s. "
 "Eksportér dem som JPEG, og prøv igen."
 
-#: galleries/admin.py:30 portfolio/admin.py:56 timeline/admin.py:26
+#: core/text.py:53
+msgid ""
+"Web addresses become links by themselves. To make words a link, write [the "
+"words](https://address)."
+msgstr ""
+"Webadresser bliver selv til links. Skriv [ordene](https://adresse) for at "
+"gøre ord til et link."
+
+#: galleries/admin.py:30 portfolio/admin.py:56 timeline/admin.py:28
 msgid "Add photographs"
 msgstr "Tilføj billeder"
 
@@ -78,8 +86,8 @@ msgstr "Over udløbsdatoen — afventer oprydning"
 msgid "Active"
 msgstr "Aktivt"
 
-#: galleries/admin.py:84 portfolio/admin.py:74 portfolio/models.py:116
-#: timeline/admin.py:43
+#: galleries/admin.py:84 portfolio/admin.py:74 portfolio/models.py:118
+#: timeline/admin.py:46
 msgid "photos"
 msgstr "billeder"
 
@@ -243,7 +251,7 @@ msgstr "klientgallerier"
 msgid "gallery"
 msgstr "galleri"
 
-#: galleries/models.py:220 portfolio/models.py:100 timeline/models.py:64
+#: galleries/models.py:220 portfolio/models.py:102 timeline/models.py:103
 msgid "image"
 msgstr "billede"
 
@@ -275,179 +283,179 @@ msgstr "Sider"
 msgid "Wedding, portrait, event…"
 msgstr "Bryllup, portræt, event…"
 
-#: pages/models.py:10
+#: pages/models.py:13
 msgid "hero image"
 msgstr "hovedbillede"
 
-#: pages/models.py:11
+#: pages/models.py:14
 msgid "business name"
 msgstr "virksomhedsnavn"
 
-#: pages/models.py:12
+#: pages/models.py:15
 msgid "tagline"
 msgstr "slogan"
 
-#: pages/models.py:13 pages/models.py:45 pages/models.py:60
+#: pages/models.py:16 pages/models.py:48 pages/models.py:63
 msgid "introduction"
 msgstr "introduktion"
 
-#: pages/models.py:15
+#: pages/models.py:18
 msgid "show a featured album"
 msgstr "vis et fremhævet album"
 
-#: pages/models.py:17
+#: pages/models.py:20
 msgid "Surfaces the most recently published album as a teaser."
 msgstr "Viser det senest udgivne album som appetitvækker."
 
-#: pages/models.py:20
+#: pages/models.py:23
 msgid "show the latest timeline entry"
 msgstr "vis seneste indlæg fra tidslinjen"
 
-#: pages/models.py:24
+#: pages/models.py:27
 msgid "home page"
 msgstr "forside"
 
-#: pages/models.py:27
+#: pages/models.py:30
 msgid "Home page"
 msgstr "Forside"
 
-#: pages/models.py:31
+#: pages/models.py:34
 msgid "portrait"
 msgstr "portræt"
 
-#: pages/models.py:32 pages/models.py:44 pages/models.py:59
+#: pages/models.py:35 pages/models.py:47 pages/models.py:62
 msgid "heading"
 msgstr "overskrift"
 
-#: pages/models.py:33
+#: pages/models.py:36
 msgid "biography"
 msgstr "biografi"
 
-#: pages/models.py:34
+#: pages/models.py:37
 msgid "how I work"
 msgstr "sådan arbejder jeg"
 
-#: pages/models.py:37
+#: pages/models.py:40
 msgid "about page"
 msgstr "om-side"
 
-#: pages/models.py:40
+#: pages/models.py:43
 msgid "About page"
 msgstr "Om-side"
 
-#: pages/models.py:46
+#: pages/models.py:49
 msgid "public email address"
 msgstr "offentlig e-mailadresse"
 
-#: pages/models.py:47
+#: pages/models.py:50
 msgid "phone"
 msgstr "telefon"
 
-#: pages/models.py:48
+#: pages/models.py:51
 msgid "Instagram"
 msgstr "Instagram"
 
-#: pages/models.py:49
+#: pages/models.py:52
 msgid "Facebook"
 msgstr "Facebook"
 
-#: pages/models.py:52
+#: pages/models.py:55
 msgid "contact page"
 msgstr "kontaktside"
 
-#: pages/models.py:55
+#: pages/models.py:58
 msgid "Contact page"
 msgstr "Kontaktside"
 
-#: pages/models.py:62
+#: pages/models.py:65
 msgid "FAQ / how booking works"
 msgstr "FAQ / sådan booker du"
 
-#: pages/models.py:64
+#: pages/models.py:67
 msgid "Shown beneath the packages."
 msgstr "Vises under pakkerne."
 
-#: pages/models.py:68
+#: pages/models.py:71
 msgid "pricing page"
 msgstr "prisside"
 
-#: pages/models.py:71
+#: pages/models.py:74
 msgid "Pricing page"
 msgstr "Prisside"
 
-#: pages/models.py:75 pages/models.py:105 portfolio/models.py:19
-#: portfolio/models.py:54
+#: pages/models.py:78 pages/models.py:108 portfolio/models.py:21
+#: portfolio/models.py:56 timeline/models.py:24
 msgid "name"
 msgstr "navn"
 
-#: pages/models.py:77
+#: pages/models.py:80
 msgid "what's included"
 msgstr "hvad er inkluderet"
 
-#: pages/models.py:77
+#: pages/models.py:80
 msgid "One item per line; rendered as a list."
 msgstr "Ét punkt per linje; vises som en liste."
 
-#: pages/models.py:80
+#: pages/models.py:83
 msgid "price"
 msgstr "pris"
 
-#: pages/models.py:82
+#: pages/models.py:85
 msgid "Free text so the currency and any 'from' wording stay editable."
 msgstr "Fritekst, så valuta og et eventuelt 'fra'-forbehold kan redigeres."
 
-#: pages/models.py:84 portfolio/models.py:23 portfolio/models.py:59
-#: timeline/models.py:37
+#: pages/models.py:87 portfolio/models.py:25 portfolio/models.py:61
+#: timeline/models.py:76
 msgid "visible"
 msgstr "synlig"
 
-#: pages/models.py:87
+#: pages/models.py:90
 msgid "pricing package"
 msgstr "prispakke"
 
-#: pages/models.py:88
+#: pages/models.py:91
 msgid "pricing packages"
 msgstr "prispakker"
 
-#: pages/models.py:106
+#: pages/models.py:109
 msgid "email"
 msgstr "e-mail"
 
-#: pages/models.py:107
+#: pages/models.py:110
 msgid "shoot type"
 msgstr "type opgave"
 
-#: pages/models.py:108
+#: pages/models.py:111
 msgid "preferred date"
 msgstr "ønsket dato"
 
-#: pages/models.py:109
+#: pages/models.py:112
 msgid "message"
 msgstr "besked"
 
-#: pages/models.py:110
+#: pages/models.py:113
 msgid "submitted at"
 msgstr "indsendt"
 
-#: pages/models.py:111
+#: pages/models.py:114
 msgid "IP address"
 msgstr "IP-adresse"
 
-#: pages/models.py:113
+#: pages/models.py:116
 msgid "notification sent"
 msgstr "besked sendt"
 
-#: pages/models.py:115
+#: pages/models.py:118
 msgid ""
 "False means the relay rejected it — the submission is still recorded here."
 msgstr ""
 "Falsk betyder, at mailserveren afviste den — henvendelsen er stadig gemt her."
 
-#: pages/models.py:119
+#: pages/models.py:122
 msgid "contact submission"
 msgstr "henvendelse"
 
-#: pages/models.py:120
+#: pages/models.py:123
 msgid "contact submissions"
 msgstr "henvendelser"
 
@@ -463,23 +471,23 @@ msgstr "kontakt/"
 msgid "about/"
 msgstr "om/"
 
-#: pages/views.py:49 templates/base.html:33 templates/pages/about.html:4
+#: pages/views.py:56 templates/base.html:33 templates/pages/about.html:4
 #: templates/pages/about.html:13
 msgid "About"
 msgstr "Om mig"
 
-#: pages/views.py:67 templates/base.html:32 templates/pages/pricing.html:4
+#: pages/views.py:74 templates/base.html:32 templates/pages/pricing.html:4
 #: templates/pages/pricing.html:9
 msgid "Pricing"
 msgstr "Priser"
 
-#: pages/views.py:112
+#: pages/views.py:119
 msgid ""
 "Too many messages have been sent from here recently. Please try again later."
 msgstr ""
 "Der er sendt for mange beskeder herfra for nylig. Prøv venligst igen senere."
 
-#: pages/views.py:132
+#: pages/views.py:139
 msgid ""
 "Your message was received, but the confirmation email could not be sent. "
 "Please get in touch directly if you don't hear back."
@@ -487,22 +495,22 @@ msgstr ""
 "Din besked er modtaget, men bekræftelsesmailen kunne ikke sendes. Skriv "
 "gerne direkte, hvis du ikke hører fra mig."
 
-#: pages/views.py:146 templates/base.html:34
+#: pages/views.py:153 templates/base.html:34
 #: templates/galleries/unavailable.html:26 templates/pages/contact.html:4
 #: templates/pages/contact.html:9 templates/pages/home.html:17
 msgid "Contact"
 msgstr "Kontakt"
 
-#: pages/views.py:178
+#: pages/views.py:185
 #, python-format
 msgid "Contact form: %(name)s"
 msgstr "Kontaktformular: %(name)s"
 
-#: portfolio/admin.py:36 portfolio/models.py:69
+#: portfolio/admin.py:36 portfolio/models.py:71
 msgid "albums"
 msgstr "albummer"
 
-#: portfolio/admin.py:48 timeline/admin.py:20
+#: portfolio/admin.py:48 timeline/admin.py:22
 msgid "preview"
 msgstr "forhåndsvisning"
 
@@ -510,7 +518,7 @@ msgstr "forhåndsvisning"
 msgid "Select several at once; they are appended in the order chosen."
 msgstr "Vælg flere på én gang; de tilføjes i den valgte rækkefølge."
 
-#: portfolio/admin.py:86 timeline/admin.py:55
+#: portfolio/admin.py:86 timeline/admin.py:65
 #, python-format
 msgid "Added %(count)d photograph(s)."
 msgstr "Tilføjede %(count)d billede(r)."
@@ -521,47 +529,47 @@ msgstr "Tilføjede %(count)d billede(r)."
 msgid "Portfolio"
 msgstr "Portfolio"
 
-#: portfolio/models.py:20 portfolio/models.py:55 timeline/models.py:16
+#: portfolio/models.py:22 portfolio/models.py:57 timeline/models.py:50
 msgid "slug"
 msgstr "kort-navn"
 
-#: portfolio/models.py:21 portfolio/models.py:56
+#: portfolio/models.py:23 portfolio/models.py:58
 msgid "description"
 msgstr "beskrivelse"
 
-#: portfolio/models.py:25
+#: portfolio/models.py:27
 msgid "Unpublished categories are hidden from the public site."
 msgstr "Kategorier, der ikke er udgivet, vises ikke på det offentlige site."
 
-#: portfolio/models.py:31 portfolio/models.py:52
+#: portfolio/models.py:33 portfolio/models.py:54
 msgid "category"
 msgstr "kategori"
 
-#: portfolio/models.py:32
+#: portfolio/models.py:34
 msgid "categories"
 msgstr "kategorier"
 
-#: portfolio/models.py:57
+#: portfolio/models.py:59
 msgid "cover image"
 msgstr "forsidebillede"
 
-#: portfolio/models.py:61
+#: portfolio/models.py:63
 msgid "Unpublished albums are hidden from the public site."
 msgstr "Albummer, der ikke er udgivet, vises ikke på det offentlige site."
 
-#: portfolio/models.py:68 portfolio/models.py:98
+#: portfolio/models.py:70 portfolio/models.py:100
 msgid "album"
 msgstr "album"
 
-#: portfolio/models.py:101 timeline/models.py:19 timeline/models.py:65
+#: portfolio/models.py:103 timeline/models.py:53 timeline/models.py:104
 msgid "caption"
 msgstr "billedtekst"
 
-#: portfolio/models.py:103 timeline/models.py:67
+#: portfolio/models.py:105 timeline/models.py:106
 msgid "alt text"
 msgstr "alt-tekst"
 
-#: portfolio/models.py:107 timeline/models.py:71
+#: portfolio/models.py:109 timeline/models.py:110
 msgid ""
 "Describes what is in the photograph, for visitors who cannot see it and for "
 "search engines. Not shown on the page. The caption is used if this is empty."
@@ -569,7 +577,7 @@ msgstr ""
 "Beskriver hvad billedet viser, til besøgende der ikke kan se det, og til "
 "søgemaskiner. Vises ikke på siden. Billedteksten bruges, hvis feltet er tomt."
 
-#: portfolio/models.py:115
+#: portfolio/models.py:117
 msgid "photo"
 msgstr "billede"
 
@@ -651,7 +659,7 @@ msgstr "Hovedmenu"
 
 #: templates/base.html:31 templates/pages/home.html:16
 #: templates/timeline/entry.html:9 templates/timeline/index.html:4
-#: templates/timeline/index.html:10 timeline/apps.py:9 timeline/views.py:26
+#: templates/timeline/index.html:10 timeline/apps.py:9 timeline/views.py:29
 msgid "Timeline"
 msgstr "Tidslinje"
 
@@ -830,47 +838,71 @@ msgstr "Relateret: %(name)s"
 msgid "in the portfolio"
 msgstr "i portfolioen"
 
-#: timeline/models.py:15
+#: timeline/admin.py:50 timeline/models.py:28 timeline/models.py:65
+msgid "tags"
+msgstr "tags"
+
+#: timeline/admin.py:86 timeline/models.py:82
+msgid "timeline entries"
+msgstr "tidslinjeindlæg"
+
+#: timeline/admin.py:90
+msgid "Merge the selected tags into one"
+msgstr "Slå de valgte tags sammen til ét"
+
+#: timeline/admin.py:96
+msgid "Select at least two tags to merge."
+msgstr "Vælg mindst to tags for at slå dem sammen."
+
+#: timeline/admin.py:107
+#, python-format
+msgid ""
+"Merged %(names)s into “%(kept)s”. Rename it if another spelling is better."
+msgstr ""
+"%(names)s er slået sammen med “%(kept)s”. Omdøb det, hvis en anden stavemåde "
+"er bedre."
+
+#: timeline/models.py:27
+msgid "tag"
+msgstr "tag"
+
+#: timeline/models.py:34
+msgid "A tag with this name already exists."
+msgstr "Der findes allerede et tag med det navn."
+
+#: timeline/models.py:49
 msgid "title"
 msgstr "titel"
 
-#: timeline/models.py:17
+#: timeline/models.py:51
 msgid "date"
 msgstr "dato"
 
-#: timeline/models.py:21
+#: timeline/models.py:57
 msgid "A short story about the session — a paragraph or two, not an article."
 msgstr ""
 "En kort fortælling om optagelsen — et afsnit eller to, ikke en artikel."
 
-#: timeline/models.py:24
-msgid "tags"
-msgstr "tags"
+#: timeline/models.py:66
+msgid "Choose from the tags already used; the + adds a new one."
+msgstr "Vælg blandt de tags, der allerede er brugt; + tilføjer et nyt."
 
-#: timeline/models.py:27
-msgid "Comma-separated, e.g. winter, coast, film."
-msgstr "Adskilt af komma, f.eks. vinter, kyst, film."
-
-#: timeline/models.py:35
+#: timeline/models.py:74
 msgid "related portfolio category"
 msgstr "relateret portfoliokategori"
 
-#: timeline/models.py:42
+#: timeline/models.py:81
 msgid "timeline entry"
 msgstr "tidslinjeindlæg"
 
-#: timeline/models.py:43
-msgid "timeline entries"
-msgstr "tidslinjeindlæg"
-
-#: timeline/models.py:62
+#: timeline/models.py:101
 msgid "entry"
 msgstr "indlæg"
 
-#: timeline/models.py:79
+#: timeline/models.py:118
 msgid "timeline photo"
 msgstr "tidslinjebillede"
 
-#: timeline/models.py:80
+#: timeline/models.py:119
 msgid "timeline photos"
 msgstr "tidslinjebilleder"

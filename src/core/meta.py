@@ -12,6 +12,8 @@ from django.utils.text import Truncator
 from easy_thumbnails.exceptions import EasyThumbnailsError
 from easy_thumbnails.files import get_thumbnailer
 
+from core.text import plain_text
+
 # Search engines cut a description at roughly this length.
 DESCRIPTION_LENGTH = 160
 # The `cover` derivative is 1200x800, close to the 1.91:1 shape link previews crop to.
@@ -35,7 +37,7 @@ def page_meta(request, title="", description="", image=None):
     Anything left empty falls back to the site-wide values in the template, so a page with
     no description of its own still gets the site's.
     """
-    description = " ".join(str(description or "").split())
+    description = " ".join(plain_text(description).split())
     if not image:
         # A page with no photograph of its own previews with the front page's.
         from pages.models import HomeSettings
