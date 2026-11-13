@@ -24,7 +24,7 @@ upstream_proxy_addresses:
 # --- Mail --------------------------------------------------------------------
 # A mailbox you read, not on the site's own domain: contact-form messages and error
 # reports go here.
-owner_email: ""
+owner_email: "kontakt@lauridsen-fotos.dk"
 
 # --- Backups -----------------------------------------------------------------
 # The home NAS, as the VPS reaches it over SSH. Empty until there is one to point at;
