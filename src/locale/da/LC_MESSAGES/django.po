@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lauridsen-fotos\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 14:11+0100\n"
+"POT-Creation-Date: 2026-11-14 09:03+0100\n"
 "Language: da\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -295,167 +295,167 @@ msgstr "virksomhedsnavn"
 msgid "tagline"
 msgstr "slogan"
 
-#: pages/models.py:16 pages/models.py:48 pages/models.py:63
+#: pages/models.py:16 pages/models.py:51 pages/models.py:66
 msgid "introduction"
 msgstr "introduktion"
 
 #: pages/models.py:18
-msgid "show a featured album"
-msgstr "vis et fremhævet album"
+msgid "show albums on the front page"
+msgstr "vis albummer på forsiden"
 
-#: pages/models.py:20
-msgid "Surfaces the most recently published album as a teaser."
-msgstr "Viser det senest udgivne album som appetitvækker."
+#: pages/models.py:21
+msgid "The front page shows a random mix of published albums and timeline entries, drawn afresh on every visit."
+msgstr "Forsiden viser et tilfældigt udvalg af udgivne albummer og tidslinjeindlæg, som skifter ved hvert besøg."
 
-#: pages/models.py:23
-msgid "show the latest timeline entry"
-msgstr "vis seneste indlæg fra tidslinjen"
+#: pages/models.py:26
+msgid "show timeline entries on the front page"
+msgstr "vis tidslinjeindlæg på forsiden"
 
-#: pages/models.py:27
+#: pages/models.py:30
 msgid "home page"
 msgstr "forside"
 
-#: pages/models.py:30
+#: pages/models.py:33
 msgid "Home page"
 msgstr "Forside"
 
-#: pages/models.py:34
+#: pages/models.py:37
 msgid "portrait"
 msgstr "portræt"
 
-#: pages/models.py:35 pages/models.py:47 pages/models.py:62
+#: pages/models.py:38 pages/models.py:50 pages/models.py:65
 msgid "heading"
 msgstr "overskrift"
 
-#: pages/models.py:36
+#: pages/models.py:39
 msgid "biography"
 msgstr "biografi"
 
-#: pages/models.py:37
+#: pages/models.py:40
 msgid "how I work"
 msgstr "sådan arbejder jeg"
 
-#: pages/models.py:40
+#: pages/models.py:43
 msgid "about page"
 msgstr "om-side"
 
-#: pages/models.py:43
+#: pages/models.py:46
 msgid "About page"
 msgstr "Om-side"
 
-#: pages/models.py:49
+#: pages/models.py:52
 msgid "public email address"
 msgstr "offentlig e-mailadresse"
 
-#: pages/models.py:50
+#: pages/models.py:53
 msgid "phone"
 msgstr "telefon"
 
-#: pages/models.py:51
+#: pages/models.py:54
 msgid "Instagram"
 msgstr "Instagram"
 
-#: pages/models.py:52
+#: pages/models.py:55
 msgid "Facebook"
 msgstr "Facebook"
 
-#: pages/models.py:55
+#: pages/models.py:58
 msgid "contact page"
 msgstr "kontaktside"
 
-#: pages/models.py:58
+#: pages/models.py:61
 msgid "Contact page"
 msgstr "Kontaktside"
 
-#: pages/models.py:65
+#: pages/models.py:68
 msgid "FAQ / how booking works"
 msgstr "FAQ / sådan booker du"
 
-#: pages/models.py:67
+#: pages/models.py:70
 msgid "Shown beneath the packages."
 msgstr "Vises under pakkerne."
 
-#: pages/models.py:71
+#: pages/models.py:74
 msgid "pricing page"
 msgstr "prisside"
 
-#: pages/models.py:74
+#: pages/models.py:77
 msgid "Pricing page"
 msgstr "Prisside"
 
-#: pages/models.py:78 pages/models.py:108 portfolio/models.py:33
+#: pages/models.py:81 pages/models.py:111 portfolio/models.py:33
 #: portfolio/models.py:68 timeline/models.py:28
 msgid "name"
 msgstr "navn"
 
-#: pages/models.py:80
+#: pages/models.py:83
 msgid "what's included"
 msgstr "hvad er inkluderet"
 
-#: pages/models.py:80
+#: pages/models.py:83
 msgid "One item per line; rendered as a list."
 msgstr "Ét punkt per linje; vises som en liste."
 
-#: pages/models.py:83
+#: pages/models.py:86
 msgid "price"
 msgstr "pris"
 
-#: pages/models.py:85
+#: pages/models.py:88
 msgid "Free text so the currency and any 'from' wording stay editable."
 msgstr "Fritekst, så valuta og et eventuelt 'fra'-forbehold kan redigeres."
 
-#: pages/models.py:87 portfolio/models.py:37 portfolio/models.py:73
+#: pages/models.py:90 portfolio/models.py:37 portfolio/models.py:73
 #: timeline/models.py:87
 msgid "visible"
 msgstr "synlig"
 
-#: pages/models.py:90
+#: pages/models.py:93
 msgid "pricing package"
 msgstr "prispakke"
 
-#: pages/models.py:91
+#: pages/models.py:94
 msgid "pricing packages"
 msgstr "prispakker"
 
-#: pages/models.py:109
+#: pages/models.py:112
 msgid "email"
 msgstr "e-mail"
 
-#: pages/models.py:110
+#: pages/models.py:113
 msgid "shoot type"
 msgstr "type opgave"
 
-#: pages/models.py:111
+#: pages/models.py:114
 msgid "preferred date"
 msgstr "ønsket dato"
 
-#: pages/models.py:112
+#: pages/models.py:115
 msgid "message"
 msgstr "besked"
 
-#: pages/models.py:113
+#: pages/models.py:116
 msgid "submitted at"
 msgstr "indsendt"
 
-#: pages/models.py:114
+#: pages/models.py:117
 msgid "IP address"
 msgstr "IP-adresse"
 
-#: pages/models.py:116
+#: pages/models.py:119
 msgid "notification sent"
 msgstr "besked sendt"
 
-#: pages/models.py:118
+#: pages/models.py:121
 msgid ""
 "False means the relay rejected it — the submission is still recorded here."
 msgstr ""
 "Falsk betyder, at mailserveren afviste den — henvendelsen er stadig gemt her."
 
-#: pages/models.py:122
+#: pages/models.py:125
 msgid "contact submission"
 msgstr "henvendelse"
 
-#: pages/models.py:123
+#: pages/models.py:126
 msgid "contact submissions"
 msgstr "henvendelser"
 
@@ -471,23 +471,31 @@ msgstr "kontakt/"
 msgid "about/"
 msgstr "om/"
 
-#: pages/views.py:56 templates/base.html:33 templates/pages/about.html:4
+#: pages/views.py:47
+msgid "From the portfolio"
+msgstr "Fra portfolioen"
+
+#: pages/views.py:60
+msgid "From the timeline"
+msgstr "Fra tidslinjen"
+
+#: pages/views.py:103 templates/base.html:33 templates/pages/about.html:4
 #: templates/pages/about.html:13
 msgid "About"
 msgstr "Om mig"
 
-#: pages/views.py:74 templates/base.html:32 templates/pages/pricing.html:4
+#: pages/views.py:121 templates/base.html:32 templates/pages/pricing.html:4
 #: templates/pages/pricing.html:9
 msgid "Pricing"
 msgstr "Priser"
 
-#: pages/views.py:119
+#: pages/views.py:166
 msgid ""
 "Too many messages have been sent from here recently. Please try again later."
 msgstr ""
 "Der er sendt for mange beskeder herfra for nylig. Prøv venligst igen senere."
 
-#: pages/views.py:139
+#: pages/views.py:186
 msgid ""
 "Your message was received, but the confirmation email could not be sent. "
 "Please get in touch directly if you don't hear back."
@@ -495,13 +503,13 @@ msgstr ""
 "Din besked er modtaget, men bekræftelsesmailen kunne ikke sendes. Skriv "
 "gerne direkte, hvis du ikke hører fra mig."
 
-#: pages/views.py:153 templates/base.html:34
+#: pages/views.py:200 templates/base.html:34
 #: templates/galleries/unavailable.html:26 templates/pages/contact.html:4
 #: templates/pages/contact.html:9 templates/pages/home.html:17
 msgid "Contact"
 msgstr "Kontakt"
 
-#: pages/views.py:185
+#: pages/views.py:232
 #, python-format
 msgid "Contact form: %(name)s"
 msgstr "Kontaktformular: %(name)s"
@@ -781,14 +789,6 @@ msgstr "Eller fang mig direkte"
 #: templates/pages/home.html:15
 msgid "See the portfolio"
 msgstr "Se portfolioen"
-
-#: templates/pages/home.html:38
-msgid "From the portfolio"
-msgstr "Fra portfolioen"
-
-#: templates/pages/home.html:50
-msgid "Latest from the timeline"
-msgstr "Nyeste fra tidslinjen"
 
 #: templates/pages/pricing.html:25
 msgid "Enquire"

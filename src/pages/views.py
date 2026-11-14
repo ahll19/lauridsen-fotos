@@ -3,6 +3,7 @@ import logging
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.shortcuts import render
+from django.utils.formats import date_format
 from django.utils.translation import gettext as _
 from django_ratelimit.core import is_ratelimited
 
@@ -16,6 +17,61 @@ from .models import AboutSettings, ContactSettings, HomeSettings, PricingPackage
 logger = logging.getLogger(__name__)
 
 
+# Two rows of four at the widest layout; narrower windows show fewer (site.css, .teasers).
+TEASER_COUNT = 8
+
+
+def _teasers(albums=True, entries=True):
+    """
+    A random mix for the front page: album, timeline entry, album, entry, and so on.
+
+    Drawn afresh on every visit. Only published work that has a picture is used, and when
+    one kind runs out the other fills the remaining places.
+    """
+    album_items, entry_items = [], []
+    if albums:
+        # Both the album and its category must be published, as on the album's own page;
+        # otherwise an album prepared in a hidden category leaked here and linked to a 404.
+        chosen = (
+            Album.objects.visible()
+            .filter(category__visible=True)
+            .select_related("category")
+            .prefetch_related("photos")
+            .order_by("?")[:TEASER_COUNT]
+        )
+        album_items = [
+            {
+                "url": album.get_absolute_url(),
+                "title": album.name,
+                "image": album.cover_image,
+                "kind": _("From the portfolio"),
+                "detail": album.category.name,
+            }
+            for album in chosen
+            if album.cover_image
+        ]
+    if entries:
+        chosen = TimelineEntry.objects.visible().prefetch_related("photos").order_by("?")
+        entry_items = [
+            {
+                "url": entry.get_absolute_url(),
+                "title": entry.title,
+                "image": entry.photos.all()[0].image,
+                "kind": _("From the timeline"),
+                "detail": date_format(entry.date, "j F Y"),
+            }
+            for entry in chosen[:TEASER_COUNT]
+            if entry.photos.all()
+        ]
+
+    mixed = []
+    for index in range(TEASER_COUNT):
+        for items in (album_items, entry_items):
+            if index < len(items):
+                mixed.append(items[index])
+    return mixed[:TEASER_COUNT]
+
+
 def home(request):
     home_settings = HomeSettings.get_solo()
     context = {
@@ -27,19 +83,10 @@ def home(request):
         ),
     }
 
-    if home_settings.show_featured_album:
-        context["featured_album"] = (
-            # Both the album and its category must be published, as on the album's own
-            # page; otherwise an album prepared in a hidden category leaked onto the home
-            # page and linked to a 404.
-            Album.objects.visible()
-            .filter(category__visible=True)
-            .select_related("category")
-            .order_by("-id")
-            .first()
-        )
-    if home_settings.show_latest_timeline_entry:
-        context["latest_entry"] = TimelineEntry.objects.visible().first()
+    context["teasers"] = _teasers(
+        albums=home_settings.show_featured_album,
+        entries=home_settings.show_latest_timeline_entry,
+    )
 
     return render(request, "pages/home.html", context)
 

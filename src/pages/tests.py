@@ -109,18 +109,90 @@ class DateFormatTests(TestCase):
         self.assertContains(response, 'value="2026-11-03"')
 
 
-class FeaturedAlbumTests(TestCase):
-    def test_album_in_a_hidden_category_is_not_featured(self):
-        from portfolio.models import Album, Category
+class FrontPageTeaserTests(TestCase):
+    """The random mix of albums and timeline entries under the front page's main image."""
 
-        shown = Category.objects.create(name="Shown", slug="shown", visible=True)
-        hidden = Category.objects.create(name="Hidden", slug="hidden", visible=False)
-        Album.objects.create(category=shown, name="Published", slug="published", visible=True)
-        Album.objects.create(category=hidden, name="Prepared", slug="prepared", visible=True)
+    def _image(self):
+        from io import BytesIO
 
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from PIL import Image
+
+        buffer = BytesIO()
+        Image.new("RGB", (30, 20), (90, 90, 90)).save(buffer, "JPEG")
+        return SimpleUploadedFile("p.jpg", buffer.getvalue(), content_type="image/jpeg")
+
+    def _album(self, slug, category, visible=True, photo=True):
+        from portfolio.models import Album, Photo
+
+        album = Album.objects.create(category=category, name=slug, slug=slug, visible=visible)
+        if photo:
+            Photo.objects.create(album=album, image=self._image())
+        return album
+
+    def _entry(self, slug, visible=True, photo=True):
+        from timeline.models import TimelineEntry, TimelineEntryPhoto
+
+        entry = TimelineEntry.objects.create(
+            slug=slug, title_da=slug, date=datetime.date(2026, 1, 1), visible=visible
+        )
+        if photo:
+            TimelineEntryPhoto.objects.create(entry=entry, image=self._image())
+        return entry
+
+    def setUp(self):
+        from portfolio.models import Category
+
+        self.shown = Category.objects.create(name="Shown", slug="shown", visible=True)
+        self.hidden = Category.objects.create(name="Hidden", slug="hidden", visible=False)
+
+    def teasers(self):
+        return self.client.get(reverse("pages:home")).context["teasers"]
+
+    def test_albums_and_entries_alternate(self):
+        for n in range(3):
+            self._album(f"album-{n}", self.shown)
+            self._entry(f"entry-{n}")
+        kinds = ["/portfolio/" in t["url"] for t in self.teasers()]
+        self.assertEqual(kinds, [True, False, True, False, True, False])
+
+    def test_nothing_appears_twice_and_never_more_than_eight(self):
+        for n in range(7):
+            self._album(f"album-{n}", self.shown)
+            self._entry(f"entry-{n}")
+        urls = [t["url"] for t in self.teasers()]
+        self.assertEqual(len(urls), 8)
+        self.assertEqual(len(set(urls)), 8)
+
+    def test_one_kind_fills_in_when_the_other_runs_out(self):
+        self._album("only-album", self.shown)
+        for n in range(4):
+            self._entry(f"entry-{n}")
+        self.assertEqual(len(self.teasers()), 5)
+
+    def test_only_published_work_with_a_picture_is_used(self):
+        self._album("published", self.shown)
+        self._album("draft", self.shown, visible=False)
+        self._album("in-hidden-category", self.hidden)
+        self._album("no-photos", self.shown, photo=False)
+        self._entry("entry")
+        self._entry("draft-entry", visible=False)
+        self._entry("no-photos-entry", photo=False)
+        urls = sorted(t["url"] for t in self.teasers())
+        self.assertEqual(urls, ["/portfolio/shown/published/", "/timeline/entry/"])
+
+    def test_each_kind_can_be_switched_off(self):
+        from .models import HomeSettings
+
+        self._album("album", self.shown)
+        self._entry("entry")
+        HomeSettings.objects.update_or_create(pk=1, defaults={"show_featured_album": False})
+        self.assertEqual([t["url"] for t in self.teasers()], ["/timeline/entry/"])
+
+    def test_front_page_renders_the_teasers(self):
+        self._album("album", self.shown)
         response = self.client.get(reverse("pages:home"))
-        self.assertEqual(response.context["featured_album"].slug, "published")
-        self.assertNotContains(response, "/hidden/prepared/")
+        self.assertContains(response, 'class="teaser"', count=1)
 
 
 class PublicPageTests(TestCase):

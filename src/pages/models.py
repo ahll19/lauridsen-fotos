@@ -15,12 +15,15 @@ class HomeSettings(SingletonModel):
     tagline = models.CharField(_("tagline"), max_length=240, blank=True)
     intro = models.TextField(_("introduction"), blank=True, help_text=LINK_HELP)
     show_featured_album = models.BooleanField(
-        _("show a featured album"),
+        _("show albums on the front page"),
         default=True,
-        help_text=_("Surfaces the most recently published album as a teaser."),
+        help_text=_(
+            "The front page shows a random mix of published albums and timeline entries, "
+            "drawn afresh on every visit."
+        ),
     )
     show_latest_timeline_entry = models.BooleanField(
-        _("show the latest timeline entry"), default=True
+        _("show timeline entries on the front page"), default=True
     )
 
     class Meta:

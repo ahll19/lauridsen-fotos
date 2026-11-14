@@ -191,9 +191,23 @@ h2 { font-size: clamp(1.4rem, 3vw, 1.9rem); }
 .crumbs a:hover { color: var(--accent); }
 .crumbs span { margin-inline: 0.5rem; }
 
-.card-grid, .teasers {
+.card-grid {
   display: grid; gap: var(--gap);
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+}
+
+/* The front page's mix of albums and timeline entries: always two rows. The page sends
+   eight; each width shows as many as fill two rows of its columns and hides the rest. */
+.teasers { display: grid; gap: var(--gap); grid-template-columns: repeat(2, 1fr); }
+.teaser:nth-child(n + 5) { display: none; }
+@media (min-width: 640px) {
+  .teasers { grid-template-columns: repeat(3, 1fr); }
+  .teaser:nth-child(n + 5) { display: block; }
+  .teaser:nth-child(n + 7) { display: none; }
+}
+@media (min-width: 980px) {
+  .teasers { grid-template-columns: repeat(4, 1fr); }
+  .teaser:nth-child(n + 7) { display: block; }
 }
 
 .card a, .teaser a { text-decoration: none; display: block; }

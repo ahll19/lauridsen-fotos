@@ -73,8 +73,10 @@ shows. After that it is instant.
 **Cover.** An album's first photograph is its cover on the portfolio pages, unless you upload
 a different one under **Forsidebillede**.
 
-**The front page** shows the newest public album and the newest timeline entry. **Forside**
-switches either off, and is where the large image at the top is set.
+**The front page** shows two rows under its main image: a random mix of public albums and
+timeline entries, alternating, drawn afresh on every visit. A wide window shows eight and a
+phone four. Only work with a picture is used. **Forside** switches albums or timeline
+entries off, and is where the main image is set.
 
 ### What to upload
 
