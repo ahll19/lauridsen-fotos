@@ -97,6 +97,8 @@ h2 { font-size: clamp(1.4rem, 3vw, 1.9rem); }
 .wrap { width: min(100% - 2.5rem, var(--wrap)); margin-inline: auto; }
 .section { padding-block: clamp(2.5rem, 6vw, 5rem); }
 .section--narrow { max-width: 62ch; }
+/* Directly after another section: one section's spacing between them, not both added up. */
+.section + .section--follows { padding-top: 0; }
 .lede { font-size: 1.125rem; color: var(--ink-soft); max-width: 62ch; }
 .empty { color: var(--ink-faint); font-style: italic; }
 
